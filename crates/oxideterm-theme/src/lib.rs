@@ -489,9 +489,30 @@ impl UiRadii {
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UiSpacing {
+    /// 2px — hairline separation between adjacent chips or icons.
+    pub half: f32,
+    /// 4px — the base step. Smallest gap that still reads as intentional.
     pub one: f32,
+    /// 6px — tight padding inside compact rows.
+    pub one_half: f32,
+    /// 8px — default gap between sibling controls.
     pub two: f32,
+    /// 10px — comfortable padding inside dense table cells.
+    pub two_half: f32,
+    /// 12px — default padding inside cards and panels.
     pub three: f32,
+    /// 16px — section padding, gap between form rows.
+    pub four: f32,
+    /// 20px — gap between unrelated control groups.
+    pub five: f32,
+    /// 24px — gap between page sections.
+    pub six: f32,
+    /// 32px — outer page margin.
+    pub eight: f32,
+    /// 48px — empty-state and hero spacing.
+    pub twelve: f32,
+    /// Icon-to-label distance. Kept separate because it tracks icon size,
+    /// not the layout rhythm.
     pub icon_gap: f32,
 }
 
@@ -572,12 +593,46 @@ impl UiMotion {
 }
 
 impl UiSpacing {
+    /// The reference rhythm. Values are the ones the UI was already drawing
+    /// before this scale had names, so replacing a literal `px(12.0)` with
+    /// `spacing.three` is a no-op visually.
     pub const fn tauri_default() -> Self {
         Self {
+            half: 2.0,
             one: 4.0,
+            one_half: 6.0,
             two: 8.0,
+            two_half: 10.0,
             three: 12.0,
+            four: 16.0,
+            five: 20.0,
+            six: 24.0,
+            eight: 32.0,
+            twelve: 48.0,
             icon_gap: 8.0,
+        }
+    }
+
+    /// Density-adjusted copy of the reference rhythm.
+    ///
+    /// Every step goes through `scaled_metric` so the ratio between steps is
+    /// preserved; density must not turn `two` into something that is not
+    /// double `one`.
+    pub fn scaled(scale: f32) -> Self {
+        let base = Self::tauri_default();
+        Self {
+            half: scaled_metric(base.half, scale),
+            one: scaled_metric(base.one, scale),
+            one_half: scaled_metric(base.one_half, scale),
+            two: scaled_metric(base.two, scale),
+            two_half: scaled_metric(base.two_half, scale),
+            three: scaled_metric(base.three, scale),
+            four: scaled_metric(base.four, scale),
+            five: scaled_metric(base.five, scale),
+            six: scaled_metric(base.six, scale),
+            eight: scaled_metric(base.eight, scale),
+            twelve: scaled_metric(base.twelve, scale),
+            icon_gap: scaled_metric(base.icon_gap, scale),
         }
     }
 }
@@ -684,12 +739,7 @@ impl ThemeTokens {
             UiDensityProfile::Spacious => 1.18,
         };
         self.density = density;
-        self.spacing = UiSpacing {
-            one: scaled_metric(UiSpacing::tauri_default().one, scale),
-            two: scaled_metric(UiSpacing::tauri_default().two, scale),
-            three: scaled_metric(UiSpacing::tauri_default().three, scale),
-            icon_gap: scaled_metric(UiSpacing::tauri_default().icon_gap, scale),
-        };
+        self.spacing = UiSpacing::scaled(scale);
         apply_density_to_metrics(&mut self.metrics, scale);
     }
 
@@ -1056,5 +1106,73 @@ mod tests {
         tokens.apply_motion(UiMotionProfile::Fast);
         assert!(tokens.motion.spatial_enabled);
         assert!(tokens.motion.scaled_duration_ms(840) < 840);
+    }
+
+    #[test]
+    fn spacing_scale_matches_the_pixels_the_ui_already_drew() {
+        let spacing = UiSpacing::tauri_default();
+
+        // These are the literals pages used before the steps had names.
+        // If a value here changes, every page that migrates to the token
+        // shifts visually, so the test exists to make that a deliberate edit.
+        assert_eq!(spacing.half, 2.0);
+        assert_eq!(spacing.one, 4.0);
+        assert_eq!(spacing.one_half, 6.0);
+        assert_eq!(spacing.two, 8.0);
+        assert_eq!(spacing.two_half, 10.0);
+        assert_eq!(spacing.three, 12.0);
+        assert_eq!(spacing.four, 16.0);
+        assert_eq!(spacing.five, 20.0);
+        assert_eq!(spacing.six, 24.0);
+        assert_eq!(spacing.eight, 32.0);
+        assert_eq!(spacing.twelve, 48.0);
+        assert_eq!(spacing.icon_gap, 8.0);
+    }
+
+    #[test]
+    fn spacing_scale_is_strictly_increasing() {
+        let s = UiSpacing::tauri_default();
+        let ladder = [
+            s.half,
+            s.one,
+            s.one_half,
+            s.two,
+            s.two_half,
+            s.three,
+            s.four,
+            s.five,
+            s.six,
+            s.eight,
+            s.twelve,
+        ];
+
+        for pair in ladder.windows(2) {
+            assert!(
+                pair[0] < pair[1],
+                "spacing ladder must increase, got {:?} before {:?}",
+                pair[0],
+                pair[1]
+            );
+        }
+    }
+
+    #[test]
+    fn spacing_density_scaling_preserves_the_ladder() {
+        let base = UiSpacing::scaled(1.0);
+        let reference = UiSpacing::tauri_default();
+        assert_eq!(base, reference, "1.0 density must be a no-op");
+
+        let compact = UiSpacing::scaled(0.82);
+        let spacious = UiSpacing::scaled(1.18);
+
+        // Density must move every step the same direction and keep ordering,
+        // otherwise `two` could stop being roughly double `one`.
+        assert!(compact.one < reference.one);
+        assert!(compact.three < reference.three);
+        assert!(spacious.one > reference.one);
+        assert!(spacious.three > reference.three);
+        assert!(compact.half < compact.one);
+        assert!(spacious.half < spacious.one);
+        assert!(compact.twelve < spacious.twelve);
     }
 }
