@@ -216,7 +216,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .w_full()
@@ -225,7 +225,7 @@ impl WorkspaceApp {
                     .flex_row()
                     .flex_wrap()
                     .items_center()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(self.keybinding_search_input(cx))
                     .child(self.keybinding_scope_filter(cx))
                     .child(div().flex_1().min_w(px(0.0)))
@@ -301,7 +301,7 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let selected = self.settings_workspace.read(cx).keybinding_scope_filter();
-        let mut filters = div().flex().flex_wrap().gap(px(4.0)).max_w_full();
+        let mut filters = div().flex().flex_wrap().gap(px(self.tokens.spacing.one)).max_w_full();
         for filter in SettingsKeybindingScopeFilter::all().iter().copied() {
             let active = filter == selected;
             let item = oxideterm_gpui_ui::segmented_control_item(
@@ -507,12 +507,12 @@ impl WorkspaceApp {
         div()
             .w_full()
             .min_w(px(0.0))
-            .px(px(20.0))
-            .py(px(12.0))
+            .px(px(self.tokens.spacing.five))
+            .py(px(self.tokens.spacing.three))
             .flex()
             .items_center()
             .justify_between()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             // Tauri's `divide-y` does not draw a divider after the last row.
             // Avoid a final border inside the rounded bottom because GPUI's
             // rounded overflow can otherwise expose the line outside the mask.
@@ -529,7 +529,7 @@ impl WorkspaceApp {
                     .min_w(px(0.0))
                     .flex()
                     .items_center()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .truncate()
@@ -554,7 +554,7 @@ impl WorkspaceApp {
                     .flex_none()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .when(recording, |controls| {
                         controls.child(self.keybinding_recording_cell(&conflicts, side, cx))
                     })
@@ -564,10 +564,10 @@ impl WorkspaceApp {
                                 div()
                                     .flex()
                                     .items_center()
-                                    .gap(px(4.0))
+                                    .gap(px(self.tokens.spacing.one))
                                     .rounded(px(self.tokens.radii.sm))
-                                    .px(px(8.0))
-                                    .py(px(4.0))
+                                    .px(px(self.tokens.spacing.two))
+                                    .py(px(self.tokens.spacing.one))
                                     .cursor_pointer()
                                     .hover(|style| style.bg(self.keybinding_hover_background()))
                                     .child(
@@ -651,13 +651,13 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .flex()
                     .flex_col()
                     .items_end()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .child(match combo_display.as_deref() {
                         Some(combo) => self.keybinding_kbd_badge(combo, true, cx),
                         None => div()
@@ -720,7 +720,7 @@ impl WorkspaceApp {
             .flex_none()
             .rounded(px(self.tokens.radii.sm))
             .bg(rgba((self.tokens.ui.accent << 8) | 0x33))
-            .px(px(6.0))
+            .px(px(self.tokens.spacing.one_half))
             .py(px(1.0))
             .text_size(px(10.0))
             .font_weight(gpui::FontWeight::MEDIUM)
@@ -760,8 +760,8 @@ impl WorkspaceApp {
             } else {
                 self.settings_panel_background(self.tokens.ui.bg)
             })
-            .px(px(8.0))
-            .py(px(2.0))
+            .px(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.half))
             .font_family(settings_mono_font_family(self.settings_store.settings()))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .text_color(rgb(if accent {

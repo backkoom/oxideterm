@@ -365,7 +365,7 @@ impl WorkspaceApp {
             .unwrap_or_default();
         let scope_scroll = self.selectable_text_scroll_handle("settings-privilege-scopes-scroll");
 
-        let mut scope_list = div().flex().flex_col().gap(px(2.0));
+        let mut scope_list = div().flex().flex_col().gap(px(self.tokens.spacing.half));
         for scope in scopes {
             let selected = scope.id == active_scope.id;
             let scope_id = scope.id.clone();
@@ -384,11 +384,11 @@ impl WorkspaceApp {
                     } else {
                         rgba(theme.bg_panel << 8)
                     })
-                    .px(px(10.0))
-                    .py(px(8.0))
+                    .px(px(self.tokens.spacing.two_half))
+                    .py(px(self.tokens.spacing.two))
                     .flex()
                     .items_center()
-                    .gap(px(10.0))
+                    .gap(px(self.tokens.spacing.two_half))
                     .cursor_pointer()
                     .hover(move |row| row.bg(rgba((theme.bg_hover << 8) | 0xcc)))
                     .on_mouse_down(
@@ -452,7 +452,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_wrap()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .items_start()
             .child(
                 div()
@@ -462,7 +462,7 @@ impl WorkspaceApp {
                     .flex_none()
                     .flex()
                     .flex_col()
-                    .gap(px(10.0))
+                    .gap(px(self.tokens.spacing.two_half))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -495,7 +495,7 @@ impl WorkspaceApp {
                     .flex_basis(px(PRIVILEGE_DETAIL_MIN_WIDTH))
                     .flex()
                     .flex_col()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(self.settings_privilege_active_header(
                         &active_scope,
                         !editor_visible,
@@ -531,7 +531,7 @@ impl WorkspaceApp {
             .flex_wrap()
             .items_center()
             .justify_between()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .min_w(px(0.0))
@@ -590,7 +590,7 @@ impl WorkspaceApp {
             return list
                 .child(
                     div()
-                        .py(px(4.0))
+                        .py(px(self.tokens.spacing.one))
                         .text_size(px(self.tokens.metrics.ui_text_xs))
                         .text_color(rgb(theme.text_muted))
                         .child(self.i18n.t("sessionManager.privilege_credentials.empty")),
@@ -610,11 +610,11 @@ impl WorkspaceApp {
                     .flex()
                     .flex_wrap()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .border_b_1()
                     .border_color(rgba((theme.border << 8) | 0x80))
-                    .px(px(8.0))
-                    .py(px(8.0))
+                    .px(px(self.tokens.spacing.two))
+                    .py(px(self.tokens.spacing.two))
                     .child(Self::render_lucide_icon(
                         LucideIcon::KeyRound,
                         16.0,
@@ -651,8 +651,8 @@ impl WorkspaceApp {
                         row.child(
                             div()
                                 .rounded_full()
-                                .px(px(8.0))
-                                .py(px(2.0))
+                                .px(px(self.tokens.spacing.two))
+                                .py(px(self.tokens.spacing.half))
                                 .text_size(px(self.tokens.metrics.ui_text_xs))
                                 .text_color(rgb(theme.text_muted))
                                 .bg(rgba((theme.bg_hover << 8) | 0x99))
@@ -723,7 +723,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .border_t_1()
             .border_color(rgba((theme.border << 8) | 0x80))
             .pt(px(14.0))
@@ -746,7 +746,7 @@ impl WorkspaceApp {
                     .min_w(px(0.0))
                     .flex()
                     .flex_wrap()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(field_slot(
                         self.settings_privilege_text_field(
                             "sessionManager.privilege_credentials.label",
@@ -792,7 +792,7 @@ impl WorkspaceApp {
                     .min_w(px(0.0))
                     .flex()
                     .flex_wrap()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(field_slot(self.settings_privilege_text_field(
                         "sessionManager.privilege_credentials.secret",
                         SettingsInput::LocalPrivilegeSecret,
@@ -836,7 +836,7 @@ impl WorkspaceApp {
                             .min_w(px(0.0))
                             .flex()
                             .flex_wrap()
-                            .gap(px(12.0))
+                            .gap(px(self.tokens.spacing.three))
                             .child(field_slot(self.settings_privilege_totp_field(
                                 privilege.totp_credential_id.as_deref(),
                                 cx,
@@ -873,7 +873,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .cursor_pointer()
                     .on_mouse_down(
                         MouseButton::Left,
@@ -912,7 +912,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_wrap()
                     .justify_end()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .when(show_cancel, |row| {
                         row.child(
                             self.workspace_toolbar_action_button(
@@ -1079,7 +1079,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .cursor_pointer()
             .on_mouse_down(
                 MouseButton::Left,
@@ -1184,8 +1184,8 @@ impl WorkspaceApp {
                 rgb(theme.border)
             })
             .bg(rgb(theme.bg))
-            .px(px(12.0))
-            .py(px(8.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.two))
             .flex()
             .flex_col()
             .items_start()

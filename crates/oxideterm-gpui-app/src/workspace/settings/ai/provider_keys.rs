@@ -44,14 +44,14 @@ impl WorkspaceApp {
         div()
             .w_full()
             .min_w(px(0.0))
-            .px(px(16.0))
-            .pb(px(16.0))
+            .px(px(self.tokens.spacing.four))
+            .pb(px(self.tokens.spacing.four))
             .child(
                 self.ai_provider_field(
                     "settings_view.ai.api_key",
                     div()
                         .flex()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .child(
                             div()
                                 .flex_1()
@@ -106,20 +106,20 @@ impl WorkspaceApp {
         div()
             .w_full()
             .min_w(px(0.0))
-            .px(px(16.0))
-            .pb(px(16.0))
+            .px(px(self.tokens.spacing.four))
+            .pb(px(self.tokens.spacing.four))
             .child(
                 self.ai_provider_field(
                     "settings_view.ai.api_key",
                     div()
                         .flex()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .child(
                             div()
                                 .min_w(px(0.0))
                                 .flex_1()
                                 .h(px(32.0))
-                                .px(px(8.0))
+                                .px(px(self.tokens.spacing.two))
                                 .flex()
                                 .items_center()
                                 .rounded(px(self.tokens.radii.sm))

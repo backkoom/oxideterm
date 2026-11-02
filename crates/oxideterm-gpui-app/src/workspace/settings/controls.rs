@@ -309,7 +309,7 @@ impl WorkspaceApp {
                                     .pr(px(self.tokens.metrics.ui_select_check_size))
                                     .flex()
                                     .flex_col()
-                                    .gap(px(4.0))
+                                    .gap(px(self.tokens.spacing.one))
                                     .child(div().truncate().child(label))
                                     .child(
                                         match target {

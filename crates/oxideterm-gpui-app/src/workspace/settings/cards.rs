@@ -327,8 +327,8 @@ impl WorkspaceApp {
 
     pub(in crate::workspace) fn text_badge(&self, label: String, color: u32) -> AnyElement {
         div()
-            .px(px(8.0))
-            .py(px(2.0))
+            .px(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.half))
             .rounded(px(self.tokens.radii.sm))
             .bg(rgba((color << 8) | 0x1a))
             .text_size(px(self.tokens.metrics.ui_text_xs))

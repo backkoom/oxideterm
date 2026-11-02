@@ -106,14 +106,14 @@ impl WorkspaceApp {
                         .flex_wrap()
                         .items_center()
                         .justify_between()
-                        .gap(px(16.0))
+                        .gap(px(self.tokens.spacing.four))
                         .child(
                             div()
                                 .flex_1()
                                 .min_w(px(0.0))
                                 .flex()
                                 .flex_col()
-                                .gap(px(4.0))
+                                .gap(px(self.tokens.spacing.one))
                                 .child(
                                     div()
                                         .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -172,7 +172,7 @@ impl WorkspaceApp {
                         .flex_row()
                         .flex_wrap()
                         .justify_end()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .child(self.semantic_scheme_action_button(
                             LucideIcon::Plus,
                             self.i18n.t(
@@ -244,14 +244,14 @@ impl WorkspaceApp {
                     .flex_wrap()
                     .items_start()
                     .justify_between()
-                    .gap(px(16.0))
+                    .gap(px(self.tokens.spacing.four))
                     .child(
                         div()
                             .flex_1()
                             .min_w(px(0.0))
                             .flex()
                             .flex_col()
-                            .gap(px(4.0))
+                            .gap(px(self.tokens.spacing.one))
                             .child(
                                 div()
                                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -279,7 +279,7 @@ impl WorkspaceApp {
                             .flex()
                             .flex_row()
                             .flex_wrap()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(
                                 self.settings_select_control(
                                     SettingsSelect::HighlightPreset,
@@ -343,7 +343,7 @@ impl WorkspaceApp {
                     .flex_row()
                     .flex_wrap()
                     .justify_end()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         self.semantic_scheme_action_button(
                             LucideIcon::Plus,
@@ -413,7 +413,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_row()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .text_size(px(self.tokens.metrics.ui_text_xs))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(limit_text)
@@ -428,8 +428,8 @@ impl WorkspaceApp {
             rules_card = rules_card.child(
                 div()
                     .w_full()
-                    .px(px(16.0))
-                    .py(px(32.0))
+                    .px(px(self.tokens.spacing.four))
+                    .py(px(self.tokens.spacing.eight))
                     .text_align(gpui::TextAlign::Center)
                     .text_size(px(self.tokens.metrics.ui_text_sm))
                     .text_color(rgb(self.tokens.ui.text_muted))
@@ -451,7 +451,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(24.0))
+            .gap(px(self.tokens.spacing.six))
             .child(self.plain_settings_card(vec![self.checkbox_row(
                 "terminal.highlight_override.selection_matches",
                 "terminal.highlight_override.selection_matches_default_hint",
@@ -877,7 +877,7 @@ impl WorkspaceApp {
             .w_full()
             .flex()
             .flex_col()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(
                 div()
                     .flex()
@@ -885,7 +885,7 @@ impl WorkspaceApp {
                     .flex_wrap()
                     .items_end()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(self.highlight_input_block(
                         self.i18n.t(
                             "settings_view.terminal.highlight_rules.semantic_scheme_name",
@@ -920,7 +920,7 @@ impl WorkspaceApp {
                     ),
             );
 
-        let mut colors = div().w_full().flex().flex_row().flex_wrap().gap(px(12.0));
+        let mut colors = div().w_full().flex().flex_row().flex_wrap().gap(px(self.tokens.spacing.three));
         for (index, &class) in SEMANTIC_CLASSES.iter().enumerate() {
             colors = colors.child(
                 self.highlight_input_block(
@@ -961,21 +961,21 @@ impl WorkspaceApp {
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .flex()
             .flex_col()
-            .gap(px(10.0))
+            .gap(px(self.tokens.spacing.two_half))
             .child(
                 div()
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(
                                 checkbox(
                                     &self.tokens,
@@ -1026,7 +1026,7 @@ impl WorkspaceApp {
                     .flex_row()
                     .flex_wrap()
                     .items_end()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(self.settings_select_control(
                         SettingsSelect::SemanticSchemeRuleClass(index),
                         semantic_class_label(rule.class, &self.i18n),
@@ -1056,7 +1056,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(6.0))
+                            .gap(px(self.tokens.spacing.one_half))
                             .child(self.highlight_small_button(
                                 "−".to_string(),
                                 rule.priority > 0,
@@ -1162,28 +1162,28 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .flex()
                     .flex_row()
                     .items_start()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .flex_1()
                             .min_w(px(0.0))
                             .flex()
                             .flex_col()
-                            .gap(px(6.0))
+                            .gap(px(self.tokens.spacing.one_half))
                             .child(
                                 div()
                                     .flex()
                                     .flex_row()
                                     .flex_wrap()
                                     .items_center()
-                                    .gap(px(8.0))
+                                    .gap(px(self.tokens.spacing.two))
                                     .child(
                                         div()
                                             .truncate()
@@ -1230,7 +1230,7 @@ impl WorkspaceApp {
                             .flex()
                             .flex_row()
                             .flex_wrap()
-                            .gap(px(6.0))
+                            .gap(px(self.tokens.spacing.one_half))
                             .child(self.highlight_small_button(
                                 "↑".to_string(),
                                 index > 0,
@@ -1254,7 +1254,7 @@ impl WorkspaceApp {
             .child(
                 div()
                     .grid()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         self.highlight_input_block(
                             self.i18n.t("settings_view.terminal.highlight_rules.label"),
@@ -1285,7 +1285,7 @@ impl WorkspaceApp {
                     .flex_row()
                     .flex_wrap()
                     .items_end()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         self.highlight_input_block(
                             self.i18n
@@ -1458,7 +1458,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -1479,7 +1479,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -1503,7 +1503,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -1565,10 +1565,10 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
             .bg(rgb(self.tokens.terminal.background))
-            .p(px(8.0))
+            .p(px(self.tokens.spacing.two))
             .flex()
             .flex_col()
-            .gap(px(2.0))
+            .gap(px(self.tokens.spacing.half))
             .font_family(settings_mono_font_family(self.settings_store.settings()))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .line_height(px(24.0))
@@ -1583,7 +1583,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .w_full()
@@ -1591,7 +1591,7 @@ impl WorkspaceApp {
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .flex_none()
@@ -1635,7 +1635,7 @@ impl WorkspaceApp {
         let mut row = div()
             .w_full()
             .min_w(px(0.0))
-            .px(px(6.0))
+            .px(px(self.tokens.spacing.one_half))
             .rounded(px(self.tokens.radii.xs))
             .flex()
             .flex_row()
@@ -1680,7 +1680,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .w_full()
@@ -1689,7 +1689,7 @@ impl WorkspaceApp {
                     .flex_row()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .flex_none()
@@ -1722,10 +1722,10 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
             .bg(rgb(self.tokens.terminal.background))
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .font_family(settings_mono_font_family(self.settings_store.settings()))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .line_height(px(24.0))

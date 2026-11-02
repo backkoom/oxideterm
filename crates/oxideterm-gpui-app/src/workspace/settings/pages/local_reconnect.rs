@@ -80,8 +80,8 @@ impl WorkspaceApp {
         if settings.local_terminal.oh_my_posh_enabled {
             rows.push(
                 div()
-                    .px(px(12.0))
-                    .py(px(8.0))
+                    .px(px(self.tokens.spacing.three))
+                    .py(px(self.tokens.spacing.two))
                     .rounded(px(self.tokens.radii.sm))
                     .border_1()
                     .border_color(rgba((self.tokens.ui.info << 8) | 0x33))
@@ -138,7 +138,7 @@ impl WorkspaceApp {
                 .flex()
                 .flex_wrap()
                 .items_center()
-                .gap(px(8.0))
+                .gap(px(self.tokens.spacing.two))
                 .text_size(px(self.tokens.metrics.ui_text_sm))
                 .font_weight(gpui::FontWeight::MEDIUM)
                 .text_color(rgb(theme.text))
@@ -209,7 +209,7 @@ impl WorkspaceApp {
         let strategy = div()
             .flex()
             .flex_col()
-            .gap(px(24.0))
+            .gap(px(self.tokens.spacing.six))
             .opacity(if reconnect_enabled { 1.0 } else { 0.4 })
             .child(
                 div()
@@ -225,7 +225,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_row()
                     .flex_wrap()
-                    .gap(px(32.0))
+                    .gap(px(self.tokens.spacing.eight))
                     .child(self.reconnect_select_field(
                         "settings_view.reconnect.max_attempts",
                         "settings_view.reconnect.max_attempts_hint",
@@ -255,7 +255,7 @@ impl WorkspaceApp {
                 div()
                     .w_full()
                     .min_w_0()
-                    .pt(px(4.0))
+                    .pt(px(self.tokens.spacing.one))
                     .text_size(px(self.tokens.metrics.ui_text_xs))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(self.i18n.t("settings_view.reconnect.formula_hint")),
@@ -304,11 +304,11 @@ impl WorkspaceApp {
             .flex_1()
             .flex_basis(px(SETTINGS_RECONNECT_FIELD_BASIS))
             .grid()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .grid()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))

@@ -495,13 +495,13 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .min_w(px(0.0))
                     .flex()
                     .flex_col()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -534,7 +534,7 @@ impl WorkspaceApp {
             .flex_row()
             .items_center()
             .justify_start()
-            .gap(px(10.0))
+            .gap(px(self.tokens.spacing.two_half))
             .min_w(px(0.0))
             .flex_wrap();
 
@@ -1063,7 +1063,7 @@ impl WorkspaceApp {
                 div()
                     .relative()
                     .h(px(28.0))
-                    .px(px(12.0))
+                    .px(px(self.tokens.spacing.three))
                     .flex()
                     .items_center()
                     .justify_center()
@@ -1103,7 +1103,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .p(px(2.0))
+            .p(px(self.tokens.spacing.half))
             .rounded(px(self.tokens.radii.sm))
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
@@ -1253,7 +1253,7 @@ impl WorkspaceApp {
                 .flex()
                 .flex_row()
                 .items_start()
-                .gap(px(8.0))
+                .gap(px(self.tokens.spacing.two))
                 .child(
                     div()
                         .mt(px(5.0))
@@ -1284,11 +1284,11 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
             .bg(rgb(self.tokens.ui.bg_sunken))
-            .px(px(12.0))
-            .py(px(10.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.two_half))
             .flex()
             .flex_col()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(status_row(self.tokens.ui.accent, effective_text))
             .child(status_row(status_color, self.i18n.t(status_key)))
             .child(status_row(self.tokens.ui.text_muted, self.i18n.t(blur_key)))
@@ -1426,7 +1426,7 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_center()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(self.appearance_slider_control(slider, anchor_id, min, max, value, cx))
             .child(
                 div()
@@ -1653,7 +1653,7 @@ impl WorkspaceApp {
                     .bg(rgb(self.tokens.ui.bg_panel))
                     .flex()
                     .flex_col()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_base))
@@ -1728,7 +1728,7 @@ impl WorkspaceApp {
                             .flex()
                             .flex_row()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(
                                 // ThemeEditorModal uses normal shadcn Button
                                 // footer actions in Tauri; route clicks through
@@ -1943,12 +1943,12 @@ impl WorkspaceApp {
     ) -> AnyElement {
         let active = section == active_section;
         div()
-            .px(px(12.0))
-            .py(px(6.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.one_half))
             .flex()
             .flex_col()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .font_weight(gpui::FontWeight::MEDIUM)
             .text_color(rgb(if active {
@@ -2013,7 +2013,7 @@ impl WorkspaceApp {
             .w_full()
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .flex()
@@ -2428,7 +2428,7 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .when(!editor_open, |actions| {
                 actions
                     .child(self.appearance_action_button(

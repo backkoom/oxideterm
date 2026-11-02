@@ -412,7 +412,7 @@ impl WorkspaceApp {
                     div()
                         .flex_1()
                         .min_h(px(0.0))
-                        .p(px(16.0))
+                        .p(px(self.tokens.spacing.four))
                         .bg(rgb(self.tokens.ui.bg))
                         .text_color(rgb(self.tokens.ui.text))
                         .child(markdown_virtual_with_code_actions(

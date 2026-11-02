@@ -61,11 +61,11 @@ impl WorkspaceApp {
             )
             .child(
                 div()
-                    .px(px(24.0))
+                    .px(px(self.tokens.spacing.six))
                     .py(px(18.0))
                     .flex()
                     .flex_col()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(self.portable_entity_password_field(
                         "settings_view.general.portable_current_password",
                         SettingsInput::PortableCurrentPassword,
@@ -88,8 +88,8 @@ impl WorkspaceApp {
                                 .border_1()
                                 .border_color(rgba((self.tokens.ui.error << 8) | 0x4d))
                                 .bg(rgba((self.tokens.ui.error << 8) | 0x1a))
-                                .px(px(10.0))
-                                .py(px(8.0))
+                                .px(px(self.tokens.spacing.two_half))
+                                .py(px(self.tokens.spacing.two))
                                 .text_size(px(self.tokens.metrics.ui_text_sm))
                                 .text_color(rgb(self.tokens.ui.error))
                                 .child(error),
@@ -143,7 +143,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -202,7 +202,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))

@@ -216,7 +216,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .text_size(px(self.tokens.metrics.ui_text_xs))
                     .children([
                         self.ide_feature_row("settings_view.ide.agent_feature_atomic"),
@@ -227,7 +227,7 @@ impl WorkspaceApp {
             )
             .child(
                 div()
-                    .pt(px(8.0))
+                    .pt(px(self.tokens.spacing.two))
                     .border_t_1()
                     .border_color(rgba(
                         (self.tokens.ui.border << 8)
@@ -236,12 +236,12 @@ impl WorkspaceApp {
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(16.0))
+                    .gap(px(self.tokens.spacing.four))
                     .child(
                         div()
                             .flex()
                             .flex_col()
-                            .gap(px(4.0))
+                            .gap(px(self.tokens.spacing.one))
                             .child(
                                 div()
                                     .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -258,8 +258,8 @@ impl WorkspaceApp {
                     )
                     .child(
                         div()
-                            .px(px(8.0))
-                            .py(px(4.0))
+                            .px(px(self.tokens.spacing.two))
+                            .py(px(self.tokens.spacing.one))
                             .rounded(px(self.tokens.radii.sm))
                             .border_1()
                             .border_color(rgba(
@@ -292,12 +292,12 @@ impl WorkspaceApp {
             ))
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .text_size(px(self.tokens.metrics.ui_text_sm))
                     .font_weight(gpui::FontWeight::MEDIUM)
                     .text_color(rgb(self.tokens.ui.text))
@@ -312,7 +312,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(10.0))
+                    .gap(px(self.tokens.spacing.two_half))
                     .text_size(px(self.tokens.metrics.ui_text_xs))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .children([
@@ -358,7 +358,7 @@ impl WorkspaceApp {
         suffix: Option<&'static str>,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let mut control = div().flex_none().flex().items_center().gap(px(4.0)).child(
+        let mut control = div().flex_none().flex().items_center().gap(px(self.tokens.spacing.one)).child(
             self.settings_text_input_control_with_align(
                 input,
                 value,
@@ -401,7 +401,7 @@ impl WorkspaceApp {
                 .min_w(px(0.0))
                 .flex()
                 .flex_col()
-                .gap(px(2.0))
+                .gap(px(self.tokens.spacing.half))
                 .child(
                     div()
                         .text_color(rgb(self.tokens.ui.text))
@@ -417,7 +417,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_start()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(
                 div()

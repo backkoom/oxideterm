@@ -19,6 +19,10 @@ struct SettingsNavigationDrag {
     background: Rgba,
     border: Rgba,
     text: Rgba,
+    // The preview outlives the borrow of the settings entity, so spacing is
+    // captured here the same way the colours are.
+    padding_x: f32,
+    padding_y: f32,
 }
 
 impl SettingsNavigationDrag {
@@ -35,8 +39,8 @@ impl Render for SettingsNavigationDrag {
         div().pl(self.position.x).pt(self.position.y).child(
             div()
                 .max_w(px(300.0))
-                .px(px(12.0))
-                .py(px(8.0))
+                .px(px(self.padding_x))
+                .py(px(self.padding_y))
                 .rounded(px(8.0))
                 .border_1()
                 .border_color(self.border)
@@ -102,6 +106,8 @@ impl WorkspaceApp {
             background: rgb(self.tokens.ui.bg_panel),
             border: rgb(self.tokens.ui.accent),
             text: rgb(self.tokens.ui.text),
+            padding_x: self.tokens.spacing.three,
+            padding_y: self.tokens.spacing.two,
         }
     }
 
@@ -146,7 +152,7 @@ impl WorkspaceApp {
             .child(
                 // A six-dot grip communicates direct manipulation more clearly
                 // than a menu icon while remaining independent of icon assets.
-                div().w(px(6.0)).flex().flex_wrap().gap(px(2.0)).children(
+                div().w(px(6.0)).flex().flex_wrap().gap(px(self.tokens.spacing.half)).children(
                     (0..6).map(move |_| div().size(px(2.0)).rounded(px(1.0)).bg(grip_color)),
                 ),
             )
@@ -172,7 +178,7 @@ impl WorkspaceApp {
             .id(format!("settings-navigation-page-row-{}", tab.id()))
             .h(px(SETTINGS_NAVIGATION_ROW_HEIGHT))
             .flex_none()
-            .px(px(10.0))
+            .px(px(self.tokens.spacing.two_half))
             .flex()
             .items_center()
             .gap(px(9.0))
@@ -338,15 +344,15 @@ impl WorkspaceApp {
             .flex_none()
             .flex()
             .flex_col()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(
                 div()
                     .id(("settings-navigation-group-header", group_index))
                     .h(px(36.0))
-                    .px(px(4.0))
+                    .px(px(self.tokens.spacing.one))
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .drag_over::<SettingsNavigationDrag>(move |header, _drag, _window, _cx| {
                         header
                             .rounded(px(group_header_radius))
@@ -398,7 +404,7 @@ impl WorkspaceApp {
             }),
         );
 
-        let mut groups = div().flex().flex_col().gap(px(12.0));
+        let mut groups = div().flex().flex_col().gap(px(self.tokens.spacing.three));
         for group_index in 0..layout.group_count() {
             groups = groups.child(self.render_settings_navigation_group(&layout, group_index, cx));
         }
@@ -411,7 +417,7 @@ impl WorkspaceApp {
                 .flex()
                 .items_center()
                 .justify_center()
-                .gap(px(8.0))
+                .gap(px(self.tokens.spacing.two))
                 .rounded(px(self.tokens.radii.lg))
                 .border_1()
                 .border_dashed()
@@ -497,8 +503,8 @@ impl WorkspaceApp {
                         .flex_1()
                         .min_h(px(0.0))
                         .overflow_y_scroll()
-                        .px(px(20.0))
-                        .py(px(16.0))
+                        .px(px(self.tokens.spacing.five))
+                        .py(px(self.tokens.spacing.four))
                         .child(groups),
                 )
                 .child(

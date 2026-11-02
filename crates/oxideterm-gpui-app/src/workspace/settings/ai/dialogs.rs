@@ -350,10 +350,10 @@ impl WorkspaceApp {
                     )
                     .child(
                         div()
-                            .p(px(16.0))
+                            .p(px(self.tokens.spacing.four))
                             .flex()
                             .flex_col()
-                            .gap(px(16.0))
+                            .gap(px(self.tokens.spacing.four))
                             .child(
                                 div()
                                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -366,10 +366,10 @@ impl WorkspaceApp {
                                     .border_1()
                                     .border_color(rgba((self.tokens.ui.border << 8) | 0x80))
                                     .bg(rgba((self.tokens.ui.bg_panel << 8) | 0x4d))
-                                    .p(px(12.0))
+                                    .p(px(self.tokens.spacing.three))
                                     .flex()
                                     .flex_col()
-                                    .gap(px(8.0))
+                                    .gap(px(self.tokens.spacing.two))
                                     .child(
                                         self.ai_confirm_bullet(
                                             "settings_view.ai_confirm.point_local",
@@ -416,10 +416,10 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_start()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
-                    .mt(px(6.0))
+                    .mt(px(self.tokens.spacing.one_half))
                     .size(px(AI_CONFIRM_BULLET_SIZE))
                     .rounded(px(AI_CONFIRM_BULLET_SIZE / 2.0))
                     .bg(rgb(self.tokens.ui.text_muted)),
@@ -468,10 +468,10 @@ impl WorkspaceApp {
                             .flex()
                             .flex_col()
                             .items_center()
-                            .gap(px(12.0))
-                            .px(px(24.0))
-                            .pt(px(24.0))
-                            .pb(px(16.0))
+                            .gap(px(self.tokens.spacing.three))
+                            .px(px(self.tokens.spacing.six))
+                            .pt(px(self.tokens.spacing.six))
+                            .pb(px(self.tokens.spacing.four))
                             .child(
                                 div()
                                     .size(px(AI_CONFIRM_ICON_WRAP))
@@ -573,10 +573,10 @@ impl WorkspaceApp {
                             .flex()
                             .flex_col()
                             .items_center()
-                            .gap(px(12.0))
-                            .px(px(24.0))
-                            .pt(px(24.0))
-                            .pb(px(16.0))
+                            .gap(px(self.tokens.spacing.three))
+                            .px(px(self.tokens.spacing.six))
+                            .pt(px(self.tokens.spacing.six))
+                            .pb(px(self.tokens.spacing.four))
                             .child(
                                 div()
                                     .size(px(AI_CONFIRM_ICON_WRAP))

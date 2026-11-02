@@ -21,11 +21,11 @@ impl WorkspaceApp {
             .flex()
             .flex_wrap()
             .items_end()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .grid()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_xs))

@@ -8,8 +8,8 @@ impl WorkspaceApp {
         div()
             .rounded(px(self.tokens.radii.sm))
             .bg(rgb(self.tokens.ui.bg_panel))
-            .px(px(6.0))
-            .py(px(2.0))
+            .px(px(self.tokens.spacing.one_half))
+            .py(px(self.tokens.spacing.half))
             .text_size(px(10.0))
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(provider_type.to_uppercase())
@@ -25,8 +25,8 @@ impl WorkspaceApp {
         div()
             .rounded(px(self.tokens.radii.sm))
             .bg(rgba((color << 8) | bg_alpha))
-            .px(px(6.0))
-            .py(px(2.0))
+            .px(px(self.tokens.spacing.one_half))
+            .py(px(self.tokens.spacing.half))
             .text_size(px(10.0))
             .font_weight(gpui::FontWeight::MEDIUM)
             .text_color(rgb(color))
@@ -161,18 +161,18 @@ impl WorkspaceApp {
         div()
             .border_t_1()
             .border_color(rgba((self.tokens.ui.border << 8) | 0x4d))
-            .px(px(16.0))
-            .pt(px(12.0))
-            .pb(px(12.0))
+            .px(px(self.tokens.spacing.four))
+            .pt(px(self.tokens.spacing.three))
+            .pb(px(self.tokens.spacing.three))
             .flex()
             .items_center()
             .justify_between()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .cursor_pointer()
                     .child(self.ai_provider_enabled_toggle(index, provider.enabled, cx))
                     .child(
@@ -230,11 +230,11 @@ impl WorkspaceApp {
         div()
             .w_full()
             .min_w(px(0.0))
-            .px(px(16.0))
-            .pb(px(12.0))
+            .px(px(self.tokens.spacing.four))
+            .pb(px(self.tokens.spacing.three))
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(self.ai_provider_field(
                 "settings_view.ai.provider_name",
                 self.ai_provider_text_input_control(
@@ -267,8 +267,8 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         div()
-            .px(px(16.0))
-            .pb(px(16.0))
+            .px(px(self.tokens.spacing.four))
+            .pb(px(self.tokens.spacing.four))
             .child(self.ai_provider_field(
                 "settings_view.ai.api_protocol",
                 self.ai_provider_protocol_control(index, provider, cx),
@@ -282,7 +282,7 @@ impl WorkspaceApp {
         provider: &AiProviderView,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let mut row = div().flex().flex_wrap().gap(px(4.0));
+        let mut row = div().flex().flex_wrap().gap(px(self.tokens.spacing.one));
         for (protocol, key) in [
             (
                 oxideterm_ai::AiApiProtocol::ChatCompletions,

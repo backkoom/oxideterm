@@ -61,7 +61,7 @@ impl WorkspaceApp {
         let version_rows = div()
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(self.help_key_value_row(
                 "settings_view.help.app_name",
                 "OxideTerm".to_string(),
@@ -89,7 +89,7 @@ impl WorkspaceApp {
             .flex_col()
             .child(
                 div()
-                    .mb(px(16.0))
+                    .mb(px(self.tokens.spacing.four))
                     .text_size(px(self.tokens.metrics.ui_text_sm))
                     .font_weight(gpui::FontWeight::MEDIUM)
                     .text_color(rgb(self.tokens.ui.text))
@@ -140,14 +140,14 @@ impl WorkspaceApp {
     }
 
     pub(in crate::workspace) fn help_tech_stack_card(&self) -> AnyElement {
-        let mut badges = div().flex().flex_row().flex_wrap().gap(px(8.0));
+        let mut badges = div().flex().flex_row().flex_wrap().gap(px(self.tokens.spacing.two));
         for (label, color) in HELP_TECH_BADGES {
             badges = badges.child(
                 div()
                     .rounded_full()
                     .bg(rgba((color << 8) | 0x26))
-                    .px(px(10.0))
-                    .py(px(4.0))
+                    .px(px(self.tokens.spacing.two_half))
+                    .py(px(self.tokens.spacing.one))
                     .text_size(px(self.tokens.metrics.ui_text_xs))
                     .font_weight(gpui::FontWeight::MEDIUM)
                     .text_color(rgb(color))
@@ -207,7 +207,7 @@ impl WorkspaceApp {
             "settings_view.help.safety_secrets",
             "settings_view.help.safety_ai",
         ];
-        let mut safety_rows = div().flex().flex_col().gap(px(10.0));
+        let mut safety_rows = div().flex().flex_col().gap(px(self.tokens.spacing.two_half));
         for key in safety_items {
             safety_rows = safety_rows.child(self.help_safety_row(key));
         }
@@ -222,7 +222,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_start()
-            .gap(px(10.0))
+            .gap(px(self.tokens.spacing.two_half))
             .child(
                 div()
                     .mt(px(7.0))
@@ -254,7 +254,7 @@ impl WorkspaceApp {
             .flex()
             .flex_col()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(self.render_selectable_text_scoped(
@@ -323,20 +323,20 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         div()
-            .mt(px(16.0))
-            .pt(px(16.0))
+            .mt(px(self.tokens.spacing.four))
+            .pt(px(self.tokens.spacing.four))
             .border_t_1()
             .border_color(rgba(
                 (self.tokens.ui.border << 8) | alpha_byte(HELP_UPDATE_FOOTER_BORDER_ALPHA),
             ))
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(if is_portable {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(self.help_portable_update_notice())
                     .child(self.help_update_status_area(cx))
                     .into_any_element()
@@ -356,12 +356,12 @@ impl WorkspaceApp {
             .bg(rgba(
                 (self.tokens.ui.bg_elevated << 8) | alpha_byte(HELP_PORTABLE_NOTICE_BG_ALPHA),
             ))
-            .p(px(16.0))
+            .p(px(self.tokens.spacing.four))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .text_size(px(self.tokens.metrics.ui_text_sm))
                     .font_weight(gpui::FontWeight::MEDIUM)
                     .text_color(rgb(self.tokens.ui.text))
@@ -374,7 +374,7 @@ impl WorkspaceApp {
             )
             .child(
                 div()
-                    .mt(px(8.0))
+                    .mt(px(self.tokens.spacing.two))
                     .text_size(px(self.tokens.metrics.ui_text_sm))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(self.i18n.t("settings_view.help.portable_updates_hint")),
@@ -403,11 +403,11 @@ impl WorkspaceApp {
                 | NativeUpdateRenderState::Installing(_)
         );
 
-        let mut area = div().flex().flex_col().gap(px(12.0)).child(
+        let mut area = div().flex().flex_col().gap(px(self.tokens.spacing.three)).child(
             div()
                 .flex()
                 .items_center()
-                .gap(px(12.0))
+                .gap(px(self.tokens.spacing.three))
                 .child(self.help_outline_button_with_disabled(
                     self.i18n.t("settings_view.help.check_update"),
                     button_icon,
@@ -499,7 +499,7 @@ impl WorkspaceApp {
         let mut row = div()
             .flex()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .text_size(px(self.tokens.metrics.ui_text_sm))
             .text_color(rgb(color));
         if let Some(icon) = icon {
@@ -546,12 +546,12 @@ impl WorkspaceApp {
                     div()
                         .flex()
                         .flex_col()
-                        .gap(px(12.0))
+                        .gap(px(self.tokens.spacing.three))
                         .child(
                             div()
                                 .flex()
                                 .items_center()
-                                .gap(px(8.0))
+                                .gap(px(self.tokens.spacing.two))
                                 .text_size(px(self.tokens.metrics.ui_text_sm))
                                 .text_color(rgb(self.tokens.ui.text))
                                 .child(self.i18n.t("settings_view.help.update_available"))
@@ -709,8 +709,8 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
             .bg(rgb(self.tokens.ui.bg_elevated))
-            .px(px(12.0))
-            .py(px(4.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.one))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .font_weight(gpui::FontWeight::MEDIUM)
             .text_color(rgb(color))
@@ -744,7 +744,7 @@ impl WorkspaceApp {
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .min_w(px(0.0))
@@ -792,12 +792,12 @@ impl WorkspaceApp {
     ) -> AnyElement {
         div()
             .rounded(px(self.tokens.radii.md))
-            .px(px(12.0))
-            .py(px(10.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.two_half))
             .flex()
             .items_center()
             .justify_between()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .cursor_pointer()
             .hover(|row| row.bg(rgb(self.tokens.ui.bg_hover)))
             .on_mouse_down(
@@ -815,7 +815,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(Self::render_lucide_icon(
                         icon,
                         18.0,
@@ -953,7 +953,7 @@ impl WorkspaceApp {
                     div()
                         .flex_1()
                         .min_h(px(0.0))
-                        .p(px(16.0))
+                        .p(px(self.tokens.spacing.four))
                         .bg(rgb(self.tokens.ui.bg))
                         .text_color(rgb(self.tokens.ui.text))
                         .child(markdown_virtual_with_code_actions(

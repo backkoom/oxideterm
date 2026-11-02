@@ -134,7 +134,7 @@ impl WorkspaceApp {
             .flex_row()
             .items_start()
             .justify_between()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(div().flex().flex_col().w_full().min_w(px(0.0)).child(
                 self.portable_settings_text(
                     "portable-runtime-summary-hint",
@@ -204,13 +204,13 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let mut value_row = div()
-            .mt(px(4.0))
+            .mt(px(self.tokens.spacing.one))
             .w_full()
             .min_w(px(0.0))
             .rounded(px(self.tokens.radii.sm))
             .bg(rgb(self.tokens.ui.bg))
-            .px(px(10.0))
-            .py(px(8.0))
+            .px(px(self.tokens.spacing.two_half))
+            .py(px(self.tokens.spacing.two))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .text_color(rgb(self.tokens.ui.text))
             .line_height(px((self.tokens.metrics.ui_text_xs + 4.0).max(16.0)))
@@ -336,8 +336,8 @@ impl WorkspaceApp {
                         .border_1()
                         .border_color(rgba((self.tokens.ui.error << 8) | 0x4d))
                         .bg(rgba((self.tokens.ui.error << 8) | 0x1a))
-                        .px(px(10.0))
-                        .py(px(8.0))
+                        .px(px(self.tokens.spacing.two_half))
+                        .py(px(self.tokens.spacing.two))
                         .text_size(px(self.tokens.metrics.ui_text_sm))
                         .text_color(rgb(self.tokens.ui.error))
                         .child(error),

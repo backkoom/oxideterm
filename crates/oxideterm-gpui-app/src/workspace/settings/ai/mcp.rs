@@ -40,14 +40,14 @@ impl WorkspaceApp {
         }
 
         let list = if configs.is_empty() {
-            div().flex().flex_col().gap(px(12.0)).child(
+            div().flex().flex_col().gap(px(self.tokens.spacing.three)).child(
                 div()
                     .border_1()
                     .border_color(rgba(
                         (self.tokens.ui.border << 8) | AI_MCP_PANEL_BORDER_ALPHA,
                     ))
                     .rounded(px(self.tokens.radii.lg))
-                    .py(px(32.0))
+                    .py(px(self.tokens.spacing.eight))
                     .text_align(gpui::TextAlign::Center)
                     .text_size(px(self.tokens.metrics.ui_text_sm))
                     .text_color(rgb(self.tokens.ui.text_muted))
@@ -82,7 +82,7 @@ impl WorkspaceApp {
                                 .iter()
                                 .find(|snapshot| snapshot.config.id == config.id);
                             div()
-                                .pb(px(12.0))
+                                .pb(px(this.tokens.spacing.three))
                                 .child(this.ai_mcp_server_card(config, snapshot, cx))
                                 .into_any_element()
                         })
@@ -93,13 +93,13 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(
                 div()
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(self.ai_section_heading(
                         "settings_view.mcp.title",
                         "settings_view.mcp.description",
@@ -213,21 +213,21 @@ impl WorkspaceApp {
                 (self.tokens.ui.border << 8) | AI_MCP_PANEL_BORDER_ALPHA,
             ))
             .bg(rgba((self.tokens.ui.bg_panel << 8) | AI_MCP_PANEL_BG_ALPHA))
-            .p(px(16.0))
+            .p(px(self.tokens.spacing.four))
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(10.0))
+                            .gap(px(self.tokens.spacing.two_half))
                             .child(
                                 div()
                                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -245,8 +245,8 @@ impl WorkspaceApp {
                                 |row| {
                                     row.child(
                                         div()
-                                            .px(px(6.0))
-                                            .py(px(2.0))
+                                            .px(px(self.tokens.spacing.one_half))
+                                            .py(px(self.tokens.spacing.half))
                                             .rounded(px(self.tokens.radii.sm))
                                             .bg(rgba((self.tokens.ui.warning << 8) | 0x1a))
                                             .text_size(px(10.0))
@@ -263,7 +263,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(6.0))
+                            .gap(px(self.tokens.spacing.one_half))
                             .when(status == "connected", |row| {
                                 row.child(self.ai_mcp_card_icon_button(
                                     LucideIcon::RefreshCw,
@@ -308,12 +308,12 @@ impl WorkspaceApp {
             );
         }
         if !tools.is_empty() {
-            let mut chips = div().flex().flex_wrap().gap(px(4.0));
+            let mut chips = div().flex().flex_wrap().gap(px(self.tokens.spacing.one));
             for tool in tools {
                 chips = chips.child(
                     div()
-                        .px(px(6.0))
-                        .py(px(2.0))
+                        .px(px(self.tokens.spacing.one_half))
+                        .py(px(self.tokens.spacing.half))
                         .rounded(px(self.tokens.radii.sm))
                         .bg(rgba((self.tokens.ui.bg_panel << 8) | AI_MCP_CODE_BG_ALPHA))
                         .text_size(px(10.0))
@@ -323,20 +323,20 @@ impl WorkspaceApp {
             }
             card = card.child(
                 div()
-                    .mt(px(4.0))
-                    .pt(px(8.0))
+                    .mt(px(self.tokens.spacing.one))
+                    .pt(px(self.tokens.spacing.two))
                     .border_t_1()
                     .border_color(rgba(
                         (self.tokens.ui.border << 8) | AI_MCP_TOOL_BORDER_ALPHA,
                     ))
                     .flex()
                     .flex_col()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(6.0))
+                            .gap(px(self.tokens.spacing.one_half))
                             .text_size(px(10.0))
                             .text_color(rgb(self.tokens.ui.text_muted))
                             .child(Self::render_lucide_icon(
@@ -459,13 +459,13 @@ impl WorkspaceApp {
             ),
         };
         div()
-            .px(px(8.0))
-            .py(px(2.0))
+            .px(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.half))
             .rounded(px(self.tokens.radii.sm))
             .bg(rgba((color << 8) | 0x33))
             .flex()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .text_size(px(10.0))
             .font_weight(gpui::FontWeight::MEDIUM)
             .text_color(rgb(color))
@@ -492,8 +492,8 @@ impl WorkspaceApp {
         transport: oxideterm_ai::McpTransport,
     ) -> AnyElement {
         div()
-            .px(px(6.0))
-            .py(px(2.0))
+            .px(px(self.tokens.spacing.one_half))
+            .py(px(self.tokens.spacing.half))
             .rounded(px(self.tokens.radii.sm))
             .bg(rgb(self.tokens.ui.bg_panel))
             .text_size(px(10.0))
@@ -512,8 +512,8 @@ impl WorkspaceApp {
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(
                 div()
-                    .px(px(6.0))
-                    .py(px(2.0))
+                    .px(px(self.tokens.spacing.one_half))
+                    .py(px(self.tokens.spacing.half))
                     .rounded(px(self.tokens.radii.sm))
                     .bg(rgba((self.tokens.ui.bg_panel << 8) | AI_MCP_CODE_BG_ALPHA))
                     .child(self.render_selectable_display_text(
@@ -732,7 +732,7 @@ impl WorkspaceApp {
             div()
                 .grid()
                 .grid_cols(2)
-                .gap(px(12.0))
+                .gap(px(self.tokens.spacing.three))
                 .child(self.ai_mcp_labeled_input(
                     "settings_view.mcp.auth_header_name",
                     SettingsInput::AiMcpAuthHeaderName,

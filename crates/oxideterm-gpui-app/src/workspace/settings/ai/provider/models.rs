@@ -27,7 +27,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(
                 div()
                     .w_full()
@@ -36,8 +36,8 @@ impl WorkspaceApp {
                     .flex_wrap()
                     .items_center()
                     .justify_between()
-                    .px(px(16.0))
-                    .gap(px(8.0))
+                    .px(px(self.tokens.spacing.four))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -53,7 +53,7 @@ impl WorkspaceApp {
                             .flex()
                             .flex_wrap()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(self.ai_provider_refresh_button(index, provider, cx))
                             .when(
                                 provider.models.len() > AI_PROVIDER_VISIBLE_MODEL_LIMIT,
@@ -124,7 +124,7 @@ impl WorkspaceApp {
                 div()
                     .w_full()
                     .min_w(px(0.0))
-                    .px(px(16.0))
+                    .px(px(self.tokens.spacing.four))
                     .pb(px(AI_PROVIDER_MODEL_CHIP_LIST_BOTTOM_PADDING))
                     .h(px(list_height))
                     .child(tauri_virtual_list(
@@ -171,11 +171,11 @@ impl WorkspaceApp {
         div()
             .w_full()
             .min_w(px(0.0))
-            .px(px(16.0))
-            .pb(px(16.0))
+            .px(px(self.tokens.spacing.four))
+            .pb(px(self.tokens.spacing.four))
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .min_w(px(0.0))
@@ -334,15 +334,15 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_wrap()
-            .gap(px(4.0));
+            .gap(px(self.tokens.spacing.one));
         for item in row {
             chips = chips.child(self.ai_provider_model_chip(item.model.clone()));
         }
         if is_last_row && hidden_count > 0 {
             chips = chips.child(
                 div()
-                    .px(px(6.0))
-                    .py(px(2.0))
+                    .px(px(self.tokens.spacing.one_half))
+                    .py(px(self.tokens.spacing.half))
                     .text_size(px(10.0))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(format!("+{hidden_count}")),
@@ -359,8 +359,8 @@ impl WorkspaceApp {
                 (self.tokens.ui.border << 8) | AI_PROVIDER_MODEL_BORDER_ALPHA,
             ))
             .bg(rgb(self.tokens.ui.bg))
-            .px(px(6.0))
-            .py(px(2.0))
+            .px(px(self.tokens.spacing.one_half))
+            .py(px(self.tokens.spacing.half))
             .text_size(px(10.0))
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(model)

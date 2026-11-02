@@ -45,16 +45,16 @@ impl WorkspaceApp {
             )
             .child(
                 div()
-                    .px(px(24.0))
+                    .px(px(self.tokens.spacing.six))
                     .py(px(18.0))
                     .flex()
                     .flex_col()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .flex()
                             .flex_col()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(
                                 div()
                                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -77,7 +77,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .flex_col()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(
                                 div()
                                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -176,16 +176,16 @@ impl WorkspaceApp {
             )
             .child(
                 div()
-                    .px(px(24.0))
+                    .px(px(self.tokens.spacing.six))
                     .py(px(18.0))
                     .flex()
                     .flex_col()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .flex()
                             .flex_col()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(
                                 div()
                                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -211,7 +211,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .flex_col()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(
                                 div()
                                     .text_size(px(self.tokens.metrics.ui_text_sm))

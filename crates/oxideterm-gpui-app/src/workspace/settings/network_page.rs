@@ -436,7 +436,7 @@ impl WorkspaceApp {
 
     fn public_mcp_create_client_controls(&self, cx: &mut Context<Self>) -> AnyElement {
         let mode = self.settings_workspace.read(cx).new_mcp_client_mode;
-        let mut picker = div().flex().flex_wrap().gap(px(4.0));
+        let mut picker = div().flex().flex_wrap().gap(px(self.tokens.spacing.one));
         for (value, label) in [
             (
                 oxideterm_public_mcp::ClientApprovalMode::Standard,
@@ -472,7 +472,7 @@ impl WorkspaceApp {
             .flex()
             .flex_wrap()
             .items_center()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -975,8 +975,8 @@ impl WorkspaceApp {
                                 .flex_grow(1.0)
                                 .min_w(px(300.0))
                                 .max_w_full()
-                                .pr(px(12.0))
-                                .pb(px(16.0))
+                                .pr(px(self.tokens.spacing.three))
+                                .pb(px(self.tokens.spacing.four))
                                 .child(settings_ai_tool_policy_group(
                                     &self.tokens,
                                     self.i18n.t(title_key),
@@ -993,7 +993,7 @@ impl WorkspaceApp {
                     div()
                         .flex()
                         .flex_col()
-                        .gap(px(12.0))
+                        .gap(px(self.tokens.spacing.three))
                         .child(
                             div()
                                 .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -1009,7 +1009,7 @@ impl WorkspaceApp {
                         .min_w_0()
                         .flex()
                         .flex_col()
-                        .gap(px(16.0))
+                        .gap(px(self.tokens.spacing.four))
                         .child(
                             self.setting_row(
                                 "settings_view.network.mcp_approval_mode",
@@ -1042,7 +1042,7 @@ impl WorkspaceApp {
                                 .flex()
                                 .flex_wrap()
                                 .items_center()
-                                .gap(px(8.0))
+                                .gap(px(self.tokens.spacing.two))
                                 .child(self.workspace_toolbar_action_button(
                                     self.i18n.t(toggle_key),
                                     None,
@@ -1231,7 +1231,7 @@ impl WorkspaceApp {
                         .flex()
                         .flex_wrap()
                         .items_start()
-                        .gap(px(32.0))
+                        .gap(px(self.tokens.spacing.eight))
                         .child(self.network_responsive_field(
                             SETTINGS_NETWORK_FIELD_WIDTH,
                             self.network_select_field(
@@ -1355,7 +1355,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_wrap()
                     .items_start()
-                    .gap(px(32.0))
+                    .gap(px(self.tokens.spacing.eight))
                     .child(self.network_responsive_field(
                         SETTINGS_NETWORK_FIELD_WIDTH,
                         self.network_select_field(
@@ -1429,7 +1429,7 @@ impl WorkspaceApp {
                     .min_w(px(0.0))
                     .flex()
                     .flex_wrap()
-                    .gap(px(16.0))
+                    .gap(px(self.tokens.spacing.four))
                     .child(self.network_responsive_field(
                         SETTINGS_NETWORK_FIELD_WIDTH,
                         self.network_input_field(
@@ -1462,7 +1462,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_wrap()
                     .items_center()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .flex_none()
@@ -1574,7 +1574,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_wrap()
                     .items_start()
-                    .gap(px(32.0))
+                    .gap(px(self.tokens.spacing.eight))
                     .child(self.network_responsive_field(
                         SETTINGS_NETWORK_FIELD_WIDTH,
                         self.network_select_field(
@@ -1731,7 +1731,7 @@ impl WorkspaceApp {
             .max_w_full()
             .min_w(px(0.0))
             .grid()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(self.network_field_label(label_key, hint_key))
             .child(self.settings_select_control(select_id, value, !enabled, None, cx))
             .into_any_element()
@@ -1752,7 +1752,7 @@ impl WorkspaceApp {
             .max_w_full()
             .min_w(px(0.0))
             .grid()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(self.network_field_label(label_key, hint_key))
             .child(
                 self.settings_text_input_control_fill(input, value, placeholder, cx)
@@ -1776,7 +1776,7 @@ impl WorkspaceApp {
             .w_full()
             .min_w(px(0.0))
             .grid()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(self.network_field_label(label_key, hint_key))
             .child(self.network_full_width_text_input_control(input, value, placeholder, cx))
             .when(!enabled, |field| field.opacity(0.5))
@@ -1842,7 +1842,7 @@ impl WorkspaceApp {
             .w_full()
             .min_w(px(0.0))
             .grid()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(self.network_field_label(
                 "settings_view.network.password",
                 if has_saved_password {
@@ -1858,7 +1858,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_wrap()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .min_w(px(0.0))
@@ -1954,7 +1954,7 @@ impl WorkspaceApp {
         div()
             .min_w(px(0.0))
             .grid()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))

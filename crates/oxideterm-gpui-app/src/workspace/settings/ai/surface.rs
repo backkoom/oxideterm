@@ -77,7 +77,7 @@ impl WorkspaceApp {
             .p(px(self.tokens.metrics.settings_card_padding))
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -102,7 +102,7 @@ impl WorkspaceApp {
 
     pub(in crate::workspace) fn ai_section_title(&self, key: &str) -> AnyElement {
         div()
-            .mb(px(16.0))
+            .mb(px(self.tokens.spacing.four))
             .text_size(px(self.tokens.metrics.ui_text_sm))
             .font_weight(gpui::FontWeight::MEDIUM)
             .text_color(rgb(self.tokens.ui.text))

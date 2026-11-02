@@ -17,7 +17,7 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgba((self.tokens.ui.border << 8) | 0x66))
             .bg(rgba((self.tokens.ui.bg << 8) | 0x66))
-            .px(px(10.0))
+            .px(px(self.tokens.spacing.two_half))
             .flex()
             .items_center()
             .text_size(px(12.0))
@@ -43,14 +43,14 @@ impl WorkspaceApp {
                 .min_w(px(0.0))
                 .flex()
                 .flex_col()
-                .gap(px(12.0))
+                .gap(px(self.tokens.spacing.three))
                 .child(
                     div()
                         .flex()
                         .flex_wrap()
                         .items_center()
                         .justify_between()
-                        .gap(px(12.0))
+                        .gap(px(self.tokens.spacing.three))
                         .child(settings_ai_section_heading(
                             &self.tokens,
                             self.i18n.t("ai.model_selector.custom_acp_agents"),
@@ -62,7 +62,7 @@ impl WorkspaceApp {
                                 .flex()
                                 .flex_wrap()
                                 .justify_end()
-                                .gap(px(8.0))
+                                .gap(px(self.tokens.spacing.two))
                                 .child(self.workspace_toolbar_action_button(
                                     self.i18n.t(
                                         if self.plugin_manager_state(cx).custom_acp_expanded {
@@ -108,7 +108,7 @@ impl WorkspaceApp {
             return section
                 .child(
                     div()
-                        .py(px(12.0))
+                        .py(px(self.tokens.spacing.three))
                         .text_size(px(12.0))
                         .text_color(rgb(self.tokens.ui.text_muted))
                         .child(self.i18n.t("settings_view.ai.acp_agents_empty")),
@@ -139,10 +139,10 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .border_t_1()
             .border_color(rgb(self.tokens.ui.border))
-            .pt(px(12.0))
+            .pt(px(self.tokens.spacing.three))
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .w_full()
@@ -151,7 +151,7 @@ impl WorkspaceApp {
                     .flex_wrap()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(self.ai_acp_agent_enabled_toggle(index, agent.enabled, cx))
                     .child(
                         div()
@@ -160,7 +160,7 @@ impl WorkspaceApp {
                             .flex_wrap()
                             .items_center()
                             .justify_end()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .when_some(agent.status.last_error_kind.as_ref(), |row, error| {
                                 let error_label = self.i18n.t(acp_agent_error_kind_key(error));
                                 row.child(
@@ -197,7 +197,7 @@ impl WorkspaceApp {
                     .min_w(px(0.0))
                     .flex()
                     .flex_wrap()
-                    .gap(px(10.0))
+                    .gap(px(self.tokens.spacing.two_half))
                     .child(self.ai_responsive_field(
                         AI_ACP_AGENT_FIELD_MIN_WIDTH,
                         self.ai_labeled_text_input(
@@ -213,7 +213,7 @@ impl WorkspaceApp {
                             div()
                                 .flex()
                                 .flex_col()
-                                .gap(px(6.0))
+                                .gap(px(self.tokens.spacing.one_half))
                                 .child(self.i18n.t("settings_view.ai.acp_agent_plugin"))
                                 .child(self.ai_readonly_value(plugin_id.clone()))
                                 .into_any_element()
@@ -249,7 +249,7 @@ impl WorkspaceApp {
                     .min_w(px(0.0))
                     .flex()
                     .flex_wrap()
-                    .gap(px(10.0))
+                    .gap(px(self.tokens.spacing.two_half))
                     .child(self.ai_responsive_field(
                         AI_ACP_AGENT_TEXTAREA_FIELD_MIN_WIDTH,
                         self.ai_textarea_row(
@@ -353,7 +353,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .text_size(px(12.0))
@@ -413,8 +413,8 @@ impl WorkspaceApp {
         div()
             .rounded(px(self.tokens.radii.sm))
             .bg(rgba((self.tokens.ui.bg << 8) | 0x80))
-            .px(px(8.0))
-            .py(px(4.0))
+            .px(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.one))
             .text_size(px(10.0))
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(
@@ -514,10 +514,10 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .border_t_1()
             .border_color(rgba((self.tokens.ui.border << 8) | 0x66))
-            .pt(px(12.0))
+            .pt(px(self.tokens.spacing.three))
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .text_size(px(12.0))
@@ -530,7 +530,7 @@ impl WorkspaceApp {
                     .min_w(px(0.0))
                     .flex()
                     .flex_wrap()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(self.ai_responsive_field(
                         AI_ACP_AGENT_CAPABILITY_MIN_WIDTH,
                         self.ai_acp_agent_capability_toggle(
@@ -634,7 +634,7 @@ impl WorkspaceApp {
                 div()
                     .w_full()
                     .min_w(px(0.0))
-                    .mt(px(12.0))
+                    .mt(px(self.tokens.spacing.three))
                     .h(px(list_height))
                     .child(tauri_virtual_list(
                         state,
@@ -669,7 +669,7 @@ impl WorkspaceApp {
                 },
                 cx,
             ))
-            .child(div().mt(px(12.0)).child(self.ai_provider_add_controls(cx)))
+            .child(div().mt(px(self.tokens.spacing.three)).child(self.ai_provider_add_controls(cx)))
             .when_some(provider_list, |section, provider_list| {
                 section.child(provider_list)
             })
@@ -812,7 +812,7 @@ impl WorkspaceApp {
         div()
             .w_full()
             .min_w(px(0.0))
-            .pb(px(12.0))
+            .pb(px(self.tokens.spacing.three))
             .child(self.ai_provider_card(index, provider, cx))
             .into_any_element()
     }
@@ -1254,7 +1254,7 @@ impl WorkspaceApp {
                             .min_w(px(0.0))
                             .flex()
                             .flex_col()
-                            .gap(px(16.0));
+                            .gap(px(self.tokens.spacing.four));
                         for panel in provider_panels {
                             list = list.child(self.ai_context_window_provider(settings, panel, cx));
                         }
@@ -1666,7 +1666,7 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .children(settings.ai.tool_use.disabled_tools.iter().map(|name| {
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_xs))

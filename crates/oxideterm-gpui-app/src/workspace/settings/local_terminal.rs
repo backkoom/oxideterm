@@ -208,7 +208,7 @@ impl WorkspaceApp {
                 .flex()
                 .flex_wrap()
                 .items_center()
-                .gap(px(8.0))
+                .gap(px(self.tokens.spacing.two))
                 .child(self.settings_text_input_control(
                     input,
                     path.clone(),

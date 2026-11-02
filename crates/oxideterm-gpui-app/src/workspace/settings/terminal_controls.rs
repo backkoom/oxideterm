@@ -59,7 +59,7 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_center()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .w(px(self.tokens.metrics.settings_slider_width))
@@ -105,7 +105,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_row()
                     .items_center()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .child(self.number_input(
                         SettingsInput::TerminalFontSize,
                         settings.terminal.font_size.to_string(),

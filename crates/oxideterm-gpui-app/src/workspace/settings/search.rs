@@ -1155,7 +1155,7 @@ impl WorkspaceApp {
             .pb_3()
             .flex()
             .flex_col()
-            .gap(px(2.0));
+            .gap(px(self.tokens.spacing.half));
 
         if query.trim().is_empty() || results.is_empty() {
             let message_key = if query.trim().is_empty() {

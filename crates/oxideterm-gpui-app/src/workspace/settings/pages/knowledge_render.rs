@@ -67,7 +67,7 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgba((self.tokens.ui.error << 8) | 0x4d))
             .bg(rgba((self.tokens.ui.error << 8) | 0x1a))
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .text_size(px(self.tokens.metrics.ui_text_sm))
             .text_color(rgb(self.tokens.ui.error))
             .child(error.to_string())
@@ -177,7 +177,7 @@ impl WorkspaceApp {
                 .flex_wrap()
                 .items_center()
                 .justify_between()
-                .gap(px(12.0))
+                .gap(px(self.tokens.spacing.three))
                 .child(
                     div()
                         .min_w(px(0.0))
@@ -185,7 +185,7 @@ impl WorkspaceApp {
                         .flex_basis(px(KNOWLEDGE_DOCUMENT_HEADER_INFO_MIN_WIDTH))
                         .flex()
                         .flex_col()
-                        .gap(px(2.0))
+                        .gap(px(self.tokens.spacing.half))
                         .child(
                             div()
                                 .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -210,7 +210,7 @@ impl WorkspaceApp {
                         .flex_wrap()
                         .items_center()
                         .justify_end()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .child({
                             let import_disabled = import_progress.is_some();
                             self.knowledge_text_icon_button(
@@ -310,7 +310,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_wrap()
                     .items_center()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(self.knowledge_text_icon_button(
                         LucideIcon::ChevronLeft,
                         self.i18n.t("settings_view.knowledge.previous_page"),
@@ -373,7 +373,7 @@ impl WorkspaceApp {
             .flex()
             .items_center()
             .justify_between()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(if selected {
@@ -386,8 +386,8 @@ impl WorkspaceApp {
             } else {
                 rgba(0x00000000)
             })
-            .px(px(12.0))
-            .py(px(8.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.two))
             .cursor_pointer()
             .hover(|style| style.bg(rgb(self.tokens.ui.bg_hover)))
             .on_mouse_down(
@@ -408,7 +408,7 @@ impl WorkspaceApp {
                     .flex_1()
                     .flex()
                     .items_center()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(div().flex_none().child(Self::render_lucide_icon(
                         LucideIcon::BookOpen,
                         KNOWLEDGE_ROW_ICON_SIZE,
@@ -420,7 +420,7 @@ impl WorkspaceApp {
                             .flex_1()
                             .flex()
                             .flex_col()
-                            .gap(px(2.0))
+                            .gap(px(self.tokens.spacing.half))
                             .child(
                                 div()
                                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -778,14 +778,14 @@ impl WorkspaceApp {
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
-                    .p(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
+                    .p(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .min_w(px(0.0))
                             .flex()
                             .items_start()
-                            .gap(px(12.0))
+                            .gap(px(self.tokens.spacing.three))
                             .child(
                                 div()
                                     .size(px(KNOWLEDGE_EMBEDDING_ICON_BOX))
@@ -807,7 +807,7 @@ impl WorkspaceApp {
                                     .min_w(px(0.0))
                                     .flex()
                                     .flex_col()
-                                    .gap(px(4.0))
+                                    .gap(px(self.tokens.spacing.one))
                                     .child(
                                         div()
                                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -819,7 +819,7 @@ impl WorkspaceApp {
                                         div()
                                             .flex()
                                             .items_center()
-                                            .gap(px(8.0))
+                                            .gap(px(self.tokens.spacing.two))
                                             .flex_wrap()
                                             .child(
                                                 div()
@@ -833,8 +833,8 @@ impl WorkspaceApp {
                                                         (status_color << 8)
                                                             | KNOWLEDGE_STATUS_BG_ALPHA,
                                                     ))
-                                                    .px(px(8.0))
-                                                    .py(px(2.0))
+                                                    .px(px(self.tokens.spacing.two))
+                                                    .py(px(self.tokens.spacing.half))
                                                     .text_size(px(self.tokens.metrics.ui_text_xs))
                                                     .text_color(rgb(status_color))
                                                     .child(status),
@@ -853,12 +853,12 @@ impl WorkspaceApp {
                             .h(px(KNOWLEDGE_EMBEDDING_CONFIG_BUTTON_HEIGHT))
                             .flex()
                             .items_center()
-                            .gap(px(6.0))
+                            .gap(px(self.tokens.spacing.one_half))
                             .rounded(px(self.tokens.radii.md))
                             .border_1()
                             .border_color(rgb(self.tokens.ui.border))
                             .bg(rgb(self.tokens.ui.bg))
-                            .px(px(10.0))
+                            .px(px(self.tokens.spacing.two_half))
                             .text_size(px(self.tokens.metrics.ui_text_sm))
                             .font_weight(gpui::FontWeight::MEDIUM)
                             .text_color(rgb(self.tokens.ui.text))
@@ -896,10 +896,10 @@ impl WorkspaceApp {
                         .border_color(rgba(
                             (self.tokens.ui.border << 8) | KNOWLEDGE_SECTION_DIVIDER_ALPHA,
                         ))
-                        .p(px(12.0))
+                        .p(px(self.tokens.spacing.three))
                         .flex()
                         .flex_col()
-                        .gap(px(12.0))
+                        .gap(px(self.tokens.spacing.three))
                         .child(
                             div()
                                 .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -953,7 +953,7 @@ impl WorkspaceApp {
             .flex()
             .items_center()
             .flex_wrap()
-            .gap(px(24.0))
+            .gap(px(self.tokens.spacing.six))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(self.knowledge_stat_item(
@@ -990,7 +990,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .font_weight(gpui::FontWeight::SEMIBOLD)
@@ -1036,9 +1036,9 @@ impl WorkspaceApp {
             .flex_col()
             .items_center()
             .justify_center()
-            .gap(px(8.0))
-            .px(px(16.0))
-            .py(px(32.0))
+            .gap(px(self.tokens.spacing.two))
+            .px(px(self.tokens.spacing.four))
+            .py(px(self.tokens.spacing.eight))
             .text_center()
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(Self::render_lucide_icon(

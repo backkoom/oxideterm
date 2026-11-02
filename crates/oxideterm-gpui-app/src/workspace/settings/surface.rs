@@ -916,8 +916,8 @@ impl WorkspaceApp {
             div()
                 .flex_none()
                 .h(px(48.0))
-                .px(px(20.0))
-                .when(!settings_search_open, |header| header.mb(px(12.0)))
+                .px(px(self.tokens.spacing.five))
+                .when(!settings_search_open, |header| header.mb(px(self.tokens.spacing.three)))
                 .flex()
                 .items_center()
                 .justify_between()
@@ -1054,7 +1054,7 @@ impl WorkspaceApp {
             .h(px(self.tokens.metrics.ui_button_lg_height))
             .w_full()
             .flex_none()
-            .mb(px(4.0))
+            .mb(px(self.tokens.spacing.one))
             .px_3()
             .relative()
             .flex()
@@ -1145,7 +1145,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .w_full()
@@ -1185,7 +1185,7 @@ impl WorkspaceApp {
                 let note = self.i18n.t("settings_view.keybindings.intl_keyboard_note");
                 header.child(
                     div()
-                        .mt(px(2.0))
+                        .mt(px(self.tokens.spacing.half))
                         .w_full()
                         .min_w(px(0.0))
                         .text_size(px(self.tokens.metrics.ui_text_xs))

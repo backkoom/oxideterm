@@ -70,8 +70,8 @@ impl WorkspaceApp {
             if provider.custom {
                 card = card.child(
                     div()
-                        .px(px(16.0))
-                        .pb(px(12.0))
+                        .px(px(self.tokens.spacing.four))
+                        .pb(px(self.tokens.spacing.three))
                         .child(self.ai_provider_remove_button(index, provider.name.clone(), cx)),
                 );
             }
@@ -96,8 +96,8 @@ impl WorkspaceApp {
             .flex()
             .items_start()
             .justify_between()
-            .gap(px(16.0))
-            .p(px(16.0))
+            .gap(px(self.tokens.spacing.four))
+            .p(px(self.tokens.spacing.four))
             .cursor_pointer()
             .child(
                 div()
@@ -105,14 +105,14 @@ impl WorkspaceApp {
                     .flex_1()
                     .flex()
                     .flex_col()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .min_w_0()
                             .flex()
                             .flex_wrap()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(
                                 div()
                                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -182,7 +182,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .when(!active_provider, |row| {
                         row.child(self.ai_provider_active_button(provider, active_provider, cx))
                     })

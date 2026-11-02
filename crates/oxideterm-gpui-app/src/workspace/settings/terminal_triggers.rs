@@ -61,6 +61,7 @@ fn trigger_action_label(action: &TerminalTriggerAction) -> &'static str {
 fn terminal_trigger_connection_list(
     rows: Vec<AnyElement>,
     scroll: &gpui::ScrollHandle,
+    row_gap: f32,
 ) -> AnyElement {
     div()
         .id("terminal-trigger-connections")
@@ -76,7 +77,7 @@ fn terminal_trigger_connection_list(
                 .overflow_y_scroll()
                 .track_scroll(scroll)
                 .on_scroll_wheel(|_, _, cx| cx.stop_propagation())
-                .child(div().w_full().flex().flex_col().gap(px(4.0)).children(rows)),
+                .child(div().w_full().flex().flex_col().gap(px(row_gap)).children(rows)),
         )
         .vertical_scrollbar(scroll)
         .into_any_element()
@@ -705,14 +706,14 @@ impl WorkspaceApp {
             .flex_wrap()
             .items_start()
             .justify_between()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(
                 div()
                     .flex_1()
                     .min_w(px(220.0))
                     .flex()
                     .flex_col()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -773,11 +774,11 @@ impl WorkspaceApp {
     }
 
     fn terminal_trigger_manager(&self, cx: &mut Context<Self>) -> AnyElement {
-        let mut rule_list = div().w_full().flex().flex_col().gap(px(4.0));
+        let mut rule_list = div().w_full().flex().flex_col().gap(px(self.tokens.spacing.one));
         if self.terminal_triggers.snapshot.triggers.is_empty() {
             rule_list = rule_list.child(
                 div()
-                    .py(px(16.0))
+                    .py(px(self.tokens.spacing.four))
                     .text_size(px(self.tokens.metrics.ui_text_xs))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(self.i18n.t("settings_view.terminal.triggers.no_rules")),
@@ -799,12 +800,12 @@ impl WorkspaceApp {
             .w(px(TERMINAL_TRIGGER_SIDEBAR_WIDTH))
             .max_w_full()
             .flex_none()
-            .pr(px(16.0))
+            .pr(px(self.tokens.spacing.four))
             .border_r_1()
             .border_color(rgb(self.tokens.ui.border))
             .flex()
             .flex_col()
-            .gap(px(10.0))
+            .gap(px(self.tokens.spacing.two_half))
             .child(
                 div()
                     .w_full()
@@ -821,12 +822,12 @@ impl WorkspaceApp {
                 sidebar.child(
                     div()
                         .w_full()
-                        .pt(px(10.0))
+                        .pt(px(self.tokens.spacing.two_half))
                         .border_t_1()
                         .border_color(rgb(self.tokens.ui.border))
                         .flex()
                         .flex_wrap()
-                        .gap(px(6.0))
+                        .gap(px(self.tokens.spacing.one_half))
                         .child(
                             self.terminal_trigger_button(
                                 self.i18n
@@ -858,7 +859,7 @@ impl WorkspaceApp {
         } else {
             div()
                 .w_full()
-                .py(px(24.0))
+                .py(px(self.tokens.spacing.six))
                 .text_size(px(self.tokens.metrics.ui_text_sm))
                 .text_color(rgb(self.tokens.ui.text_muted))
                 .child(self.i18n.t("settings_view.terminal.triggers.no_rules"))
@@ -872,7 +873,7 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_start()
-            .gap(px(20.0))
+            .gap(px(self.tokens.spacing.five))
             .child(sidebar)
             .child(div().flex_1().min_w(px(0.0)).child(content))
             .into_any_element()
@@ -978,10 +979,10 @@ impl WorkspaceApp {
             .max_w(px(TERMINAL_TRIGGER_EDITOR_MAX_WIDTH))
             .rounded(px(self.tokens.radii.md))
             .bg(self.settings_panel_background(self.tokens.ui.bg_panel))
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 self.setting_row(
                     "settings_view.terminal.triggers.shell_execution",
@@ -1013,10 +1014,10 @@ impl WorkspaceApp {
                     .rounded(px(self.tokens.radii.md))
                     .border_1()
                     .border_color(rgb(self.tokens.ui.error))
-                    .p(px(10.0))
+                    .p(px(self.tokens.spacing.two_half))
                     .flex()
                     .flex_col()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .font_weight(gpui::FontWeight::SEMIBOLD)
@@ -1039,7 +1040,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .justify_end()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(self.terminal_trigger_button(
                                 self.i18n.t("settings_view.terminal.triggers.cancel"),
                                 ButtonVariant::Outline,
@@ -1077,9 +1078,9 @@ impl WorkspaceApp {
             .w_full()
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.md))
-            .p(px(8.0))
+            .p(px(self.tokens.spacing.two))
             .cursor_pointer()
             .when(selected, |row| {
                 row.bg(rgba((self.tokens.ui.accent << 8) | 0x1f))
@@ -1156,7 +1157,7 @@ impl WorkspaceApp {
             .flex()
             .items_center()
             .justify_between()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .flex_1()
@@ -1211,7 +1212,7 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .flex_wrap()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(self.terminal_trigger_responsive_field(
                 TERMINAL_TRIGGER_FIELD_BASIS,
                 self.terminal_trigger_labeled_input(
@@ -1237,7 +1238,7 @@ impl WorkspaceApp {
             .flex_row()
             .flex_wrap()
             .items_end()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(self.terminal_trigger_responsive_field(
                 TERMINAL_TRIGGER_COMPACT_FIELD_BASIS,
                 self.terminal_trigger_select_field(
@@ -1259,7 +1260,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_row()
                     .flex_wrap()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(self.terminal_trigger_bool_option(
                         "settings_view.terminal.triggers.case_sensitive",
                         trigger.matcher.case_sensitive,
@@ -1282,7 +1283,7 @@ impl WorkspaceApp {
                     )),
             );
 
-        let mut action_fields = div().w_full().flex().flex_col().gap(px(10.0)).child(
+        let mut action_fields = div().w_full().flex().flex_col().gap(px(self.tokens.spacing.two_half)).child(
             self.terminal_trigger_compact_field(
                 TERMINAL_TRIGGER_COMPACT_FIELD_BASIS,
                 self.terminal_trigger_select_field(
@@ -1386,7 +1387,7 @@ impl WorkspaceApp {
                                 .flex()
                                 .flex_row()
                                 .flex_wrap()
-                                .gap(px(12.0))
+                                .gap(px(self.tokens.spacing.three))
                                 .child(
                                     self.terminal_trigger_responsive_field(
                                         TERMINAL_TRIGGER_FIELD_BASIS,
@@ -1437,7 +1438,7 @@ impl WorkspaceApp {
             .flex_row()
             .flex_wrap()
             .items_end()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(self.terminal_trigger_responsive_field(
                 TERMINAL_TRIGGER_FIELD_BASIS,
                 self.terminal_trigger_select_field(
@@ -1521,7 +1522,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .justify_end()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(self.terminal_trigger_button(
                         self.i18n.t("settings_view.terminal.triggers.cancel"),
                         ButtonVariant::Outline,
@@ -1596,7 +1597,7 @@ impl WorkspaceApp {
             .terminal_triggers
             .menu_item
             .min(items.len().saturating_sub(1));
-        let mut choices = div().w_full().flex().flex_wrap().gap(px(6.0));
+        let mut choices = div().w_full().flex().flex_wrap().gap(px(self.tokens.spacing.one_half));
         for (index, item) in items.iter().enumerate() {
             let label = if item.label.is_empty() {
                 format!(
@@ -1621,7 +1622,7 @@ impl WorkspaceApp {
                 }),
             ));
         }
-        let mut tools = div().flex().flex_wrap().gap(px(6.0));
+        let mut tools = div().flex().flex_wrap().gap(px(self.tokens.spacing.one_half));
         if items.len() < 16 {
             tools = tools.child(self.terminal_trigger_button(
                 self.i18n.t("settings_view.terminal.triggers.add_item"),
@@ -1664,7 +1665,7 @@ impl WorkspaceApp {
             .w_full()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(choices)
             .child(tools)
             .child(
@@ -1741,7 +1742,7 @@ impl WorkspaceApp {
     ) -> AnyElement {
         div()
             .h(px(30.0))
-            .px(px(8.0))
+            .px(px(self.tokens.spacing.two))
             .flex()
             .items_center()
             .gap(px(7.0))
@@ -1869,7 +1870,7 @@ impl WorkspaceApp {
         if options.is_empty() {
             rows.push(
                 div()
-                    .py(px(20.0))
+                    .py(px(self.tokens.spacing.five))
                     .text_size(px(self.tokens.metrics.ui_text_sm))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(self.i18n.t(if total_count == 0 {
@@ -1896,13 +1897,13 @@ impl WorkspaceApp {
                     div()
                         .w_full()
                         .min_w(px(0.0))
-                        .p(px(10.0))
+                        .p(px(self.tokens.spacing.two_half))
                         .rounded(px(self.tokens.radii.md))
                         .bg(self.settings_panel_background(self.tokens.ui.bg_panel))
                         .flex()
                         .items_center()
                         .justify_between()
-                        .gap(px(12.0))
+                        .gap(px(self.tokens.spacing.three))
                         .child(
                             div()
                                 .min_w(px(0.0))
@@ -1961,12 +1962,12 @@ impl WorkspaceApp {
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(
                                 div()
                                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -2005,6 +2006,7 @@ impl WorkspaceApp {
             .child(terminal_trigger_connection_list(
                 rows,
                 &self.terminal_triggers.scope_picker_scroll,
+                self.tokens.spacing.one,
             ))
             .into_any_element()
     }
@@ -2073,6 +2075,7 @@ mod tests {
     struct ConnectionListFixture {
         page: gpui::ListState,
         connections_scroll: gpui::ScrollHandle,
+        tokens: oxideterm_theme::ThemeTokens,
     }
 
     impl ConnectionListFixture {
@@ -2084,6 +2087,7 @@ mod tests {
                     TauriVirtualListSpec::new(px(260.0), 2),
                 ),
                 connections_scroll: gpui::ScrollHandle::new(),
+                tokens: oxideterm_theme::default_tokens(),
             }
         }
     }
@@ -2091,6 +2095,11 @@ mod tests {
     impl Render for ConnectionListFixture {
         fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
             let connections_scroll = self.connections_scroll.clone();
+            // The virtual list closure must own what it reads, so copy the
+            // spacing steps out of `self` the same way the scroll handle is.
+            let row_padding = self.tokens.spacing.two_half;
+            let column_gap = self.tokens.spacing.five;
+            let row_gap = self.tokens.spacing.one;
             tauri_virtual_list(
                 self.page.clone(),
                 TauriVirtualListSpec::new(px(260.0), 2),
@@ -2099,7 +2108,7 @@ mod tests {
                         .map(|index| {
                             div()
                                 .w_full()
-                                .p(px(10.0))
+                                .p(px(row_padding))
                                 .flex()
                                 .items_center()
                                 .child(div().h(px(20.0)).child(format!("Connection {index}")))
@@ -2111,7 +2120,7 @@ mod tests {
                         .w_full()
                         .flex()
                         .items_start()
-                        .gap(px(20.0))
+                        .gap(px(column_gap))
                         .child(
                             div().w(px(120.0)).flex_none().child(
                                 div()
@@ -2124,7 +2133,11 @@ mod tests {
                             div()
                                 .flex_1()
                                 .min_w_0()
-                                .child(terminal_trigger_connection_list(rows, &connections_scroll)),
+                                .child(terminal_trigger_connection_list(
+                                    rows,
+                                    &connections_scroll,
+                                    row_gap,
+                                )),
                         )
                 },
             )

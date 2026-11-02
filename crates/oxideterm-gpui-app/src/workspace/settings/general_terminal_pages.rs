@@ -42,7 +42,7 @@ impl WorkspaceApp {
                             .flex()
                             .flex_row()
                             .items_center()
-                            .gap(px(16.0))
+                            .gap(px(self.tokens.spacing.four))
                             .child(
                                 div()
                                     .flex_1()
@@ -126,7 +126,7 @@ impl WorkspaceApp {
                     div()
                         .flex()
                         .flex_col()
-                        .gap(px(4.0))
+                        .gap(px(self.tokens.spacing.one))
                         .child(
                             div()
                                 .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -147,20 +147,20 @@ impl WorkspaceApp {
                         .flex_row()
                         .items_end()
                         .justify_between()
-                        .gap(px(16.0))
+                        .gap(px(self.tokens.spacing.four))
                         .child(
                             div()
                                 .flex_1()
                                 .flex()
                                 .flex_col()
-                                .gap(px(10.0))
+                                .gap(px(self.tokens.spacing.two_half))
                                 .min_w(px(0.0))
                                 .child(
                                     div()
                                         .flex()
                                         .flex_row()
                                         .items_center()
-                                        .gap(px(10.0))
+                                        .gap(px(self.tokens.spacing.two_half))
                                         .child(Self::render_lucide_icon(
                                             LucideIcon::Terminal,
                                             16.0,
@@ -274,8 +274,8 @@ impl WorkspaceApp {
                             .flex_wrap()
                             .items_center()
                             .justify_between()
-                            .gap(px(12.0))
-                            .p(px(12.0))
+                            .gap(px(self.tokens.spacing.three))
+                            .p(px(self.tokens.spacing.three))
                             .rounded(px(self.tokens.radii.md))
                             .border_1()
                             .border_color(rgba((self.tokens.ui.warning << 8) | 0x80))
@@ -286,12 +286,12 @@ impl WorkspaceApp {
                                     .min_w(px(220.0))
                                     .flex()
                                     .flex_col()
-                                    .gap(px(4.0))
+                                    .gap(px(self.tokens.spacing.one))
                                     .child(
                                         div()
                                             .flex()
                                             .items_center()
-                                            .gap(px(8.0))
+                                            .gap(px(self.tokens.spacing.two))
                                             .child(Self::render_lucide_icon(
                                                 LucideIcon::AlertTriangle,
                                                 16.0,
@@ -372,7 +372,7 @@ impl WorkspaceApp {
         // TODO(signing): Once every macOS artifact is Developer ID signed and
         // notarized, replace this system-settings handoff with an in-app
         // SMAppService register/unregister toggle and remove the manual copy.
-        let mut description = div().min_w(px(0.0)).flex().flex_col().gap(px(4.0)).child(
+        let mut description = div().min_w(px(0.0)).flex().flex_col().gap(px(self.tokens.spacing.one)).child(
             div()
                 .text_size(px(self.tokens.metrics.ui_text_xs))
                 .text_color(rgb(self.tokens.ui.text_muted))
@@ -460,7 +460,7 @@ impl WorkspaceApp {
                     }),
                 ),
             );
-        let mut label = div().min_w(px(0.0)).flex().flex_col().gap(px(4.0)).child(
+        let mut label = div().min_w(px(0.0)).flex().flex_col().gap(px(self.tokens.spacing.one)).child(
             div()
                 .text_size(px(self.tokens.metrics.ui_text_xs))
                 .text_color(rgb(self.tokens.ui.text_muted))
@@ -1212,7 +1212,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_row()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(self.settings_text_input_control(
                         SettingsInput::TerminalSessionLogDirectory,
                         configured_directory,
@@ -1437,8 +1437,8 @@ impl WorkspaceApp {
                 rgb(theme.border)
             })
             .bg(rgb(theme.bg))
-            .px(px(12.0))
-            .py(px(8.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.two))
             .flex()
             .flex_col()
             .items_start()
@@ -1504,7 +1504,7 @@ impl WorkspaceApp {
             },
         );
 
-        let mut presets = div().w_full().flex().flex_row().flex_wrap().gap(px(8.0));
+        let mut presets = div().w_full().flex().flex_row().flex_wrap().gap(px(self.tokens.spacing.two));
         for command in RECOMMENDED_FOCUS_HANDOFF_COMMANDS {
             let enabled = settings
                 .terminal
@@ -1516,7 +1516,7 @@ impl WorkspaceApp {
             let theme = self.tokens.ui;
             let chip = div()
                 .h(px(32.0))
-                .px(px(12.0))
+                .px(px(self.tokens.spacing.three))
                 .rounded(px(self.tokens.radii.md))
                 .border_1()
                 .border_color(if enabled {
@@ -1531,7 +1531,7 @@ impl WorkspaceApp {
                 })
                 .flex()
                 .items_center()
-                .gap(px(6.0))
+                .gap(px(self.tokens.spacing.one_half))
                 .cursor_pointer()
                 .text_size(px(self.tokens.metrics.ui_text_sm))
                 .font_family(settings_mono_font_family(self.settings_store.settings()))
@@ -1579,12 +1579,12 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -1610,7 +1610,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -1851,8 +1851,8 @@ impl WorkspaceApp {
                 rgb(theme.border)
             })
             .bg(rgb(theme.bg))
-            .px(px(12.0))
-            .py(px(8.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.two))
             .flex()
             .flex_col()
             .items_start()
@@ -2157,7 +2157,7 @@ impl WorkspaceApp {
             .bg(rgba(
                 (self.tokens.ui.warning << 8) | alpha_byte(TAURI_RUNTIME_NOTE_BACKGROUND_ALPHA),
             ))
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(

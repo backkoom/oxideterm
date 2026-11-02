@@ -72,7 +72,7 @@ impl WorkspaceApp {
                     .flex_wrap()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(self.card_title("settings_view.ai.skills_title"))
                     .child(self.workspace_toolbar_action_button(
                         self.i18n.t("settings_view.ai.skills_refresh"),
@@ -103,7 +103,7 @@ impl WorkspaceApp {
                     .flex_wrap()
                     .items_center()
                     .justify_between()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -149,7 +149,7 @@ impl WorkspaceApp {
                 .flex()
                 .flex_wrap()
                 .items_center()
-                .gap(px(12.0))
+                .gap(px(self.tokens.spacing.three))
                 .child(div().min_w_0().flex_1().flex_basis(px(240.0)).child(
                     self.settings_text_input_control_fill(
                         SettingsInput::SkillSearch,
@@ -164,7 +164,7 @@ impl WorkspaceApp {
             return section
                 .child(
                     div()
-                        .py(px(20.0))
+                        .py(px(self.tokens.spacing.five))
                         .text_size(px(self.tokens.metrics.ui_text_sm))
                         .text_color(rgb(self.tokens.ui.text_muted))
                         .child(self.i18n.t(if records.is_empty() {
@@ -187,7 +187,7 @@ impl WorkspaceApp {
 
     fn ai_skill_scope_filter(&self, cx: &mut Context<Self>) -> AnyElement {
         let selected = self.settings_workspace.read(cx).skill_scope_filter;
-        let mut filters = div().flex().flex_wrap().gap(px(4.0));
+        let mut filters = div().flex().flex_wrap().gap(px(self.tokens.spacing.one));
         for scope in [
             None,
             Some(SkillScope::Workspace),
@@ -268,7 +268,7 @@ impl WorkspaceApp {
             .flex()
             .flex_wrap()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -385,11 +385,11 @@ impl WorkspaceApp {
             let details = div()
                 .w_full()
                 .min_w_0()
-                .px(px(12.0))
-                .pb(px(12.0))
+                .px(px(self.tokens.spacing.three))
+                .pb(px(self.tokens.spacing.three))
                 .flex()
                 .flex_col()
-                .gap(px(8.0))
+                .gap(px(self.tokens.spacing.two))
                 .text_size(px(self.tokens.metrics.ui_text_xs))
                 .text_color(rgb(self.tokens.ui.text_muted))
                 .child(div().child(self.render_selectable_text_scoped(
@@ -431,7 +431,7 @@ impl WorkspaceApp {
         diagnostics: &[SkillDiagnostic],
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let mut list = div().w_full().min_w_0().flex().flex_col().gap(px(12.0));
+        let mut list = div().w_full().min_w_0().flex().flex_col().gap(px(self.tokens.spacing.three));
         for diagnostic in diagnostics {
             let key = match diagnostic.kind {
                 SkillDiagnosticKind::Invalid => "settings_view.ai.skills_invalid",
@@ -443,7 +443,7 @@ impl WorkspaceApp {
                     .min_w_0()
                     .flex()
                     .flex_col()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .text_size(px(self.tokens.metrics.ui_text_xs))
                     .child(
                         div()

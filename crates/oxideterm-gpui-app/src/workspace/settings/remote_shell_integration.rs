@@ -656,7 +656,7 @@ impl WorkspaceApp {
                         .w_full()
                         .flex()
                         .flex_col()
-                        .gap(px(12.0))
+                        .gap(px(self.tokens.spacing.three))
                         .child(div().child(description))
                         .when(show_suppression, |description| {
                             description.child(
@@ -761,7 +761,7 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .flex_col()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(self.remote_shell_integration_disclosure());
 
         if let Some(node_title) = node_title {
@@ -800,8 +800,8 @@ impl WorkspaceApp {
                             .rounded(px(self.tokens.radii.md))
                             .border_1()
                             .border_color(rgb(color))
-                            .px(px(12.0))
-                            .py(px(10.0))
+                            .px(px(self.tokens.spacing.three))
+                            .py(px(self.tokens.spacing.two_half))
                             .text_size(px(self.tokens.metrics.ui_text_xs))
                             .text_color(rgb(color))
                             .child(self.i18n.t(failure.message_key())),
@@ -813,7 +813,7 @@ impl WorkspaceApp {
                         .flex()
                         .flex_wrap()
                         .items_center()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .children([
                             self.remote_shell_integration_action_button(
                                 "settings_view.connections.shell_integration.inspect",
@@ -866,8 +866,8 @@ impl WorkspaceApp {
                     .rounded(px(self.tokens.radii.md))
                     .border_1()
                     .border_color(rgb(self.tokens.ui.border))
-                    .px(px(12.0))
-                    .py(px(10.0))
+                    .px(px(self.tokens.spacing.three))
+                    .py(px(self.tokens.spacing.two_half))
                     .text_size(px(self.tokens.metrics.ui_text_xs))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(
@@ -890,11 +890,11 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
             .bg(rgb(self.tokens.ui.bg_panel))
-            .px(px(12.0))
-            .py(px(10.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.two_half))
             .flex()
             .flex_col()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(
@@ -916,7 +916,7 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .flex_wrap()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .child(
                 div()

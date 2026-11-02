@@ -48,7 +48,7 @@ impl WorkspaceApp {
             return self.sftp_settings_card(
                 vec![
                     div()
-                        .mb(px(8.0))
+                        .mb(px(self.tokens.spacing.two))
                         .child(self.setting_row(
                             "settings_view.sftp.conflict",
                             "settings_view.sftp.conflict_hint",
@@ -122,7 +122,7 @@ impl WorkspaceApp {
         if settings.sftp.speed_limit_enabled {
             performance_rows.push(
                 div()
-                    .pt(px(8.0))
+                    .pt(px(self.tokens.spacing.two))
                     .child(self.setting_row(
                         "settings_view.sftp.speed_limit",
                         "",
