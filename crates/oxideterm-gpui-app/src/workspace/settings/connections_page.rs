@@ -659,7 +659,7 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .flex_col()
-            .gap(px(32.0))
+            .gap(px(self.tokens.spacing.eight))
             .child(self.ssh_key_section_header(
                 "settings_view.ssh_keys.local_section",
                 "settings_view.ssh_keys.local_description",
@@ -936,7 +936,7 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
             .bg(self.settings_panel_background(self.tokens.ui.bg_panel))
-            .p(px(8.0));
+            .p(px(self.tokens.spacing.two));
         if ssh_hosts.is_empty() {
             list = list.child(self.ssh_config_empty_state());
         } else {
@@ -949,11 +949,11 @@ impl WorkspaceApp {
         let body = div()
             .flex_1()
             .min_h(px(0.0))
-            .px(px(24.0))
+            .px(px(self.tokens.spacing.six))
             .py(px(18.0))
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .when(importable_count > 0, |body| {
                 body.child(
                     div()
@@ -961,7 +961,7 @@ impl WorkspaceApp {
                         .flex()
                         .items_center()
                         .justify_between()
-                        .gap(px(12.0))
+                        .gap(px(self.tokens.spacing.three))
                         .child(self.ssh_config_toggle_all_button(
                             all_selected,
                             importable_count,
@@ -1159,17 +1159,17 @@ impl WorkspaceApp {
 
         div()
             .w_full()
-            .mb(px(4.0))
+            .mb(px(self.tokens.spacing.one))
             .flex()
             .flex_row()
             .items_center()
             .justify_between()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(rgba(0x00000000))
             .bg(rgba(0x00000000))
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .opacity(if disabled { 0.5 } else { 1.0 })
             .hover(|style| {
                 if disabled {
@@ -1188,7 +1188,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_row()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(self.ssh_config_checkbox(selected))
                     .child(
                         div()
@@ -1201,7 +1201,7 @@ impl WorkspaceApp {
                                     .flex()
                                     .flex_row()
                                     .items_center()
-                                    .gap(px(8.0))
+                                    .gap(px(self.tokens.spacing.two))
                                     .child(
                                         div()
                                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -1303,8 +1303,8 @@ impl WorkspaceApp {
 
     pub(in crate::workspace) fn ssh_config_imported_badge(&self) -> AnyElement {
         div()
-            .px(px(6.0))
-            .py(px(2.0))
+            .px(px(self.tokens.spacing.one_half))
+            .py(px(self.tokens.spacing.half))
             .rounded(px(self.tokens.radii.sm))
             .bg(rgba((self.tokens.ui.accent << 8) | 0x20))
             .text_size(px(10.0))
@@ -1336,7 +1336,7 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
             .bg(self.settings_panel_background(self.tokens.ui.bg_panel))
-            .p(px(8.0))
+            .p(px(self.tokens.spacing.two))
             .flex()
             .items_center()
             .justify_center()
@@ -1393,7 +1393,7 @@ impl WorkspaceApp {
             .flex()
             .flex_wrap()
             .items_start()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(
                 div()
                     .min_w_0()
@@ -1409,7 +1409,7 @@ impl WorkspaceApp {
                     .flex_1()
                     .flex_basis(px(CONNECTION_IMPORT_PATH_BASIS))
                     .grid()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -1433,7 +1433,7 @@ impl WorkspaceApp {
             .w_full()
             .min_w_0()
             .grid()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -1463,7 +1463,7 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .flex_wrap()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .when(connection_import_supports_files(source), |row| {
                 row.child(self.connection_import_pick_files_button(cx))
             })
@@ -1616,7 +1616,7 @@ impl WorkspaceApp {
             .flex_wrap()
             .items_center()
             .justify_between()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(self.connection_import_toggle_all_button(all_selected, importable, cx))
             .child(
                 div()
@@ -1629,7 +1629,7 @@ impl WorkspaceApp {
                     .flex_wrap()
                     .items_center()
                     .justify_end()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(self.connection_import_duplicate_strategy_picker(duplicate_strategy, cx))
                     .child(
                         self.settings_text_input_control(
@@ -1814,10 +1814,10 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .items_start()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .border_b_1()
             .border_color(rgba((self.tokens.ui.border << 8) | 0x99))
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .opacity(if disabled { 0.5 } else { 1.0 })
             .child(
                 div()
@@ -1838,7 +1838,7 @@ impl WorkspaceApp {
                             .flex()
                             .flex_row()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(
                                 div()
                                     .truncate()
@@ -1898,8 +1898,8 @@ impl WorkspaceApp {
 
     pub(in crate::workspace) fn connection_import_duplicate_badge(&self) -> AnyElement {
         div()
-            .px(px(6.0))
-            .py(px(2.0))
+            .px(px(self.tokens.spacing.one_half))
+            .py(px(self.tokens.spacing.half))
             .rounded(px(self.tokens.radii.sm))
             .bg(rgba((self.tokens.ui.accent << 8) | 0x20))
             .text_size(px(10.0))
@@ -1920,9 +1920,9 @@ impl WorkspaceApp {
             .flex_row()
             .items_center()
             .justify_between()
-            .gap(px(16.0))
-            .px(px(4.0))
-            .py(px(12.0))
+            .gap(px(self.tokens.spacing.four))
+            .px(px(self.tokens.spacing.one))
+            .py(px(self.tokens.spacing.three))
             .child(
                 div()
                     .min_w(px(0.0))
@@ -1930,7 +1930,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_row()
                     .items_center()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .size(px(40.0))
@@ -1952,7 +1952,7 @@ impl WorkspaceApp {
                             .flex_1()
                             .flex()
                             .flex_col()
-                            .gap(px(4.0))
+                            .gap(px(self.tokens.spacing.one))
                             .child(
                                 div()
                                     .truncate()
@@ -1993,7 +1993,7 @@ impl WorkspaceApp {
             .flex_wrap()
             .items_start()
             .justify_between()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .min_w(px(0.0))
@@ -2001,7 +2001,7 @@ impl WorkspaceApp {
                     .flex_basis(px(SSH_KEY_HEADER_TEXT_BASIS))
                     .flex()
                     .flex_col()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .child(
                         div()
                             .text_size(px(18.0))
@@ -2031,7 +2031,7 @@ impl WorkspaceApp {
             .flex_wrap()
             .items_center()
             .justify_end()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(self.managed_key_action_button(
                 LucideIcon::FileLock,
                 "settings_view.ssh_keys.import_file",
@@ -2139,9 +2139,9 @@ impl WorkspaceApp {
             .flex_row()
             .items_center()
             .justify_between()
-            .gap(px(16.0))
-            .px(px(4.0))
-            .py(px(12.0))
+            .gap(px(self.tokens.spacing.four))
+            .px(px(self.tokens.spacing.one))
+            .py(px(self.tokens.spacing.three))
             .child(
                 div()
                     .min_w(px(0.0))
@@ -2149,7 +2149,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_row()
                     .items_center()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .size(px(40.0))
@@ -2171,7 +2171,7 @@ impl WorkspaceApp {
                             .flex_1()
                             .flex()
                             .flex_col()
-                            .gap(px(4.0))
+                            .gap(px(self.tokens.spacing.one))
                             .child(
                                 div()
                                     .truncate()
@@ -2205,7 +2205,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_row()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(self.workspace_icon_action_button(
                         LucideIcon::Pencil,
                         14.0,
@@ -2249,7 +2249,7 @@ impl WorkspaceApp {
         div()
             .w_full()
             .min_w_0()
-            .py(px(24.0))
+            .py(px(self.tokens.spacing.six))
             .text_align(gpui::TextAlign::Center)
             .text_size(px(self.tokens.metrics.ui_text_sm))
             .text_color(rgb(self.tokens.ui.text_muted))
@@ -2525,11 +2525,11 @@ impl WorkspaceApp {
             )
             .child(
                 div()
-                    .px(px(24.0))
+                    .px(px(self.tokens.spacing.six))
                     .py(px(18.0))
                     .flex()
                     .flex_col()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .children(rows),
             )
             .child(
@@ -2574,7 +2574,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -2598,7 +2598,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -2637,8 +2637,8 @@ impl WorkspaceApp {
                 rgb(theme.border)
             })
             .bg(rgb(theme.bg))
-            .px(px(12.0))
-            .py(px(8.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.two))
             .flex()
             .flex_col()
             .items_start()
@@ -2694,7 +2694,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -2922,7 +2922,7 @@ impl WorkspaceApp {
     pub(in crate::workspace) fn ssh_keys_empty_state(&self) -> AnyElement {
         div()
             .w_full()
-            .py(px(24.0))
+            .py(px(self.tokens.spacing.six))
             .text_align(gpui::TextAlign::Center)
             .text_size(px(self.tokens.metrics.ui_text_sm))
             .text_color(rgb(self.tokens.ui.text_muted))
@@ -2936,8 +2936,8 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgba((self.tokens.ui.info << 8) | 0x33))
             .bg(rgba((self.tokens.ui.info << 8) | 0x1a))
-            .px(px(12.0))
-            .py(px(8.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.two))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .text_color(rgb(self.tokens.ui.info))
             .child(status)
