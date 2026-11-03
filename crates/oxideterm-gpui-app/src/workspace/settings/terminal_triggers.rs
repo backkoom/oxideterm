@@ -723,9 +723,7 @@ impl WorkspaceApp {
                     .gap(px(self.tokens.spacing.one))
                     .child(
                         div()
-                            .child(
-                                self.card_title("settings_view.terminal.triggers.global_title"),
-                            ),
+                            .child(self.card_title("settings_view.terminal.triggers.global_title")),
                     )
                     .child(
                         div()

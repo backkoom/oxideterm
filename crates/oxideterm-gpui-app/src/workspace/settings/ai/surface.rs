@@ -78,10 +78,7 @@ impl WorkspaceApp {
             .flex()
             .flex_col()
             .gap(px(self.tokens.spacing.three))
-            .child(
-                div()
-                    .child(self.card_title("settings_view.ai.privacy_notice")),
-            )
+            .child(div().child(self.card_title("settings_view.ai.privacy_notice")))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_xs))

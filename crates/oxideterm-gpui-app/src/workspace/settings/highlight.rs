@@ -246,9 +246,7 @@ impl WorkspaceApp {
                             .flex()
                             .flex_col()
                             .gap(px(self.tokens.spacing.one))
-                            .child(
-                                self.card_title("settings_view.terminal.highlight_rules.title"),
-                            )
+                            .child(self.card_title("settings_view.terminal.highlight_rules.title"))
                             .child(
                                 div()
                                     .text_size(px(self.tokens.metrics.ui_text_xs))
