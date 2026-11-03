@@ -16,8 +16,7 @@ No account. No subscription. No telemetry. No Electron.
 
 [**Download**](https://github.com/backkoom/oxideterm/releases/latest) ·
 [**Documentation**](https://oxideterm.app) ·
-[**Changelog**](.github/release-notes/stable-changelog.md) ·
-[**Report an issue**](https://github.com/backkoom/oxideterm/issues)
+[**Changelog**](.github/release-notes/stable-changelog.md)
 
 [English](README.md) | [简体中文](docs/readme/README.zh-Hans.md) | [繁體中文](docs/readme/README.zh-Hant.md) | [日本語](docs/readme/README.ja.md) | [한국어](docs/readme/README.ko.md) | [Français](docs/readme/README.fr.md) | [Deutsch](docs/readme/README.de.md) | [Español](docs/readme/README.es.md) | [Italiano](docs/readme/README.it.md) | [Português](docs/readme/README.pt-BR.md) | [Tiếng Việt](docs/readme/README.vi.md)
 
@@ -162,7 +161,7 @@ Legacy Tauri (1.x) ESM plugins may be listed but are not executed by the native 
 We would rather you know before installing:
 
 - Desktop only (macOS, Windows, Linux). There is no mobile app.
-- The project moves quickly, with frequent releases. See the [changelog](.github/release-notes/stable-changelog.md) and [open issues](https://github.com/backkoom/oxideterm/issues).
+- The project moves quickly, with frequent releases. See the [changelog](.github/release-notes/stable-changelog.md). This fork keeps GitHub Issues disabled.
 - Auditing and session recording are opt-in, and only reflect what OxideTerm itself can observe.
 - Process plugins are not sandboxed by the OS.
 - If the renderer fails on your machine, try the compatibility profile: `OXIDETERM_RENDER_PROFILE=compatibility`.
