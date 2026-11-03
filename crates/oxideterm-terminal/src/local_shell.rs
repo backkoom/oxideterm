@@ -14,6 +14,39 @@ use std::os::windows::process::CommandExt;
 #[cfg(target_os = "windows")]
 const WINDOWS_SHELL_DISCOVERY_CREATE_NO_WINDOW: u32 = 0x08000000;
 
+/// True when at least one WSL distribution has been registered for this user.
+///
+/// WSL records every installed distribution under
+/// `HKCU\Software\Microsoft\Windows\CurrentVersion\Lxss`; the key is absent until
+/// the first `wsl --install`. Reading it costs a single registry lookup and
+/// avoids launching `wsl.exe`, which can surface an update prompt.
+#[cfg(target_os = "windows")]
+fn wsl_has_registered_distributions() -> bool {
+    use windows::Win32::System::Registry::{
+        HKEY, HKEY_CURRENT_USER, KEY_READ, RegCloseKey, RegOpenKeyExW,
+    };
+    use windows::core::w;
+
+    let mut key = HKEY::default();
+    let opened = unsafe {
+        RegOpenKeyExW(
+            HKEY_CURRENT_USER,
+            w!(r"Software\Microsoft\Windows\CurrentVersion\Lxss"),
+            None,
+            KEY_READ,
+            &mut key,
+        )
+    };
+    if opened.is_err() {
+        return false;
+    }
+
+    unsafe {
+        let _ = RegCloseKey(key);
+    }
+    true
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ShellInfo {
     pub id: String,
@@ -416,6 +449,16 @@ fn scan_wsl_distributions(shells: &mut Vec<ShellInfo>) {
         PathBuf::from(env::var("SystemRoot").unwrap_or_else(|_| r"C:\Windows".to_string()))
             .join(r"System32\wsl.exe");
     if !wsl_path.exists() {
+        return;
+    }
+
+    // `wsl.exe` ships with every Windows install, so its presence says nothing
+    // about whether WSL can actually be used. Asking it directly is not free:
+    // when the WSL 2 kernel wants an update the binary starts its own updater in
+    // a fresh console, which does not inherit the CREATE_NO_WINDOW flag below and
+    // leaves a prompt on screen for 60 seconds. Check the registration instead
+    // and skip the probe entirely when no distribution has ever been installed.
+    if !wsl_has_registered_distributions() {
         return;
     }
 
