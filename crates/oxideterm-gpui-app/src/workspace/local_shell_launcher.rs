@@ -205,7 +205,7 @@ impl WorkspaceApp {
                     .p(px(self.tokens.spacing.four))
                     .flex()
                     .flex_col()
-                    .gap(px(14.0))
+                    .gap(px(self.tokens.spacing.three_half))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_base))

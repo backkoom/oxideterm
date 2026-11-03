@@ -791,7 +791,7 @@ impl HostToolsEntity {
             .flex()
             .items_center()
             .justify_end()
-            .gap(px(4.0))
+            .gap(px(tokens.spacing.one))
             .child(self.render_host_process_action_button(
                 connection_id,
                 process,

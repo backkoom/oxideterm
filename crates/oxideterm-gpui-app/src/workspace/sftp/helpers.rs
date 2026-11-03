@@ -859,6 +859,11 @@ pub(in crate::workspace::sftp) fn format_sftp_media_time(duration: std::time::Du
     format!("{minutes}:{seconds:02}")
 }
 
+// Diff rows have a fixed virtual-list height. Keep cell insets fixed too;
+// scaling them independently can clip code or desynchronize row measurements.
+const SFTP_DIFF_CELL_PADDING_X: f32 = 8.0;
+const SFTP_DIFF_CELL_PADDING_Y: f32 = 2.0;
+
 pub(in crate::workspace::sftp) fn diff_cell(
     number: &str,
     content: &str,
@@ -884,8 +889,8 @@ pub(in crate::workspace::sftp) fn diff_cell(
             div()
                 .w(px(SFTP_DIFF_LINE_NUMBER_COL))
                 .flex_none()
-                .px(px(8.0))
-                .py(px(2.0))
+                .px(px(SFTP_DIFF_CELL_PADDING_X))
+                .py(px(SFTP_DIFF_CELL_PADDING_Y))
                 .text_align(gpui::TextAlign::Right)
                 .text_color(if highlighted {
                     if left { rgb(SFTP_RED) } else { rgb(SFTP_GREEN) }
@@ -899,8 +904,8 @@ pub(in crate::workspace::sftp) fn diff_cell(
         .child(
             div()
                 .flex_1()
-                .px(px(8.0))
-                .py(px(2.0))
+                .px(px(SFTP_DIFF_CELL_PADDING_X))
+                .py(px(SFTP_DIFF_CELL_PADDING_Y))
                 .child(content.to_string()),
         )
         .into_any_element()

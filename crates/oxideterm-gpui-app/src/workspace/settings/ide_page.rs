@@ -73,7 +73,7 @@ impl WorkspaceApp {
             .flex()
             .flex_col()
             .gap(px(IDE_SETTINGS_CARD_GAP))
-            .child(self.ide_card_title(self.i18n.t("settings_view.ide.editor_typography")))
+            .child(self.card_title("settings_view.ide.editor_typography"))
             .child(
                 self.ide_card_description(self.i18n.t("settings_view.ide.editor_typography_hint")),
             )
@@ -209,7 +209,7 @@ impl WorkspaceApp {
             .flex()
             .flex_col()
             .gap(px(IDE_SETTINGS_CARD_GAP))
-            .child(self.ide_card_title(self.i18n.t("settings_view.ide.agent_title")))
+            .child(self.card_title("settings_view.ide.agent_title"))
             .child(self.card_separator())
             .child(self.ide_card_description(self.i18n.t("settings_view.ide.agent_description")))
             .child(
@@ -330,15 +330,6 @@ impl WorkspaceApp {
                         ),
                     ]),
             )
-            .into_any_element()
-    }
-
-    pub(in crate::workspace) fn ide_card_title(&self, title: String) -> AnyElement {
-        div()
-            .text_size(px(self.tokens.metrics.ui_text_sm))
-            .font_weight(gpui::FontWeight::MEDIUM)
-            .text_color(rgb(self.tokens.ui.text))
-            .child(title.to_uppercase())
             .into_any_element()
     }
 

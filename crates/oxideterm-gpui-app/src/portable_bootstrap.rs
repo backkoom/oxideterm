@@ -631,7 +631,7 @@ impl Render for PortableBootstrapWindow {
                     .flex()
                     .flex_col()
                     .gap(px(22.0))
-                    .p(px(28.0))
+                    .p(px(self.tokens.spacing.seven))
                     .rounded(px(self.tokens.radii.lg))
                     .border_1()
                     .border_color(rgb(self.tokens.ui.border))

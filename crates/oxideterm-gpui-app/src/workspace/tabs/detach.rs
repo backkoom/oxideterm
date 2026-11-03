@@ -23,6 +23,8 @@ const TAB_HANDOFF_PREVIEW_HEIGHT: f32 = 48.0;
 const TAB_HANDOFF_VIEWPORT_MARGIN: f32 = 8.0;
 const TAB_HANDOFF_POINTER_OFFSET_Y: f32 = 14.0;
 const TAB_HANDOFF_CORNER_RADIUS: f32 = 16.0;
+// Reserved space for non-Linux titlebar controls, not a density-scaled gap.
+const DETACHED_TITLEBAR_CONTROLS_INSET: f32 = 72.0;
 
 fn detached_tab_window_root(
     background_color: gpui::Rgba,
@@ -968,7 +970,7 @@ impl WorkspaceApp {
             .flex()
             .items_center()
             .gap(px(self.tokens.spacing.two_half))
-            .px(px(14.0))
+            .px(px(self.tokens.spacing.three_half))
             .bg(rgb(theme.bg_panel))
             .border_1()
             .border_color(rgba((accent << 8) | 0xaa))
@@ -1088,7 +1090,7 @@ impl WorkspaceApp {
             .top(px(geometry.top))
             .w(px(geometry.width))
             .min_h(px(geometry.height))
-            .px(px(14.0))
+            .px(px(self.tokens.spacing.three_half))
             .py(px(self.tokens.spacing.two_half))
             .rounded(px(TAB_HANDOFF_CORNER_RADIUS))
             .flex()
@@ -1169,7 +1171,7 @@ impl WorkspaceApp {
             .top(px(geometry.top))
             .w(px(geometry.width))
             .min_h(px(geometry.height))
-            .px(px(14.0))
+            .px(px(self.tokens.spacing.three_half))
             .py(px(self.tokens.spacing.two_half))
             .rounded(px(TAB_HANDOFF_CORNER_RADIUS))
             .flex()
@@ -1689,7 +1691,7 @@ impl WorkspaceApp {
             // Linux controls must begin at the configured edge; keep the
             // existing traffic-light/title inset on the other desktop shells.
             .when(!cfg!(target_os = "linux") && show_window_controls, |bar| {
-                bar.pl(px(72.0))
+                bar.pl(px(DETACHED_TITLEBAR_CONTROLS_INSET))
             })
             .when(!show_window_controls, |bar| {
                 bar.pl(px(self.tokens.spacing.three))

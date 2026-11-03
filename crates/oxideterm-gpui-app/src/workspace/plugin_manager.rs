@@ -1203,7 +1203,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(14.0))
+            .gap(px(self.tokens.spacing.three_half))
             .child(
                 div()
                     .w_full()
@@ -2130,7 +2130,7 @@ impl WorkspaceApp {
         self.native_plugin_card_surface(has_background)
             .flex()
             .flex_col()
-            .gap(px(14.0))
+            .gap(px(self.tokens.spacing.three_half))
             .child(
                 div()
                     .flex()
@@ -3033,7 +3033,7 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgb(theme.error))
             .bg(rgb(theme.bg_panel))
-            .p(px(14.0))
+            .p(px(self.tokens.spacing.three_half))
             .child(action_slot_row(
                 &self.tokens,
                 ActionSlotRowOptions::new().align_start().gap(10.0),

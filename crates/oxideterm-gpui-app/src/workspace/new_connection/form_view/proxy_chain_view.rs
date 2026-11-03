@@ -79,51 +79,112 @@ impl WorkspaceApp {
 
         let mut popup = select_overlay_popup_with_max_height(&self.tokens, width, max_height);
         match select_id {
-            NewConnectionSelect::Totp | NewConnectionSelect::JumpTotp => {
-                let current = self
-                    .connection_form_state(cx)
-                    .form
-                    .as_ref()
-                    .and_then(|form| {
-                        if select_id == NewConnectionSelect::JumpTotp {
-                            form.jump_server_form
-                                .as_ref()
-                                .and_then(|hop| hop.totp_credential_id.clone())
-                        } else {
-                            form.totp_credential_id.clone()
-                        }
-                    });
-                let choices = std::iter::once((None, self.i18n.t("settings_view.totp.none")))
-                    .chain(
-                        self.connection_store
-                            .totp_credentials()
-                            .iter()
-                            .map(|entry| (Some(entry.id.clone()), entry.name.clone())),
-                    );
-                for (id, label) in choices {
-                    popup = popup.child(select_option_action(
-                        select_option(&self.tokens, label, id == current),
-                        false,
-                        false,
-                        cx.listener(move |this, _, _, cx| {
-                            this.close_new_connection_select(cx);
-                            this.update_connection_form_state(cx, |state| {
-                                if let Some(form) = &mut state.form {
-                                    if select_id == NewConnectionSelect::JumpTotp {
-                                        if let Some(hop) = &mut form.jump_server_form {
-                                            hop.totp_credential_id = id.clone();
-                                        }
-                                    } else {
-                                        form.totp_credential_id = id.clone();
-                                    }
-                                }
-                            });
-                            cx.stop_propagation();
-                            cx.notify();
-                        }),
-                    ));
-                }
+            NewConnectionSelect::Totp
+            | NewConnectionSelect::JumpTotp
+            | NewConnectionSelect::KeyAuthSource
+            | NewConnectionSelect::StandaloneSftpSecondaryKeyAuthSource
+            | NewConnectionSelect::JumpKeyAuthSource
+            | NewConnectionSelect::ManagedKey
+            | NewConnectionSelect::StandaloneSftpSecondaryManagedKey
+            | NewConnectionSelect::JumpManagedKey => {
+                popup = self.append_identity_select_options(select_id, popup, cx);
             }
+            NewConnectionSelect::Group
+            | NewConnectionSelect::TunnelHost
+            | NewConnectionSelect::JumpSavedConnection
+            | NewConnectionSelect::RemoteDesktopSshGateway => {
+                popup = self.append_destination_select_options(select_id, popup, cx);
+            }
+            NewConnectionSelect::UpstreamProxyPolicy
+            | NewConnectionSelect::StandaloneSftpSecondaryUpstreamProxyPolicy
+            | NewConnectionSelect::UpstreamProxyProtocol
+            | NewConnectionSelect::StandaloneSftpSecondaryUpstreamProxyProtocol
+            | NewConnectionSelect::UpstreamProxyAuth
+            | NewConnectionSelect::StandaloneSftpSecondaryUpstreamProxyAuth => {
+                popup = self.append_proxy_select_options(select_id, popup, cx);
+            }
+            NewConnectionSelect::LocalShell
+            | NewConnectionSelect::BleAdapter
+            | NewConnectionSelect::SerialPort => {
+                popup = self.append_local_device_select_options(select_id, popup, cx);
+            }
+            NewConnectionSelect::SerialDataBits
+            | NewConnectionSelect::SerialStopBits
+            | NewConnectionSelect::SerialParity
+            | NewConnectionSelect::SerialFlowControl => {
+                popup = self.append_serial_select_options(select_id, popup, cx);
+            }
+            NewConnectionSelect::TelnetInputLineEnding
+            | NewConnectionSelect::TelnetOutputLineEnding
+            | NewConnectionSelect::BleInputLineEnding
+            | NewConnectionSelect::BleOutputLineEnding
+            | NewConnectionSelect::BleSendMode
+            | NewConnectionSelect::BleDisplayMode => {
+                popup = self.append_line_send_select_options(select_id, popup, cx);
+            }
+            NewConnectionSelect::TerminalEncoding
+            | NewConnectionSelect::TerminalBackspaceSequence
+            | NewConnectionSelect::TerminalDeleteSequence => {
+                popup = self.append_terminal_keyboard_select_options(select_id, popup, cx);
+            }
+            NewConnectionSelect::TerminalSemanticScheme
+            | NewConnectionSelect::TerminalHighlightRuleSet
+            | NewConnectionSelect::TerminalSessionLogPolicy => {
+                popup = self.append_terminal_presentation_select_options(select_id, popup, cx);
+            }
+        }
+
+        let (anchor_corner, position, offset_y) = if opens_above {
+            (
+                Corner::BottomLeft,
+                point(anchor.bounds.left(), anchor.bounds.top()),
+                -popup_gap,
+            )
+        } else {
+            (Corner::TopLeft, anchor.bounds.bottom_left(), popup_gap)
+        };
+        let popup = popup.into_any_element();
+
+        Some(
+            popover_backdrop()
+                .on_mouse_down(
+                    MouseButton::Left,
+                    cx.listener(|this, _event, _window, cx| {
+                        this.close_new_connection_select(cx);
+                        cx.stop_propagation();
+                        cx.notify();
+                    }),
+                )
+                .on_mouse_down(
+                    MouseButton::Right,
+                    cx.listener(|this, _event, _window, cx| {
+                        this.close_new_connection_select(cx);
+                        cx.stop_propagation();
+                        cx.notify();
+                    }),
+                )
+                .child(
+                    deferred(
+                        anchored()
+                            .anchor(anchor_corner)
+                            .position(position)
+                            .offset(point(px(0.0), px(offset_y)))
+                            .position_mode(AnchoredPositionMode::Window)
+                            .child(popup),
+                    )
+                    .with_priority(oxideterm_gpui_ui::modal::TAURI_SELECT_LAYER_PRIORITY),
+                )
+                .into_any_element(),
+        )
+    }
+
+    fn append_destination_select_options(
+        &self,
+        select_id: NewConnectionSelect,
+        mut popup: gpui::Stateful<gpui::Div>,
+        cx: &mut Context<Self>,
+    ) -> gpui::Stateful<gpui::Div> {
+        match select_id {
             NewConnectionSelect::Group => {
                 let current_group = self
                     .connection_form_state(cx)
@@ -310,6 +371,63 @@ impl WorkspaceApp {
                     ));
                 }
             }
+            _ => {}
+        }
+        popup
+    }
+
+    fn append_identity_select_options(
+        &self,
+        select_id: NewConnectionSelect,
+        mut popup: gpui::Stateful<gpui::Div>,
+        cx: &mut Context<Self>,
+    ) -> gpui::Stateful<gpui::Div> {
+        match select_id {
+            NewConnectionSelect::Totp | NewConnectionSelect::JumpTotp => {
+                let current = self
+                    .connection_form_state(cx)
+                    .form
+                    .as_ref()
+                    .and_then(|form| {
+                        if select_id == NewConnectionSelect::JumpTotp {
+                            form.jump_server_form
+                                .as_ref()
+                                .and_then(|hop| hop.totp_credential_id.clone())
+                        } else {
+                            form.totp_credential_id.clone()
+                        }
+                    });
+                let choices = std::iter::once((None, self.i18n.t("settings_view.totp.none")))
+                    .chain(
+                        self.connection_store
+                            .totp_credentials()
+                            .iter()
+                            .map(|entry| (Some(entry.id.clone()), entry.name.clone())),
+                    );
+                for (id, label) in choices {
+                    popup = popup.child(select_option_action(
+                        select_option(&self.tokens, label, id == current),
+                        false,
+                        false,
+                        cx.listener(move |this, _, _, cx| {
+                            this.close_new_connection_select(cx);
+                            this.update_connection_form_state(cx, |state| {
+                                if let Some(form) = &mut state.form {
+                                    if select_id == NewConnectionSelect::JumpTotp {
+                                        if let Some(hop) = &mut form.jump_server_form {
+                                            hop.totp_credential_id = id.clone();
+                                        }
+                                    } else {
+                                        form.totp_credential_id = id.clone();
+                                    }
+                                }
+                            });
+                            cx.stop_propagation();
+                            cx.notify();
+                        }),
+                    ));
+                }
+            }
             NewConnectionSelect::KeyAuthSource
             | NewConnectionSelect::StandaloneSftpSecondaryKeyAuthSource
             | NewConnectionSelect::JumpKeyAuthSource => {
@@ -389,6 +507,18 @@ impl WorkspaceApp {
                     ));
                 }
             }
+            _ => {}
+        }
+        popup
+    }
+
+    fn append_proxy_select_options(
+        &self,
+        select_id: NewConnectionSelect,
+        mut popup: gpui::Stateful<gpui::Div>,
+        cx: &mut Context<Self>,
+    ) -> gpui::Stateful<gpui::Div> {
+        match select_id {
             NewConnectionSelect::UpstreamProxyPolicy
             | NewConnectionSelect::StandaloneSftpSecondaryUpstreamProxyPolicy => {
                 let secondary =
@@ -518,6 +648,404 @@ impl WorkspaceApp {
                     ));
                 }
             }
+            _ => {}
+        }
+        popup
+    }
+
+    fn append_local_device_select_options(
+        &self,
+        select_id: NewConnectionSelect,
+        mut popup: gpui::Stateful<gpui::Div>,
+        cx: &mut Context<Self>,
+    ) -> gpui::Stateful<gpui::Div> {
+        match select_id {
+            NewConnectionSelect::LocalShell => {
+                let selected_shell_id = self
+                    .connection_form_state(cx)
+                    .form
+                    .as_ref()
+                    .and_then(|form| form.local_shell_id.as_deref());
+                let resolved_shell_id = selected_shell_id;
+                popup = popup.child(select_option_action(
+                    select_option(
+                        &self.tokens,
+                        self.i18n.t("local_session.inherit_shell"),
+                        selected_shell_id.is_none(),
+                    ),
+                    false,
+                    false,
+                    cx.listener(|this, _event, _window, cx| {
+                        this.close_new_connection_select(cx);
+                        this.update_connection_form_state(cx, |state| {
+                            if let Some(form) = state.form.as_mut() {
+                                form.local_shell_id = None;
+                                form.error = None;
+                            }
+                        });
+                        cx.stop_propagation();
+                        cx.notify();
+                    }),
+                ));
+                let default_shell_id = self
+                    .settings_store
+                    .settings()
+                    .local_terminal
+                    .default_shell_id
+                    .as_deref();
+                let default_label = self.i18n.t("settings_view.local_terminal.default");
+
+                // The modal uses the same select surface as the other connection
+                // fields; the empty selection inherits application defaults.
+                for shell in
+                    self.effective_local_shells_for_settings(self.settings_store.settings())
+                {
+                    let shell_id = shell.id.clone();
+                    let label = if default_shell_id == Some(shell.id.as_str()) {
+                        format!("{} · {default_label}", shell.label)
+                    } else {
+                        shell.label
+                    };
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            label,
+                            resolved_shell_id == Some(shell.id.as_str()),
+                        ),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_new_connection_select(cx);
+                            this.update_connection_form_state(cx, |state| {
+                                if let Some(form) = state.form.as_mut() {
+                                    form.local_shell_id = Some(shell_id.clone());
+                                    form.field_focused = false;
+                                    clear_connection_selection(form);
+                                    form.error = None;
+                                }
+                            });
+                            cx.stop_propagation();
+                            cx.notify();
+                        }),
+                    ));
+                }
+            }
+            NewConnectionSelect::BleAdapter => {
+                let selected_index = self
+                    .connection_form_state(cx)
+                    .form
+                    .as_ref()
+                    .map(|form| form.ble.selected_adapter_index)
+                    .unwrap_or_default();
+                let adapters = self
+                    .connection_form_state(cx)
+                    .form
+                    .as_ref()
+                    .map(|form| form.ble.adapters.clone())
+                    .unwrap_or_default();
+                if adapters.is_empty() {
+                    let label = if self
+                        .connection_form_state(cx)
+                        .form
+                        .as_ref()
+                        .is_some_and(|form| form.ble.adapters_loading)
+                    {
+                        self.i18n.t("modals.new_connection.ble_loading_adapters")
+                    } else {
+                        self.i18n.t("modals.new_connection.ble_no_adapters")
+                    };
+                    popup = popup.child(select_option(&self.tokens, label, false));
+                } else {
+                    for (index, adapter) in adapters.iter().enumerate() {
+                        let selected = index == selected_index;
+                        popup = popup.child(select_option_action(
+                            select_option(&self.tokens, adapter.display_label(), selected),
+                            false,
+                            false,
+                            cx.listener(move |this, _event, _window, cx| {
+                                this.close_new_connection_select(cx);
+                                this.set_new_connection_ble_adapter(index, cx);
+                                cx.stop_propagation();
+                            }),
+                        ));
+                    }
+                }
+            }
+            NewConnectionSelect::SerialPort => {
+                let selected_port = self
+                    .connection_form_state(cx)
+                    .form
+                    .as_ref()
+                    .map(|form| form.serial_port_path.as_str())
+                    .unwrap_or_default();
+                let ports = self
+                    .connection_form_state(cx)
+                    .form
+                    .as_ref()
+                    .map(|form| form.serial_ports.clone())
+                    .unwrap_or_default();
+                for port in ports {
+                    let selected = port.port_path == selected_port;
+                    let port_path = port.port_path.clone();
+                    popup = popup.child(select_option_action(
+                        select_option(&self.tokens, serial_port_display_label(&port), selected),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_new_connection_select(cx);
+                            this.set_new_connection_serial_port(port_path.clone(), cx);
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+            }
+            _ => {}
+        }
+        popup
+    }
+
+    fn append_serial_select_options(
+        &self,
+        select_id: NewConnectionSelect,
+        mut popup: gpui::Stateful<gpui::Div>,
+        cx: &mut Context<Self>,
+    ) -> gpui::Stateful<gpui::Div> {
+        match select_id {
+            NewConnectionSelect::SerialDataBits | NewConnectionSelect::SerialStopBits => {
+                let selected = self
+                    .connection_form_state(cx)
+                    .form
+                    .as_ref()
+                    .map(|form| match select_id {
+                        NewConnectionSelect::SerialDataBits => form.serial_data_bits,
+                        NewConnectionSelect::SerialStopBits => form.serial_stop_bits,
+                        _ => 0,
+                    })
+                    .unwrap_or_default();
+                let choices: &[(u8, &str)] = match select_id {
+                    NewConnectionSelect::SerialDataBits => {
+                        &[(5, "5"), (6, "6"), (7, "7"), (8, "8")]
+                    }
+                    NewConnectionSelect::SerialStopBits => &[(1, "1"), (2, "2")],
+                    _ => &[],
+                };
+                for (value, label) in choices.iter().copied() {
+                    popup = popup.child(select_option_action(
+                        select_option(&self.tokens, label.to_string(), value == selected),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_new_connection_select(cx);
+                            this.set_new_connection_serial_u8(select_id, value, cx);
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+            }
+            NewConnectionSelect::SerialParity => {
+                let selected = self
+                    .connection_form_state(cx)
+                    .form
+                    .as_ref()
+                    .map(|form| form.serial_parity)
+                    .unwrap_or(oxideterm_terminal::SerialParity::None);
+                for parity in [
+                    oxideterm_terminal::SerialParity::None,
+                    oxideterm_terminal::SerialParity::Odd,
+                    oxideterm_terminal::SerialParity::Even,
+                ] {
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            self.serial_parity_label(parity),
+                            parity == selected,
+                        ),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_new_connection_select(cx);
+                            this.set_new_connection_serial_parity(parity, cx);
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+            }
+            NewConnectionSelect::SerialFlowControl => {
+                let selected = self
+                    .connection_form_state(cx)
+                    .form
+                    .as_ref()
+                    .map(|form| form.serial_flow_control)
+                    .unwrap_or(oxideterm_terminal::SerialFlowControl::None);
+                for flow in [
+                    oxideterm_terminal::SerialFlowControl::None,
+                    oxideterm_terminal::SerialFlowControl::Software,
+                    oxideterm_terminal::SerialFlowControl::Hardware,
+                ] {
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            self.serial_flow_control_label(flow),
+                            flow == selected,
+                        ),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_new_connection_select(cx);
+                            this.set_new_connection_serial_flow_control(flow, cx);
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+            }
+            _ => {}
+        }
+        popup
+    }
+
+    fn append_line_send_select_options(
+        &self,
+        select_id: NewConnectionSelect,
+        mut popup: gpui::Stateful<gpui::Div>,
+        cx: &mut Context<Self>,
+    ) -> gpui::Stateful<gpui::Div> {
+        match select_id {
+            NewConnectionSelect::TelnetInputLineEnding
+            | NewConnectionSelect::TelnetOutputLineEnding
+            | NewConnectionSelect::BleInputLineEnding
+            | NewConnectionSelect::BleOutputLineEnding => {
+                use oxideterm_connections::SerialLineEnding;
+                // Telnet and BLE share one line-ending popup: the select id
+                // alone picks the form family and the edited direction.
+                let output = matches!(
+                    select_id,
+                    NewConnectionSelect::TelnetOutputLineEnding
+                        | NewConnectionSelect::BleOutputLineEnding
+                );
+                let ble = matches!(
+                    select_id,
+                    NewConnectionSelect::BleInputLineEnding
+                        | NewConnectionSelect::BleOutputLineEnding
+                );
+                let selected = self
+                    .connection_form_state(cx)
+                    .form
+                    .as_ref()
+                    .map(|form| match (ble, output) {
+                        (false, false) => form.telnet_input_line_ending,
+                        (false, true) => form.telnet_output_line_ending,
+                        (true, false) => form.ble.input_line_ending,
+                        (true, true) => form.ble.output_line_ending,
+                    })
+                    .unwrap_or_default();
+                for value in [
+                    SerialLineEnding::None,
+                    SerialLineEnding::Lf,
+                    SerialLineEnding::CrLf,
+                    SerialLineEnding::Cr,
+                ] {
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            self.connection_line_ending_label(value),
+                            selected == value,
+                        ),
+                        false,
+                        false,
+                        cx.listener(move |this, _, _, cx| {
+                            this.close_new_connection_select(cx);
+                            this.update_connection_form_state(cx, |state| {
+                                if let Some(form) = state.form.as_mut() {
+                                    match (ble, output) {
+                                        (false, false) => form.telnet_input_line_ending = value,
+                                        (false, true) => form.telnet_output_line_ending = value,
+                                        (true, false) => form.ble.input_line_ending = value,
+                                        (true, true) => form.ble.output_line_ending = value,
+                                    }
+                                }
+                            });
+                            cx.stop_propagation();
+                            cx.notify();
+                        }),
+                    ));
+                }
+            }
+            NewConnectionSelect::BleSendMode => {
+                use oxideterm_connections::SerialSendMode;
+                let selected = self
+                    .connection_form_state(cx)
+                    .form
+                    .as_ref()
+                    .map(|form| form.ble.send_mode)
+                    .unwrap_or_default();
+                for value in [SerialSendMode::Text, SerialSendMode::Hex] {
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            self.connection_send_mode_label(value),
+                            selected == value,
+                        ),
+                        false,
+                        false,
+                        cx.listener(move |this, _, _, cx| {
+                            this.close_new_connection_select(cx);
+                            this.update_connection_form_state(cx, |state| {
+                                if let Some(form) = state.form.as_mut() {
+                                    form.ble.send_mode = value;
+                                }
+                            });
+                            cx.stop_propagation();
+                            cx.notify();
+                        }),
+                    ));
+                }
+            }
+            NewConnectionSelect::BleDisplayMode => {
+                use oxideterm_connections::SerialDisplayMode;
+                let selected = self
+                    .connection_form_state(cx)
+                    .form
+                    .as_ref()
+                    .map(|form| form.ble.display_mode)
+                    .unwrap_or_default();
+                for value in [
+                    SerialDisplayMode::Text,
+                    SerialDisplayMode::Hex,
+                    SerialDisplayMode::Mixed,
+                ] {
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            self.connection_display_mode_label(value),
+                            selected == value,
+                        ),
+                        false,
+                        false,
+                        cx.listener(move |this, _, _, cx| {
+                            this.close_new_connection_select(cx);
+                            this.update_connection_form_state(cx, |state| {
+                                if let Some(form) = state.form.as_mut() {
+                                    form.ble.display_mode = value;
+                                }
+                            });
+                            cx.stop_propagation();
+                            cx.notify();
+                        }),
+                    ));
+                }
+            }
+            _ => {}
+        }
+        popup
+    }
+
+    fn append_terminal_keyboard_select_options(
+        &self,
+        select_id: NewConnectionSelect,
+        mut popup: gpui::Stateful<gpui::Div>,
+        cx: &mut Context<Self>,
+    ) -> gpui::Stateful<gpui::Div> {
+        match select_id {
             NewConnectionSelect::TerminalEncoding => {
                 let selected = self
                     .connection_form_state(cx)
@@ -660,6 +1188,18 @@ impl WorkspaceApp {
                     ));
                 }
             }
+            _ => {}
+        }
+        popup
+    }
+
+    fn append_terminal_presentation_select_options(
+        &self,
+        select_id: NewConnectionSelect,
+        mut popup: gpui::Stateful<gpui::Div>,
+        cx: &mut Context<Self>,
+    ) -> gpui::Stateful<gpui::Div> {
+        match select_id {
             NewConnectionSelect::TerminalSemanticScheme => {
                 let selected = self
                     .connection_form_state(cx)
@@ -821,400 +1361,9 @@ impl WorkspaceApp {
                     ));
                 }
             }
-            NewConnectionSelect::LocalShell => {
-                let selected_shell_id = self
-                    .connection_form_state(cx)
-                    .form
-                    .as_ref()
-                    .and_then(|form| form.local_shell_id.as_deref());
-                let resolved_shell_id = selected_shell_id;
-                popup = popup.child(select_option_action(
-                    select_option(
-                        &self.tokens,
-                        self.i18n.t("local_session.inherit_shell"),
-                        selected_shell_id.is_none(),
-                    ),
-                    false,
-                    false,
-                    cx.listener(|this, _event, _window, cx| {
-                        this.close_new_connection_select(cx);
-                        this.update_connection_form_state(cx, |state| {
-                            if let Some(form) = state.form.as_mut() {
-                                form.local_shell_id = None;
-                                form.error = None;
-                            }
-                        });
-                        cx.stop_propagation();
-                        cx.notify();
-                    }),
-                ));
-                let default_shell_id = self
-                    .settings_store
-                    .settings()
-                    .local_terminal
-                    .default_shell_id
-                    .as_deref();
-                let default_label = self.i18n.t("settings_view.local_terminal.default");
-
-                // The modal uses the same select surface as the other connection
-                // fields; the empty selection inherits application defaults.
-                for shell in
-                    self.effective_local_shells_for_settings(self.settings_store.settings())
-                {
-                    let shell_id = shell.id.clone();
-                    let label = if default_shell_id == Some(shell.id.as_str()) {
-                        format!("{} · {default_label}", shell.label)
-                    } else {
-                        shell.label
-                    };
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            label,
-                            resolved_shell_id == Some(shell.id.as_str()),
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_new_connection_select(cx);
-                            this.update_connection_form_state(cx, |state| {
-                                if let Some(form) = state.form.as_mut() {
-                                    form.local_shell_id = Some(shell_id.clone());
-                                    form.field_focused = false;
-                                    clear_connection_selection(form);
-                                    form.error = None;
-                                }
-                            });
-                            cx.stop_propagation();
-                            cx.notify();
-                        }),
-                    ));
-                }
-            }
-            NewConnectionSelect::BleAdapter => {
-                let selected_index = self
-                    .connection_form_state(cx)
-                    .form
-                    .as_ref()
-                    .map(|form| form.ble.selected_adapter_index)
-                    .unwrap_or_default();
-                let adapters = self
-                    .connection_form_state(cx)
-                    .form
-                    .as_ref()
-                    .map(|form| form.ble.adapters.clone())
-                    .unwrap_or_default();
-                if adapters.is_empty() {
-                    let label = if self
-                        .connection_form_state(cx)
-                        .form
-                        .as_ref()
-                        .is_some_and(|form| form.ble.adapters_loading)
-                    {
-                        self.i18n.t("modals.new_connection.ble_loading_adapters")
-                    } else {
-                        self.i18n.t("modals.new_connection.ble_no_adapters")
-                    };
-                    popup = popup.child(select_option(&self.tokens, label, false));
-                } else {
-                    for (index, adapter) in adapters.iter().enumerate() {
-                        let selected = index == selected_index;
-                        popup = popup.child(select_option_action(
-                            select_option(&self.tokens, adapter.display_label(), selected),
-                            false,
-                            false,
-                            cx.listener(move |this, _event, _window, cx| {
-                                this.close_new_connection_select(cx);
-                                this.set_new_connection_ble_adapter(index, cx);
-                                cx.stop_propagation();
-                            }),
-                        ));
-                    }
-                }
-            }
-            NewConnectionSelect::SerialPort => {
-                let selected_port = self
-                    .connection_form_state(cx)
-                    .form
-                    .as_ref()
-                    .map(|form| form.serial_port_path.as_str())
-                    .unwrap_or_default();
-                let ports = self
-                    .connection_form_state(cx)
-                    .form
-                    .as_ref()
-                    .map(|form| form.serial_ports.clone())
-                    .unwrap_or_default();
-                for port in ports {
-                    let selected = port.port_path == selected_port;
-                    let port_path = port.port_path.clone();
-                    popup = popup.child(select_option_action(
-                        select_option(&self.tokens, serial_port_display_label(&port), selected),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_new_connection_select(cx);
-                            this.set_new_connection_serial_port(port_path.clone(), cx);
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-            }
-            NewConnectionSelect::SerialDataBits | NewConnectionSelect::SerialStopBits => {
-                let selected = self
-                    .connection_form_state(cx)
-                    .form
-                    .as_ref()
-                    .map(|form| match select_id {
-                        NewConnectionSelect::SerialDataBits => form.serial_data_bits,
-                        NewConnectionSelect::SerialStopBits => form.serial_stop_bits,
-                        _ => 0,
-                    })
-                    .unwrap_or_default();
-                let choices: &[(u8, &str)] = match select_id {
-                    NewConnectionSelect::SerialDataBits => {
-                        &[(5, "5"), (6, "6"), (7, "7"), (8, "8")]
-                    }
-                    NewConnectionSelect::SerialStopBits => &[(1, "1"), (2, "2")],
-                    _ => &[],
-                };
-                for (value, label) in choices.iter().copied() {
-                    popup = popup.child(select_option_action(
-                        select_option(&self.tokens, label.to_string(), value == selected),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_new_connection_select(cx);
-                            this.set_new_connection_serial_u8(select_id, value, cx);
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-            }
-            NewConnectionSelect::SerialParity => {
-                let selected = self
-                    .connection_form_state(cx)
-                    .form
-                    .as_ref()
-                    .map(|form| form.serial_parity)
-                    .unwrap_or(oxideterm_terminal::SerialParity::None);
-                for parity in [
-                    oxideterm_terminal::SerialParity::None,
-                    oxideterm_terminal::SerialParity::Odd,
-                    oxideterm_terminal::SerialParity::Even,
-                ] {
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            self.serial_parity_label(parity),
-                            parity == selected,
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_new_connection_select(cx);
-                            this.set_new_connection_serial_parity(parity, cx);
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-            }
-            NewConnectionSelect::TelnetInputLineEnding
-            | NewConnectionSelect::TelnetOutputLineEnding
-            | NewConnectionSelect::BleInputLineEnding
-            | NewConnectionSelect::BleOutputLineEnding => {
-                use oxideterm_connections::SerialLineEnding;
-                // Telnet and BLE share one line-ending popup: the select id
-                // alone picks the form family and the edited direction.
-                let output = matches!(
-                    select_id,
-                    NewConnectionSelect::TelnetOutputLineEnding
-                        | NewConnectionSelect::BleOutputLineEnding
-                );
-                let ble = matches!(
-                    select_id,
-                    NewConnectionSelect::BleInputLineEnding
-                        | NewConnectionSelect::BleOutputLineEnding
-                );
-                let selected = self
-                    .connection_form_state(cx)
-                    .form
-                    .as_ref()
-                    .map(|form| match (ble, output) {
-                        (false, false) => form.telnet_input_line_ending,
-                        (false, true) => form.telnet_output_line_ending,
-                        (true, false) => form.ble.input_line_ending,
-                        (true, true) => form.ble.output_line_ending,
-                    })
-                    .unwrap_or_default();
-                for value in [
-                    SerialLineEnding::None,
-                    SerialLineEnding::Lf,
-                    SerialLineEnding::CrLf,
-                    SerialLineEnding::Cr,
-                ] {
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            self.connection_line_ending_label(value),
-                            selected == value,
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _, _, cx| {
-                            this.close_new_connection_select(cx);
-                            this.update_connection_form_state(cx, |state| {
-                                if let Some(form) = state.form.as_mut() {
-                                    match (ble, output) {
-                                        (false, false) => form.telnet_input_line_ending = value,
-                                        (false, true) => form.telnet_output_line_ending = value,
-                                        (true, false) => form.ble.input_line_ending = value,
-                                        (true, true) => form.ble.output_line_ending = value,
-                                    }
-                                }
-                            });
-                            cx.stop_propagation();
-                            cx.notify();
-                        }),
-                    ));
-                }
-            }
-            NewConnectionSelect::BleSendMode => {
-                use oxideterm_connections::SerialSendMode;
-                let selected = self
-                    .connection_form_state(cx)
-                    .form
-                    .as_ref()
-                    .map(|form| form.ble.send_mode)
-                    .unwrap_or_default();
-                for value in [SerialSendMode::Text, SerialSendMode::Hex] {
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            self.connection_send_mode_label(value),
-                            selected == value,
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _, _, cx| {
-                            this.close_new_connection_select(cx);
-                            this.update_connection_form_state(cx, |state| {
-                                if let Some(form) = state.form.as_mut() {
-                                    form.ble.send_mode = value;
-                                }
-                            });
-                            cx.stop_propagation();
-                            cx.notify();
-                        }),
-                    ));
-                }
-            }
-            NewConnectionSelect::BleDisplayMode => {
-                use oxideterm_connections::SerialDisplayMode;
-                let selected = self
-                    .connection_form_state(cx)
-                    .form
-                    .as_ref()
-                    .map(|form| form.ble.display_mode)
-                    .unwrap_or_default();
-                for value in [
-                    SerialDisplayMode::Text,
-                    SerialDisplayMode::Hex,
-                    SerialDisplayMode::Mixed,
-                ] {
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            self.connection_display_mode_label(value),
-                            selected == value,
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _, _, cx| {
-                            this.close_new_connection_select(cx);
-                            this.update_connection_form_state(cx, |state| {
-                                if let Some(form) = state.form.as_mut() {
-                                    form.ble.display_mode = value;
-                                }
-                            });
-                            cx.stop_propagation();
-                            cx.notify();
-                        }),
-                    ));
-                }
-            }
-            NewConnectionSelect::SerialFlowControl => {
-                let selected = self
-                    .connection_form_state(cx)
-                    .form
-                    .as_ref()
-                    .map(|form| form.serial_flow_control)
-                    .unwrap_or(oxideterm_terminal::SerialFlowControl::None);
-                for flow in [
-                    oxideterm_terminal::SerialFlowControl::None,
-                    oxideterm_terminal::SerialFlowControl::Software,
-                    oxideterm_terminal::SerialFlowControl::Hardware,
-                ] {
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            self.serial_flow_control_label(flow),
-                            flow == selected,
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_new_connection_select(cx);
-                            this.set_new_connection_serial_flow_control(flow, cx);
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-            }
+            _ => {}
         }
-
-        let (anchor_corner, position, offset_y) = if opens_above {
-            (
-                Corner::BottomLeft,
-                point(anchor.bounds.left(), anchor.bounds.top()),
-                -popup_gap,
-            )
-        } else {
-            (Corner::TopLeft, anchor.bounds.bottom_left(), popup_gap)
-        };
-        let popup = popup.into_any_element();
-
-        Some(
-            popover_backdrop()
-                .on_mouse_down(
-                    MouseButton::Left,
-                    cx.listener(|this, _event, _window, cx| {
-                        this.close_new_connection_select(cx);
-                        cx.stop_propagation();
-                        cx.notify();
-                    }),
-                )
-                .on_mouse_down(
-                    MouseButton::Right,
-                    cx.listener(|this, _event, _window, cx| {
-                        this.close_new_connection_select(cx);
-                        cx.stop_propagation();
-                        cx.notify();
-                    }),
-                )
-                .child(
-                    deferred(
-                        anchored()
-                            .anchor(anchor_corner)
-                            .position(position)
-                            .offset(point(px(0.0), px(offset_y)))
-                            .position_mode(AnchoredPositionMode::Window)
-                            .child(popup),
-                    )
-                    .with_priority(oxideterm_gpui_ui::modal::TAURI_SELECT_LAYER_PRIORITY),
-                )
-                .into_any_element(),
-        )
+        popup
     }
 
     pub(in crate::workspace) fn render_add_jump_server_modal(

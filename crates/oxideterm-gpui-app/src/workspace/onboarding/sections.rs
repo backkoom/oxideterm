@@ -683,7 +683,7 @@ impl WorkspaceApp {
                     .border_1()
                     .border_color(rgb(self.tokens.ui.border))
                     .bg(rgb(self.tokens.ui.bg_card))
-                    .p(px(14.0))
+                    .p(px(self.tokens.spacing.three_half))
                     .flex()
                     .items_center()
                     .justify_between()

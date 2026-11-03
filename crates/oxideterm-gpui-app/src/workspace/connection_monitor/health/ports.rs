@@ -667,7 +667,7 @@ impl HostToolsEntity {
             .flex()
             .items_center()
             .justify_end()
-            .gap(px(4.0))
+            .gap(px(tokens.spacing.one))
             .child(host_tools_tooltip_icon_button(
                 tokens,
                 LucideIcon::Copy,

@@ -723,13 +723,8 @@ impl WorkspaceApp {
                     .gap(px(self.tokens.spacing.one))
                     .child(
                         div()
-                            .text_size(px(self.tokens.metrics.ui_text_sm))
-                            .font_weight(gpui::FontWeight::MEDIUM)
-                            .text_color(rgb(self.tokens.ui.text))
                             .child(
-                                self.i18n
-                                    .t("settings_view.terminal.triggers.global_title")
-                                    .to_uppercase(),
+                                self.card_title("settings_view.terminal.triggers.global_title"),
                             ),
                     )
                     .child(
@@ -1494,7 +1489,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(14.0))
+            .gap(px(self.tokens.spacing.three_half))
             .child(
                 div().w_full().flex().items_center().child(
                     div()
@@ -1976,7 +1971,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(14.0))
+            .gap(px(self.tokens.spacing.three_half))
             .child(
                 div()
                     .w_full()

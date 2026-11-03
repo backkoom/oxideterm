@@ -952,7 +952,7 @@ impl WorkspaceApp {
                 .border_1()
                 .border_color(rgb(self.tokens.ui.border))
                 .bg(rgb(self.tokens.ui.bg_panel))
-                .p(px(28.0))
+                .p(px(self.tokens.spacing.seven))
                 .flex()
                 .flex_col()
                 .items_center()

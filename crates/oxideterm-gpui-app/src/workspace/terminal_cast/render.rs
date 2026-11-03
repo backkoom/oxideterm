@@ -550,7 +550,7 @@ impl WorkspaceApp {
                                 .flex()
                                 .flex_col()
                                 .gap(px(self.tokens.spacing.two_half))
-                                .p(px(14.0))
+                                .p(px(self.tokens.spacing.three_half))
                                 .border_t_1()
                                 .border_color(rgba((theme.border << 8) | PLAYER_BORDER_ALPHA))
                                 .child(select_anchor_probe(

@@ -388,7 +388,7 @@ impl WorkspaceApp {
     pub(in crate::workspace) fn keybinding_no_results(&self, cx: &mut Context<Self>) -> AnyElement {
         div()
             .w_full()
-            .py(px(44.0))
+            .py(px(self.tokens.spacing.eleven))
             .flex()
             .items_center()
             .justify_center()
@@ -423,7 +423,7 @@ impl WorkspaceApp {
             .child(
                 div()
                     .h(px(40.0))
-                    .px(px(14.0))
+                    .px(px(self.tokens.spacing.three_half))
                     .flex()
                     .items_center()
                     .justify_between()

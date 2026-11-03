@@ -458,7 +458,7 @@ impl WorkspaceApp {
         let body = div()
             .flex()
             .flex_col()
-            .gap(px(14.0))
+            .gap(px(self.tokens.spacing.three_half))
             .child(self.version_migration_feature_grid(&items, compact))
             .child(self.version_migration_animation_control(cx))
             .child(self.version_migration_radius_control(cx))
@@ -518,7 +518,7 @@ impl WorkspaceApp {
 
         div()
             .w_full()
-            .pt(px(14.0))
+            .pt(px(self.tokens.spacing.three_half))
             .border_t_1()
             .border_color(rgb(self.tokens.ui.border))
             .flex()
@@ -569,7 +569,7 @@ impl WorkspaceApp {
     fn version_migration_radius_control(&self, cx: &mut Context<Self>) -> AnyElement {
         div()
             .w_full()
-            .pt(px(14.0))
+            .pt(px(self.tokens.spacing.three_half))
             .border_t_1()
             .border_color(rgb(self.tokens.ui.border))
             .flex()
@@ -642,7 +642,7 @@ impl WorkspaceApp {
         let body = div()
             .flex()
             .flex_col()
-            .gap(px(14.0))
+            .gap(px(self.tokens.spacing.three_half))
             .child(self.version_migration_feature_grid(&items, compact))
             .child(self.version_migration_notice(
                 LucideIcon::CheckCircle,
@@ -680,7 +680,7 @@ impl WorkspaceApp {
             .flex()
             .items_start()
             .gap(px(self.tokens.spacing.three))
-            .py(px(14.0))
+            .py(px(self.tokens.spacing.three_half))
             .border_t_1()
             .border_color(rgb(self.tokens.ui.border))
             .child(

@@ -685,7 +685,7 @@ impl HostToolsEntity {
             .flex()
             .items_center()
             .justify_end()
-            .gap(px(4.0))
+            .gap(px(tokens.spacing.one))
             .child(self.render_host_docker_logs_button(
                 connection_id,
                 container,

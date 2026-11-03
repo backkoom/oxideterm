@@ -641,7 +641,7 @@ impl HostToolsEntity {
                     .flex_1()
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(render.tokens.spacing.one_half))
                     .text_color(rgb(theme.text_muted))
                     .child(WorkspaceApp::render_lucide_icon(
                         icon,
@@ -697,7 +697,7 @@ impl HostToolsEntity {
                     div()
                         .flex()
                         .items_center()
-                        .gap(px(6.0))
+                        .gap(px(render.tokens.spacing.one_half))
                         .text_color(rgb(theme.text_muted))
                         .child(WorkspaceApp::render_lucide_icon(
                             LucideIcon::Wifi,
@@ -752,7 +752,7 @@ impl HostToolsEntity {
                     .flex_1()
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(render.tokens.spacing.one_half))
                     .text_color(rgb(theme.text_muted))
                     .child(WorkspaceApp::render_lucide_icon(
                         LucideIcon::Wifi,
@@ -773,7 +773,7 @@ impl HostToolsEntity {
                     .flex()
                     .items_center()
                     .justify_end()
-                    .gap(px(8.0))
+                    .gap(px(render.tokens.spacing.two))
                     .font_family(render.mono_font_family.clone())
                     .child(
                         div()
@@ -808,7 +808,7 @@ impl HostToolsEntity {
             .border_color(rgba((theme.border << 8) | 0x60))
             .flex()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(render.tokens.spacing.one_half))
             .min_w_0()
             .text_size(px(12.0))
             .text_color(rgb(theme.text))

@@ -986,7 +986,7 @@ impl WorkspaceApp {
                             .justify_center()
                             .px(px(WELCOME_PAGE_PADDING))
                             .pt(px(self.tokens.spacing.six))
-                            .pb(px(80.0))
+                            .pb(px(self.tokens.spacing.twenty))
                             .child(
                                 div()
                                     .w_full()
@@ -996,7 +996,7 @@ impl WorkspaceApp {
                                     .flex()
                                     .flex_col()
                                     .items_start()
-                                    .gap(px(28.0))
+                                    .gap(px(self.tokens.spacing.seven))
                                     .child(self.render_welcome_header())
                                     .child(self.render_welcome_workbench(compact, cx))
                                     .child(self.render_welcome_shortcuts()),

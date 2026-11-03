@@ -1821,7 +1821,7 @@ impl WorkspaceApp {
         div()
             .flex_none()
             .h(px(oxideterm_gpui_ui::WORKSPACE_STATUS_BAR_HEIGHT))
-            .px(px(14.0))
+            .px(px(self.tokens.spacing.three_half))
             .flex()
             .items_center()
             .gap(px(self.tokens.spacing.one))

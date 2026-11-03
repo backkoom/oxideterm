@@ -402,14 +402,14 @@ impl UiMetrics {
             ui_command_list_max_height: 400.0,
             ui_font_hud_padding_x: 20.0,
             ui_font_hud_padding_y: 12.0,
-            settings_content_padding: 40.0,
+            settings_content_padding: 48.0,
             settings_content_max_width: 896.0,
             settings_content_wide_max_width: 1280.0,
             settings_nav_width: 224.0,
-            settings_row_gap: 24.0,
-            settings_page_gap: 32.0,
-            settings_card_padding: 20.0,
-            settings_card_gap: 20.0,
+            settings_row_gap: 28.0,
+            settings_page_gap: 36.0,
+            settings_card_padding: 24.0,
+            settings_card_gap: 24.0,
             settings_card_title_nudge_y: -4.0,
             settings_select_width: 200.0,
             settings_select_narrow_width: 160.0,
@@ -478,9 +478,9 @@ impl UiRadii {
     pub const fn tauri_default() -> Self {
         Self {
             xs: 2.0,
-            sm: 4.0,
-            md: 6.0,
-            lg: 10.0,
+            sm: 6.0,
+            md: 8.0,
+            lg: 12.0,
             active_indicator: 2.0,
         }
     }
@@ -501,16 +501,24 @@ pub struct UiSpacing {
     pub two_half: f32,
     /// 12px — default padding inside cards and panels.
     pub three: f32,
+    /// 14px — the 3.5 step. Tight padding on compact list rows.
+    pub three_half: f32,
     /// 16px — section padding, gap between form rows.
     pub four: f32,
     /// 20px — gap between unrelated control groups.
     pub five: f32,
     /// 24px — gap between page sections.
     pub six: f32,
+    /// 28px — the 7 step. Between section gap and page margin.
+    pub seven: f32,
     /// 32px — outer page margin.
     pub eight: f32,
+    /// 44px — the 11 step. Toolbar and header bands.
+    pub eleven: f32,
     /// 48px — empty-state and hero spacing.
     pub twelve: f32,
+    /// 80px — the 20 step. Tall empty-state blocks.
+    pub twenty: f32,
     /// Icon-to-label distance. Kept separate because it tracks icon size,
     /// not the layout rhythm.
     pub icon_gap: f32,
@@ -604,11 +612,15 @@ impl UiSpacing {
             two: 8.0,
             two_half: 10.0,
             three: 12.0,
+            three_half: 14.0,
             four: 16.0,
             five: 20.0,
             six: 24.0,
+            seven: 28.0,
             eight: 32.0,
+            eleven: 44.0,
             twelve: 48.0,
+            twenty: 80.0,
             icon_gap: 8.0,
         }
     }
@@ -627,11 +639,15 @@ impl UiSpacing {
             two: scaled_metric(base.two, scale),
             two_half: scaled_metric(base.two_half, scale),
             three: scaled_metric(base.three, scale),
+            three_half: scaled_metric(base.three_half, scale),
             four: scaled_metric(base.four, scale),
             five: scaled_metric(base.five, scale),
             six: scaled_metric(base.six, scale),
+            seven: scaled_metric(base.seven, scale),
             eight: scaled_metric(base.eight, scale),
+            eleven: scaled_metric(base.eleven, scale),
             twelve: scaled_metric(base.twelve, scale),
+            twenty: scaled_metric(base.twenty, scale),
             icon_gap: scaled_metric(base.icon_gap, scale),
         }
     }
@@ -1121,11 +1137,15 @@ mod tests {
         assert_eq!(spacing.two, 8.0);
         assert_eq!(spacing.two_half, 10.0);
         assert_eq!(spacing.three, 12.0);
+        assert_eq!(spacing.three_half, 14.0);
         assert_eq!(spacing.four, 16.0);
         assert_eq!(spacing.five, 20.0);
         assert_eq!(spacing.six, 24.0);
+        assert_eq!(spacing.seven, 28.0);
         assert_eq!(spacing.eight, 32.0);
+        assert_eq!(spacing.eleven, 44.0);
         assert_eq!(spacing.twelve, 48.0);
+        assert_eq!(spacing.twenty, 80.0);
         assert_eq!(spacing.icon_gap, 8.0);
     }
 
@@ -1139,11 +1159,15 @@ mod tests {
             s.two,
             s.two_half,
             s.three,
+            s.three_half,
             s.four,
             s.five,
             s.six,
+            s.seven,
             s.eight,
+            s.eleven,
             s.twelve,
+            s.twenty,
         ];
 
         for pair in ladder.windows(2) {
@@ -1174,5 +1198,49 @@ mod tests {
         assert!(compact.half < compact.one);
         assert!(spacious.half < spacious.one);
         assert!(compact.twelve < spacious.twelve);
+
+        // Every newly named step must use the same rounding policy as metrics.
+        // Test the full token set so adding a field without scaling it fails.
+        for (name, base, small, large) in [
+            ("half", reference.half, compact.half, spacious.half),
+            ("one", reference.one, compact.one, spacious.one),
+            (
+                "one_half",
+                reference.one_half,
+                compact.one_half,
+                spacious.one_half,
+            ),
+            ("two", reference.two, compact.two, spacious.two),
+            (
+                "two_half",
+                reference.two_half,
+                compact.two_half,
+                spacious.two_half,
+            ),
+            ("three", reference.three, compact.three, spacious.three),
+            (
+                "three_half",
+                reference.three_half,
+                compact.three_half,
+                spacious.three_half,
+            ),
+            ("four", reference.four, compact.four, spacious.four),
+            ("five", reference.five, compact.five, spacious.five),
+            ("six", reference.six, compact.six, spacious.six),
+            ("seven", reference.seven, compact.seven, spacious.seven),
+            ("eight", reference.eight, compact.eight, spacious.eight),
+            ("eleven", reference.eleven, compact.eleven, spacious.eleven),
+            ("twelve", reference.twelve, compact.twelve, spacious.twelve),
+            ("twenty", reference.twenty, compact.twenty, spacious.twenty),
+            (
+                "icon_gap",
+                reference.icon_gap,
+                compact.icon_gap,
+                spacious.icon_gap,
+            ),
+        ] {
+            assert_eq!(small, scaled_metric(base, 0.82), "compact {name}");
+            assert_eq!(large, scaled_metric(base, 1.18), "spacious {name}");
+        }
     }
 }

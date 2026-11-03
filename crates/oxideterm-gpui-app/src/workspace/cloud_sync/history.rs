@@ -727,7 +727,7 @@ impl CloudSyncWorkspaceEntity {
         let mut actions = div()
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(render.tokens.spacing.two))
             .child(render.inline_button(
                 "plugin.cloud_sync.actions.restore_backup",
                 cx.listener(move |_cloud_sync, _event, _window, cx| {
@@ -814,7 +814,7 @@ impl CloudSyncWorkspaceEntity {
             .as_deref()
             .map(|error| render.format_error(error));
         div()
-            .pb(px(8.0))
+            .pb(px(render.tokens.spacing.two))
             .child(cloud_sync_history_entry(
                 &render.tokens,
                 render.selectable_text(
@@ -862,7 +862,7 @@ impl CloudSyncWorkspaceEntity {
             .flex()
             .items_center()
             .justify_between()
-            .gap(px(12.0))
+            .gap(px(render.tokens.spacing.three))
             .child(render.section_title("plugin.cloud_sync.sections.rollback_backups", cx))
             .when(row_count != 0, |header| {
                 header.child(render.inline_button(
@@ -970,7 +970,7 @@ impl CloudSyncWorkspaceEntity {
             .flex()
             .items_center()
             .justify_between()
-            .gap(px(12.0))
+            .gap(px(render.tokens.spacing.three))
             .child(render.selectable_text(
                 SelectableTextRole::NonSelectable,
                 "cloud-sync-history",

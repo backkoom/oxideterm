@@ -489,6 +489,47 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> Option<gpui::Stateful<Div>> {
         match open_select {
+            SettingsSelect::TerminalFontFamily
+            | SettingsSelect::TerminalCjkFontFamily
+            | SettingsSelect::TerminalEncoding
+            | SettingsSelect::TerminalSessionLogFileMode
+            | SettingsSelect::TerminalBackspaceSequence
+            | SettingsSelect::TerminalDeleteSequence
+            | SettingsSelect::TerminalCursorStyle
+            | SettingsSelect::XmodemBlockSize
+            | SettingsSelect::RemoteShellIntegrationMode => self
+                .settings_select_popup_terminal_fonts(open_select, width, settings, cx),
+            SettingsSelect::TerminalTriggerMatchMode
+            | SettingsSelect::TerminalTriggerAction
+            | SettingsSelect::TerminalTriggerClickAction
+            | SettingsSelect::TerminalTriggerProcessMode
+            | SettingsSelect::TerminalTriggerQuickCommand
+            | SettingsSelect::TerminalTriggerTiming
+            | SettingsSelect::TerminalTriggerScope => self
+                .settings_select_popup_terminal_triggers(open_select, width, settings, cx),
+            SettingsSelect::TerminalSemanticScheme
+            | SettingsSelect::HighlightRuleSet
+            | SettingsSelect::SemanticSchemeRuleClass(_)
+            | SettingsSelect::SemanticSchemeRuleContext(_)
+            | SettingsSelect::HighlightPreset
+            | SettingsSelect::HighlightRenderMode(_)
+            | SettingsSelect::HighlightMatchScope(_) => self
+                .settings_select_popup_terminal_highlight(open_select, width, settings, cx),
+            SettingsSelect::LocalShell
+            | SettingsSelect::LocalShellSemanticScheme(_) => self
+                .settings_select_popup_terminal_local_shell(open_select, width, settings, cx),
+            _ => None,
+        }
+    }
+
+    fn settings_select_popup_terminal_fonts(
+        &self,
+        open_select: SettingsSelect,
+        width: f32,
+        settings: &PersistedSettings,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::Stateful<Div>> {
+        match open_select {
             SettingsSelect::TerminalFontFamily => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for &family in font_family_options() {
@@ -733,6 +774,18 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
+            _ => None,
+        }
+    }
+
+    fn settings_select_popup_terminal_triggers(
+        &self,
+        open_select: SettingsSelect,
+        width: f32,
+        _settings: &PersistedSettings,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::Stateful<Div>> {
+        match open_select {
             SettingsSelect::TerminalTriggerMatchMode => {
                 let draft = self.terminal_trigger_draft()?;
                 let current = draft.matcher.mode;
@@ -1002,6 +1055,18 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
+            _ => None,
+        }
+    }
+
+    fn settings_select_popup_terminal_highlight(
+        &self,
+        open_select: SettingsSelect,
+        width: f32,
+        settings: &PersistedSettings,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::Stateful<Div>> {
+        match open_select {
             SettingsSelect::TerminalSemanticScheme => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for &scheme in terminal_semantic_scheme_options() {
@@ -1251,6 +1316,18 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
+            _ => None,
+        }
+    }
+
+    fn settings_select_popup_terminal_local_shell(
+        &self,
+        open_select: SettingsSelect,
+        width: f32,
+        settings: &PersistedSettings,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::Stateful<Div>> {
+        match open_select {
             SettingsSelect::LocalShell => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 let selected = settings.local_terminal.default_shell_id.as_deref();

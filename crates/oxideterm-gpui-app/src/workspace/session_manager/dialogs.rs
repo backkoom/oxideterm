@@ -270,7 +270,7 @@ impl WorkspaceApp {
                 .w(px(460.0))
                 .flex()
                 .flex_col()
-                .gap(px(14.0))
+                .gap(px(self.tokens.spacing.three_half))
                 .p(px(self.tokens.spacing.four))
                 .rounded(px(self.tokens.radii.lg))
                 .border_1()

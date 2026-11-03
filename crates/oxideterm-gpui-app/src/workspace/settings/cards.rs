@@ -110,10 +110,7 @@ impl WorkspaceApp {
             .child(
                 div()
                     .mb(px(self.tokens.metrics.settings_card_title_nudge_y))
-                    .text_size(px(self.tokens.metrics.ui_text_sm))
-                    .font_weight(gpui::FontWeight::MEDIUM)
-                    .text_color(rgb(self.tokens.ui.text))
-                    .child(self.i18n.t(title_key).to_uppercase()),
+                    .child(self.card_title(title_key)),
             )
             .when(!description_key.is_empty(), |card| {
                 card.child(

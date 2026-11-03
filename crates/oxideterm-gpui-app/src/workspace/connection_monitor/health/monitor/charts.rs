@@ -209,7 +209,7 @@ pub(super) fn render_trend(render: &CompactMonitorRenderContext, cpu: bool) -> D
         .px(px(
             COMPACT_MONITOR_ROW_SIDE_PADDING + render.tokens.spacing.two
         ))
-        .pb(px(6.0))
+        .pb(px(render.tokens.spacing.one_half))
         .flex()
         .flex_col()
         .gap(px(3.0))

@@ -115,15 +115,9 @@ impl WorkspaceApp {
                                 .flex_col()
                                 .gap(px(self.tokens.spacing.one))
                                 .child(
-                                    div()
-                                        .text_size(px(self.tokens.metrics.ui_text_sm))
-                                        .font_weight(gpui::FontWeight::MEDIUM)
-                                        .text_color(rgb(self.tokens.ui.text))
-                                        .child(
-                                            self.i18n
-                                                .t("settings_view.terminal.highlight_rules.semantic_coloring")
-                                                .to_uppercase(),
-                                        ),
+                                    self.card_title(
+                                        "settings_view.terminal.highlight_rules.semantic_coloring",
+                                    ),
                                 )
                                 .child(
                                     div()
@@ -253,15 +247,7 @@ impl WorkspaceApp {
                             .flex_col()
                             .gap(px(self.tokens.spacing.one))
                             .child(
-                                div()
-                                    .text_size(px(self.tokens.metrics.ui_text_sm))
-                                    .font_weight(gpui::FontWeight::MEDIUM)
-                                    .text_color(rgb(self.tokens.ui.text))
-                                    .child(
-                                        self.i18n
-                                            .t("settings_view.terminal.highlight_rules.title")
-                                            .to_uppercase(),
-                                    ),
+                                self.card_title("settings_view.terminal.highlight_rules.title"),
                             )
                             .child(
                                 div()

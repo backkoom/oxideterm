@@ -90,14 +90,7 @@ impl WorkspaceApp {
             .child(
                 div()
                     .mb(px(self.tokens.spacing.four))
-                    .text_size(px(self.tokens.metrics.ui_text_sm))
-                    .font_weight(gpui::FontWeight::MEDIUM)
-                    .text_color(rgb(self.tokens.ui.text))
-                    .child(
-                        self.i18n
-                            .t("settings_view.help.version_info")
-                            .to_uppercase(),
-                    ),
+                    .child(self.card_title("settings_view.help.version_info")),
             )
             .child(version_rows)
             .child(self.help_update_footer(is_portable, cx));

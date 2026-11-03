@@ -310,7 +310,7 @@ impl WorkspaceApp {
             .flex()
             .items_center()
             .gap(px(self.tokens.spacing.three))
-            .p(px(14.0))
+            .p(px(self.tokens.spacing.three_half))
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(if checked {

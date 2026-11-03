@@ -80,14 +80,7 @@ impl WorkspaceApp {
             .gap(px(self.tokens.spacing.three))
             .child(
                 div()
-                    .text_size(px(self.tokens.metrics.ui_text_sm))
-                    .font_weight(gpui::FontWeight::MEDIUM)
-                    .text_color(rgb(self.tokens.ui.text))
-                    .child(
-                        self.i18n
-                            .t("settings_view.ai.privacy_notice")
-                            .to_uppercase(),
-                    ),
+                    .child(self.card_title("settings_view.ai.privacy_notice")),
             )
             .child(
                 div()
@@ -100,13 +93,12 @@ impl WorkspaceApp {
             .into_any_element()
     }
 
+    /// Section title with the extra bottom margin the AI page needs. The type
+    /// treatment itself lives in `card_title` so every page draws it the same.
     pub(in crate::workspace) fn ai_section_title(&self, key: &str) -> AnyElement {
         div()
             .mb(px(self.tokens.spacing.four))
-            .text_size(px(self.tokens.metrics.ui_text_sm))
-            .font_weight(gpui::FontWeight::MEDIUM)
-            .text_color(rgb(self.tokens.ui.text))
-            .child(self.i18n.t(key).to_uppercase())
+            .child(self.card_title(key))
             .into_any_element()
     }
 

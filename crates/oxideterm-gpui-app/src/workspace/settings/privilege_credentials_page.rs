@@ -726,7 +726,7 @@ impl WorkspaceApp {
             .gap(px(self.tokens.spacing.three))
             .border_t_1()
             .border_color(rgba((theme.border << 8) | 0x80))
-            .pt(px(14.0))
+            .pt(px(self.tokens.spacing.three_half))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
