@@ -439,8 +439,8 @@ impl WorkspaceApp {
                                     } else {
                                         rgba((theme.bg_hover << 8) | 0x80)
                                     })
-                                    .px(px(12.0))
-                                    .py(px(8.0))
+                                    .px(px(self.tokens.spacing.three))
+                                    .py(px(self.tokens.spacing.two))
                                     .text_size(px(self.tokens.metrics.form_text_font_size))
                                     .text_color(if seconds_left <= 15 {
                                         rgb(theme.error)

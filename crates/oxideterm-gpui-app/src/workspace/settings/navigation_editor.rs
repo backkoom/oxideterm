@@ -152,9 +152,14 @@ impl WorkspaceApp {
             .child(
                 // A six-dot grip communicates direct manipulation more clearly
                 // than a menu icon while remaining independent of icon assets.
-                div().w(px(6.0)).flex().flex_wrap().gap(px(self.tokens.spacing.half)).children(
-                    (0..6).map(move |_| div().size(px(2.0)).rounded(px(1.0)).bg(grip_color)),
-                ),
+                div()
+                    .w(px(6.0))
+                    .flex()
+                    .flex_wrap()
+                    .gap(px(self.tokens.spacing.half))
+                    .children(
+                        (0..6).map(move |_| div().size(px(2.0)).rounded(px(1.0)).bg(grip_color)),
+                    ),
             )
             .on_drag(drag, |drag, position, _window, cx| {
                 let preview = drag.with_position(position);

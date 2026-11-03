@@ -73,7 +73,7 @@ impl CloudSyncPageRenderer {
                     .flex_wrap()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         self.render
                             .section_title("plugin.cloud_sync.sections.connection_settings", cx),

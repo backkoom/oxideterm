@@ -888,7 +888,7 @@ impl KnowledgeDocumentEditor {
             oxideterm_gpui_ui::separator::SeparatorOrientation::Vertical,
         )
         .h(px(18.0))
-        .mx(px(4.0))
+        .mx(px(self.tokens.spacing.one))
         .flex_none()
         .into_any_element()
     }

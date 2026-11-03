@@ -86,12 +86,12 @@ impl OxideImportNameGroupRenderer {
             .is_some_and(|dialog| dialog.selected_names.contains(&name));
         let session_manager = self.session_manager.clone();
         div()
-            .pb(px(4.0))
+            .pb(px(self.tokens.spacing.one))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .text_size(px(self.tokens.metrics.ui_text_xs))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .cursor_pointer()
@@ -149,13 +149,13 @@ impl OxideImportForwardDetailRenderer {
         detail
             .map(|detail| {
                 div()
-                    .pb(px(4.0))
+                    .pb(px(self.tokens.spacing.one))
                     .child(
                         div()
                             .rounded(px(self.tokens.radii.md))
                             .bg(rgba((self.tokens.ui.bg << 8) | OXIDE_SUBCARD_BG_ALPHA))
                             .px_2()
-                            .py(px(6.0))
+                            .py(px(self.tokens.spacing.one_half))
                             .text_size(px(self.tokens.metrics.ui_text_xs))
                             .text_color(rgb(self.tokens.ui.text_muted))
                             .child(format!(
@@ -196,7 +196,7 @@ impl WorkspaceApp {
                     div()
                         .flex()
                         .items_center()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .child(Self::render_lucide_icon(
                             LucideIcon::CheckCircle,
                             20.0,
@@ -418,12 +418,12 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .when_some(icon, |header, icon| {
                         header.child(Self::render_lucide_icon(icon, 16.0, rgb(color)))
                     })
@@ -532,13 +532,13 @@ impl WorkspaceApp {
 
         if !preview.app_settings_sections.is_empty() {
             let mut sections = div()
-                .mt(px(4.0))
-                .pt(px(12.0))
+                .mt(px(self.tokens.spacing.one))
+                .pt(px(self.tokens.spacing.three))
                 .border_t_1()
                 .border_color(rgb(self.tokens.ui.border))
                 .flex()
                 .flex_col()
-                .gap(px(8.0))
+                .gap(px(self.tokens.spacing.two))
                 .child(
                     div()
                         .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -673,22 +673,22 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
             .bg(self.render_oxide_subcard_bg(false))
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .flex()
                     .items_start()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .cursor_pointer()
                     .child(
                         div()
                             .flex()
                             .items_start()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(Self::render_lucide_icon(
                                 if selected {
                                     LucideIcon::CheckSquare
@@ -706,7 +706,7 @@ impl WorkspaceApp {
                                 div()
                                     .flex()
                                     .flex_col()
-                                    .gap(px(4.0))
+                                    .gap(px(self.tokens.spacing.one))
                                     .child(
                                         div()
                                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -784,10 +784,10 @@ impl WorkspaceApp {
                 div()
                     .border_t_1()
                     .border_color(rgb(self.tokens.ui.border))
-                    .pt(px(8.0))
+                    .pt(px(self.tokens.spacing.two))
                     .flex()
                     .flex_col()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -848,7 +848,7 @@ impl WorkspaceApp {
                                         .rounded(px(self.tokens.radii.sm))
                                         .bg(self.render_oxide_subcard_bg(true))
                                         .px_2()
-                                        .py(px(6.0))
+                                        .py(px(self.tokens.spacing.one_half))
                                         .text_size(px(self.tokens.metrics.ui_text_xs))
                                         .text_color(rgb(self.tokens.ui.text_muted))
                                         .child(self.render_selectable_text_scoped(
@@ -1036,7 +1036,7 @@ impl WorkspaceApp {
             .collect::<Vec<_>>();
         entries.sort_by(|left, right| left.0.cmp(&right.0));
         if !entries.is_empty() {
-            let mut list = div().flex().flex_col().gap(px(4.0));
+            let mut list = div().flex().flex_col().gap(px(self.tokens.spacing.one));
             for (plugin_id, count) in entries {
                 let checked = self
                     .session_manager
@@ -1082,14 +1082,14 @@ impl WorkspaceApp {
             .justify_between()
             .rounded(px(self.tokens.radii.md))
             .px_2()
-            .py(px(6.0))
+            .py(px(self.tokens.spacing.one_half))
             .hover(|row| row.bg(rgb(self.tokens.ui.bg)))
             .cursor_pointer()
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .text_size(px(self.tokens.metrics.ui_text_xs))
                     .text_color(rgb(self.tokens.ui.text))
                     .child(Self::render_lucide_icon(
@@ -1269,10 +1269,10 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
             .bg(self.render_oxide_subcard_bg(true))
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .children(children)
             .into_any_element()
     }

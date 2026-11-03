@@ -2971,7 +2971,7 @@ impl WorkspaceApp {
             .flex_none()
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .border_r_1()
             .border_color(rgba((theme.border << 8) | 0x80))
             .pr(px(self.tokens.spacing.three));

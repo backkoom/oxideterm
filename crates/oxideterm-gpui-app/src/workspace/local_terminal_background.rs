@@ -298,8 +298,8 @@ impl WorkspaceApp {
                     // parent radius; GPUI must align to the inner border curve.
                     .rounded_t(px(rounded_shell_child_radius(self.tokens.radii.lg)))
                     .bg(rgba((theme.bg << 8) | DETACHED_TERMINAL_HEADER_ALPHA))
-                    .px(px(12.0))
-                    .py(px(8.0))
+                    .px(px(self.tokens.spacing.three))
+                    .py(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .text_size(px(12.0))
@@ -403,9 +403,9 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .gap(px(8.0))
-            .px(px(12.0))
-            .py(px(8.0))
+            .gap(px(self.tokens.spacing.two))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.two))
             .hover(|row| row.bg(rgba((theme.bg_hover << 8) | DETACHED_TERMINAL_HOVER_ALPHA)))
             .child(Self::render_lucide_icon(
                 LucideIcon::Square,
@@ -426,10 +426,10 @@ impl WorkspaceApp {
                     )
                     .child(
                         div()
-                            .mt(px(2.0))
+                            .mt(px(self.tokens.spacing.half))
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .text_size(px(10.0))
                             .line_height(px(14.0))
                             .text_color(rgb(theme.text_muted))
@@ -437,7 +437,7 @@ impl WorkspaceApp {
                                 div()
                                     .flex()
                                     .items_center()
-                                    .gap(px(2.0))
+                                    .gap(px(self.tokens.spacing.half))
                                     .child(Self::render_lucide_icon(
                                         LucideIcon::Clock,
                                         10.0,
@@ -456,7 +456,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .child(
                         div()
                             .size(px(24.0))

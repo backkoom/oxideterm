@@ -929,7 +929,7 @@ impl WorkspaceApp {
             .flex_row()
             .items_center()
             .gap(px(SFTP_PANE_HEADER_GAP))
-            .p(px(8.0))
+            .p(px(self.tokens.spacing.two))
             .border_b_1()
             .border_color(if active {
                 rgba((theme.accent << 8) | SFTP_HEADER_ACTIVE_BORDER_ALPHA)
@@ -1084,9 +1084,9 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .px(px(SFTP_PATH_BAR_HORIZONTAL_PADDING))
-            .py(px(2.0))
+            .py(px(self.tokens.spacing.half))
             .rounded(px(self.tokens.radii.sm))
             .border_1()
             .border_color(if focused {
@@ -1314,8 +1314,8 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_center()
-            .px(px(8.0))
-            .py(px(4.0))
+            .px(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.one))
             .bg(sftp_panel_bg(self.tokens.ui.bg_panel, has_background, 0xff))
             .border_b_1()
             .border_color(sftp_border(self.tokens.ui.border, has_background))
@@ -1385,7 +1385,7 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .text_color(if active_field == field {
                 rgb(theme.accent)
             } else {
@@ -1449,9 +1449,9 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_center()
-            .gap(px(8.0))
-            .px(px(8.0))
-            .py(px(4.0))
+            .gap(px(self.tokens.spacing.two))
+            .px(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.one))
             .bg(sftp_panel_bg(
                 theme.bg_panel,
                 has_background,

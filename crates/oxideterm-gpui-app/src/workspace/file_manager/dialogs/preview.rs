@@ -29,9 +29,9 @@ fn render_file_manager_archive_row(
         .saturating_sub(usize::from(entry.is_dir));
     div()
         .min_h(px(28.0))
-        .px(px(12.0))
+        .px(px(tokens.spacing.three))
         .flex()
-        .gap(px(8.0))
+        .gap(px(tokens.spacing.two))
         .items_center()
         .bg(if index.is_multiple_of(2) {
             file_manager_panel_bg(background_panel, has_background, 0x33)
@@ -43,7 +43,7 @@ fn render_file_manager_archive_row(
             div()
                 .flex()
                 .items_center()
-                .gap(px(6.0))
+                .gap(px(tokens.spacing.one_half))
                 .pl(px((depth * 16) as f32))
                 .child({
                     let icon = if entry.is_dir {
@@ -150,10 +150,10 @@ impl WorkspaceApp {
             .child(
                 div()
                     .h(px(48.0))
-                    .px(px(16.0))
+                    .px(px(self.tokens.spacing.four))
                     .flex()
                     .items_center()
-                    .gap(px(10.0))
+                    .gap(px(self.tokens.spacing.two_half))
                     // Tauri QuickLook clips this header through the panel's
                     // border-box. The caller passes the inset shell radius so
                     // the painted child does not fight the outer border curve.
@@ -349,8 +349,8 @@ impl WorkspaceApp {
             })
             .child(
                 div()
-                    .px(px(16.0))
-                    .py(px(8.0))
+                    .px(px(self.tokens.spacing.four))
+                    .py(px(self.tokens.spacing.two))
                     .border_t_1()
                     .border_color(file_manager_border(theme.border, has_background))
                     // Tauri footer is only bg-theme-bg-card text chrome inside
@@ -544,7 +544,7 @@ impl WorkspaceApp {
             .items_center()
             .justify_center()
             .p_4()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(Self::render_lucide_icon(
                 LucideIcon::FileAudio,
                 56.0,
@@ -571,7 +571,7 @@ impl WorkspaceApp {
                     .max_w(px(520.0))
                     .flex()
                     .items_center()
-                    .gap(px(10.0))
+                    .gap(px(self.tokens.spacing.two_half))
                     .rounded(px(self.tokens.radii.md))
                     .border_1()
                     .border_color(rgb(theme.border))
@@ -760,9 +760,9 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
-                    .px(px(16.0))
-                    .py(px(12.0))
+                    .gap(px(self.tokens.spacing.two))
+                    .px(px(self.tokens.spacing.four))
+                    .py(px(self.tokens.spacing.three))
                     .border_b_1()
                     .border_color(rgb(theme.border))
                     .bg(rgba((theme.bg_panel << 8) | FILE_MANAGER_PANEL_80_ALPHA))
@@ -841,10 +841,10 @@ impl WorkspaceApp {
                     .selectable_overflow_y_scrollbar(
                         &self.file_manager.read(cx).preview_metadata_scroll,
                     )
-                    .p(px(24.0))
+                    .p(px(self.tokens.spacing.six))
                     .flex()
                     .flex_col()
-                    .gap(px(20.0))
+                    .gap(px(self.tokens.spacing.five))
                     .child(
                         div()
                             .text_size(px(FILE_MANAGER_TEXT_XS))
@@ -987,7 +987,7 @@ impl WorkspaceApp {
             .flex_col()
             .items_center()
             .justify_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(rgb(theme.border))
@@ -1108,7 +1108,7 @@ impl WorkspaceApp {
         });
         div()
             .size_full()
-            .p(px(16.0))
+            .p(px(self.tokens.spacing.four))
             .child(
                 oxideterm_gpui_markdown::render::render_document_virtual_with_code_actions(
                     "file-manager-preview-markdown-virtual",
@@ -1189,11 +1189,12 @@ impl WorkspaceApp {
         let font_size = self.settings_store.settings().terminal.font_size as f32;
         let row_height = font_size * 1.5;
         let scroll = self.file_manager.read(cx).preview_code_scroll.clone();
+        let row_spacing = self.tokens.spacing;
         div()
             .size_full()
             .bg(file_manager_bg(theme.bg_sunken, has_background))
             .child(
-                div().size_full().p(px(16.0)).child(
+                div().size_full().p(px(self.tokens.spacing.four)).child(
                     tauri_virtual_uniform_list(
                         "file-manager-preview-code-virtual",
                         row_count,
@@ -1238,7 +1239,7 @@ impl WorkspaceApp {
                                             div()
                                                 .w(px(48.0))
                                                 .flex_none()
-                                                .pr(px(12.0))
+                                                .pr(px(row_spacing.three))
                                                 .text_align(gpui::TextAlign::Right)
                                                 .text_color(rgba(
                                                     (theme.text_muted << 8)
@@ -1307,59 +1308,64 @@ impl WorkspaceApp {
         let font_family = settings_mono_font_family(self.settings_store.settings());
         let font_size = self.settings_store.settings().terminal.font_size as f32;
         let row_height = font_size * 1.5;
+        let row_spacing = self.tokens.spacing;
         let body = div()
             .size_full()
             .bg(file_manager_bg(theme.bg_sunken, has_background))
             .child(
-                div().size_full().p(px(16.0)).overflow_x_scrollbar().child(
-                    tauri_virtual_uniform_list(
-                        "file-manager-preview-stream-code-virtual",
-                        row_count.max(1),
-                        scroll,
-                        TauriVirtualListSpec::new(
-                            px(row_height),
-                            FILE_MANAGER_PREVIEW_CODE_OVERSCAN,
-                        ),
-                        move |range, _window, _cx| {
-                            let opts = opts.clone();
-                            let language = language.clone();
-                            let font_family = font_family.clone();
-                            let lines = lines.clone();
-                            let error = error.clone();
-                            range
-                                .map(|index| {
-                                    if index >= lines.len() {
-                                        let message = error
-                                            .clone()
-                                            .unwrap_or_else(|| "Loading...".to_string());
-                                        return div()
-                                            .h(px(row_height))
-                                            .w_full()
-                                            .flex()
-                                            .items_center()
-                                            .font_family(font_family.clone())
-                                            .text_size(px(font_size))
-                                            .line_height(px(row_height))
-                                            .text_color(rgb(theme.text_muted))
-                                            .child(message)
-                                            .into_any_element();
-                                    }
+                div()
+                    .size_full()
+                    .p(px(self.tokens.spacing.four))
+                    .overflow_x_scrollbar()
+                    .child(
+                        tauri_virtual_uniform_list(
+                            "file-manager-preview-stream-code-virtual",
+                            row_count.max(1),
+                            scroll,
+                            TauriVirtualListSpec::new(
+                                px(row_height),
+                                FILE_MANAGER_PREVIEW_CODE_OVERSCAN,
+                            ),
+                            move |range, _window, _cx| {
+                                let opts = opts.clone();
+                                let language = language.clone();
+                                let font_family = font_family.clone();
+                                let lines = lines.clone();
+                                let error = error.clone();
+                                range
+                                    .map(|index| {
+                                        if index >= lines.len() {
+                                            let message = error
+                                                .clone()
+                                                .unwrap_or_else(|| "Loading...".to_string());
+                                            return div()
+                                                .h(px(row_height))
+                                                .w_full()
+                                                .flex()
+                                                .items_center()
+                                                .font_family(font_family.clone())
+                                                .text_size(px(font_size))
+                                                .line_height(px(row_height))
+                                                .text_color(rgb(theme.text_muted))
+                                                .child(message)
+                                                .into_any_element();
+                                        }
 
-                                    let line = &lines[index];
-                                    let content: AnyElement = if language != "text"
-                                        && language != "plain"
-                                        && let Some(runs) =
-                                            highlight::highlight_code(&language, line, &opts)
-                                    {
-                                        let (text, text_runs) =
-                                            highlight::highlighted_runs_to_text_runs(&runs);
-                                        StyledText::new(text)
-                                            .with_runs(text_runs)
-                                            .into_any_element()
-                                    } else {
-                                        SharedString::from(line.clone()).into_any_element()
-                                    };
-                                    div()
+                                        let line = &lines[index];
+                                        let content: AnyElement = if language != "text"
+                                            && language != "plain"
+                                            && let Some(runs) =
+                                                highlight::highlight_code(&language, line, &opts)
+                                        {
+                                            let (text, text_runs) =
+                                                highlight::highlighted_runs_to_text_runs(&runs);
+                                            StyledText::new(text)
+                                                .with_runs(text_runs)
+                                                .into_any_element()
+                                        } else {
+                                            SharedString::from(line.clone()).into_any_element()
+                                        };
+                                        div()
                                         .h(px(row_height))
                                         .w_full()
                                         .flex()
@@ -1373,7 +1379,7 @@ impl WorkspaceApp {
                                             div()
                                                 .w(px(48.0))
                                                 .flex_none()
-                                                .pr(px(12.0))
+                                                .pr(px(row_spacing.three))
                                                 .text_align(gpui::TextAlign::Right)
                                                 .text_color(rgba(
                                                     (theme.text_muted << 8)
@@ -1383,17 +1389,17 @@ impl WorkspaceApp {
                                         )
                                         .child(div().min_w(px(0.0)).child(content))
                                         .into_any_element()
-                                })
-                                .collect::<Vec<_>>()
-                        },
-                    )
-                    .on_scroll_wheel(cx.listener(
-                        |this, _event, _window, cx| {
-                            this.load_more_file_manager_stream_preview(cx);
-                            cx.stop_propagation();
-                        },
-                    )),
-                ),
+                                    })
+                                    .collect::<Vec<_>>()
+                            },
+                        )
+                        .on_scroll_wheel(cx.listener(
+                            |this, _event, _window, cx| {
+                                this.load_more_file_manager_stream_preview(cx);
+                                cx.stop_propagation();
+                            },
+                        )),
+                    ),
             )
             .into_any_element();
         div()
@@ -1417,13 +1423,13 @@ impl WorkspaceApp {
             0
         };
         let mut body = div()
-            .p(px(16.0))
+            .p(px(self.tokens.spacing.four))
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
-                    .p(px(12.0))
+                    .p(px(self.tokens.spacing.three))
                     .rounded(px(self.tokens.radii.md))
                     .bg(file_manager_panel_bg(
                         self.tokens.ui.bg_panel,
@@ -1432,7 +1438,7 @@ impl WorkspaceApp {
                     ))
                     .flex()
                     .items_center()
-                    .gap(px(16.0))
+                    .gap(px(self.tokens.spacing.four))
                     .text_size(px(FILE_MANAGER_TEXT_XS))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(self.render_selectable_display_text(
@@ -1535,9 +1541,9 @@ impl WorkspaceApp {
     ) -> AnyElement {
         div()
             .h(px(32.0))
-            .px(px(12.0))
+            .px(px(self.tokens.spacing.three))
             .flex()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .items_center()
             .border_b_1()
             .border_color(file_manager_border(self.tokens.ui.border, has_background))
@@ -1665,8 +1671,8 @@ impl WorkspaceApp {
             ));
         }
         div()
-            .px(px(16.0))
-            .py(px(12.0))
+            .px(px(self.tokens.spacing.four))
+            .py(px(self.tokens.spacing.three))
             .border_t_1()
             .border_color(file_manager_border(self.tokens.ui.border, has_background))
             .bg(file_manager_panel_bg(
@@ -1704,7 +1710,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .min_w(px(0.0))
             .child(Self::render_lucide_icon(
                 icon,
@@ -1781,7 +1787,7 @@ impl WorkspaceApp {
             .flex_col()
             .items_center()
             .justify_center()
-            .gap(px(10.0))
+            .gap(px(self.tokens.spacing.two_half))
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(if matches!(icon, LucideIcon::LoaderCircle) {
                 self.render_loading_icon(

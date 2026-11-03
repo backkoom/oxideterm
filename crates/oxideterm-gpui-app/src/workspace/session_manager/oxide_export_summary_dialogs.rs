@@ -60,15 +60,15 @@ impl WorkspaceApp {
         div()
             .min_w(px(160.0))
             .flex_1()
-            .px(px(8.0))
-            .py(px(6.0))
+            .px(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.one_half))
             .rounded(px(self.tokens.radii.sm))
             .border_1()
             .border_color(rgba((self.tokens.ui.border << 8) | 0x66))
             .bg(self.render_oxide_subcard_bg(false))
             .flex()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(Self::render_lucide_icon(
                 icon,
                 12.0,
@@ -100,7 +100,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_wrap()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .children(
                 stats
                     .into_iter()
@@ -117,28 +117,32 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let theme = self.tokens.ui;
-        let mut section = div().flex().flex_col().gap(px(8.0)).child(
-            div()
-                .flex()
-                .items_center()
-                .gap(px(8.0))
-                .text_size(px(self.tokens.metrics.ui_text_sm))
-                .font_weight(gpui::FontWeight::SEMIBOLD)
-                .text_color(rgb(theme.text))
-                .child(Self::render_lucide_icon(
-                    LucideIcon::Shield,
-                    16.0,
-                    rgb(theme.text),
-                ))
-                .child(self.render_display_text_with_role(
-                    SelectableTextRole::NonSelectable,
-                    "oxide-export-preflight-heading",
-                    (),
-                    self.i18n.t("export.summary_title"),
-                    theme.text,
-                    cx,
-                )),
-        );
+        let mut section = div()
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.two))
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(self.tokens.spacing.two))
+                    .text_size(px(self.tokens.metrics.ui_text_sm))
+                    .font_weight(gpui::FontWeight::SEMIBOLD)
+                    .text_color(rgb(theme.text))
+                    .child(Self::render_lucide_icon(
+                        LucideIcon::Shield,
+                        16.0,
+                        rgb(theme.text),
+                    ))
+                    .child(self.render_display_text_with_role(
+                        SelectableTextRole::NonSelectable,
+                        "oxide-export-preflight-heading",
+                        (),
+                        self.i18n.t("export.summary_title"),
+                        theme.text,
+                        cx,
+                    )),
+            );
         let preflight = self
             .session_manager
             .read(cx)
@@ -577,7 +581,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -599,7 +603,7 @@ impl WorkspaceApp {
             .when_some(password_strength, |input, strength| {
                 input.child(
                     div()
-                        .mt(px(4.0))
+                        .mt(px(self.tokens.spacing.one))
                         .child(self.render_oxide_password_strength(strength, cx)),
                 )
             })
@@ -645,8 +649,8 @@ impl WorkspaceApp {
             )
         };
         div()
-            .px(px(8.0))
-            .py(px(6.0))
+            .px(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.one_half))
             .rounded(px(self.tokens.radii.sm))
             .border_1()
             .border_color(rgba((color << 8) | OXIDE_TONE_BORDER_ALPHA))
@@ -655,12 +659,12 @@ impl WorkspaceApp {
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .font_weight(gpui::FontWeight::SEMIBOLD)
                     .child(Self::render_lucide_icon(
                         LucideIcon::AlertTriangle,

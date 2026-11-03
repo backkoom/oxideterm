@@ -76,7 +76,7 @@ impl WorkspaceApp {
             .justify_between()
             .gap(px(self.tokens.spacing.three))
             .px(px(if compact { 16.0 } else { 24.0 }))
-            .py(px(12.0))
+            .py(px(self.tokens.spacing.three))
             .border_b_1()
             .border_color(rgb(self.tokens.ui.border))
             // GPUI's overflow mask is rectangular, so the painted edge child
@@ -731,7 +731,7 @@ impl WorkspaceApp {
             .flex()
             .items_start()
             .gap(px(self.tokens.spacing.three))
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .rounded(px(self.tokens.radii.sm))
             .border_l_2()
             .border_color(rgb(color))
@@ -800,7 +800,7 @@ impl WorkspaceApp {
             .flex_wrap()
             .items_center()
             .gap(px(self.tokens.spacing.three))
-            .py(px(10.0))
+            .py(px(self.tokens.spacing.two_half))
             .child(
                 div()
                     .w(px(VERSION_MIGRATION_CLI_COMMAND_WIDTH))
@@ -835,7 +835,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_start()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .text_color(rgb(self.tokens.ui.error))
             .child(Self::render_lucide_icon(
@@ -853,8 +853,8 @@ impl WorkspaceApp {
         oxideterm_gpui_ui::modal_footer(&self.tokens)
             .h_auto()
             .min_h(px(self.tokens.metrics.modal_footer_height))
-            .px(px(24.0))
-            .py(px(12.0))
+            .px(px(self.tokens.spacing.six))
+            .py(px(self.tokens.spacing.three))
             .flex_wrap()
             .justify_between()
             .child(if first {
@@ -883,7 +883,7 @@ impl WorkspaceApp {
                     .flex_wrap()
                     .items_center()
                     .justify_end()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .when_some(self.version_migration.error.clone(), |row, error| {
                         row.child(
                             div()
@@ -943,7 +943,7 @@ impl WorkspaceApp {
                 disabled: loading,
             },
         )
-        .gap(px(6.0))
+        .gap(px(self.tokens.spacing.one_half))
         .child(Self::render_lucide_icon(
             if loading { LucideIcon::RefreshCw } else { icon },
             14.0,

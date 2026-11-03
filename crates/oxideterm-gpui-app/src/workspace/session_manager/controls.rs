@@ -98,7 +98,7 @@ impl WorkspaceApp {
             .px_3()
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(if active {

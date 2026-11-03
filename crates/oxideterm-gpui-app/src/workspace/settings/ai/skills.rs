@@ -431,7 +431,12 @@ impl WorkspaceApp {
         diagnostics: &[SkillDiagnostic],
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let mut list = div().w_full().min_w_0().flex().flex_col().gap(px(self.tokens.spacing.three));
+        let mut list = div()
+            .w_full()
+            .min_w_0()
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.three));
         for diagnostic in diagnostics {
             let key = match diagnostic.kind {
                 SkillDiagnosticKind::Invalid => "settings_view.ai.skills_invalid",

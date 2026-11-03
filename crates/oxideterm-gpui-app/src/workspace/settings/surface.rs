@@ -917,7 +917,9 @@ impl WorkspaceApp {
                 .flex_none()
                 .h(px(48.0))
                 .px(px(self.tokens.spacing.five))
-                .when(!settings_search_open, |header| header.mb(px(self.tokens.spacing.three)))
+                .when(!settings_search_open, |header| {
+                    header.mb(px(self.tokens.spacing.three))
+                })
                 .flex()
                 .items_center()
                 .justify_between()

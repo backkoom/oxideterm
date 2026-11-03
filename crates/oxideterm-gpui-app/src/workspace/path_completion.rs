@@ -321,10 +321,10 @@ impl WorkspaceApp {
             popup = popup.child(
                 div()
                     .h(px(PATH_COMPLETION_ROW_HEIGHT))
-                    .px(px(8.0))
+                    .px(px(self.tokens.spacing.two))
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .cursor_pointer()
                     .bg(if Some(index) == selected_index {
                         rgba((theme.bg_hover << 8) | PATH_COMPLETION_HOVER_ALPHA)

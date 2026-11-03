@@ -228,7 +228,7 @@ impl WorkspaceApp {
             .flex()
             .items_center()
             .justify_end()
-            .gap(px(4.0));
+            .gap(px(self.tokens.spacing.one));
 
         // The header is a probe result, not a command preview. It keeps the
         // popover tied to the active terminal/worktree before any action runs.
@@ -284,7 +284,7 @@ impl WorkspaceApp {
         // repository name and branch like a dedicated source-control sidebar.
         div()
             .min_h(px(38.0))
-            .px(px(8.0))
+            .px(px(self.tokens.spacing.two))
             .flex()
             .items_center()
             .gap(px(7.0))
@@ -338,11 +338,11 @@ impl WorkspaceApp {
         ];
         let mut tabs = div()
             .min_h(px(36.0))
-            .px(px(4.0))
-            .py(px(4.0))
+            .px(px(self.tokens.spacing.one))
+            .py(px(self.tokens.spacing.one))
             .flex()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .border_b_1()
             .border_color(rgba((self.tokens.ui.border << 8) | 0x40));
         for section in sections {
@@ -414,7 +414,7 @@ impl WorkspaceApp {
         let mut section = div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(self.render_terminal_git_branch_search(cx));
 
         if loading {
@@ -450,7 +450,7 @@ impl WorkspaceApp {
                     self.i18n.t("terminal.git.no_branches"),
                 ));
             }
-            let mut list = div().flex().flex_col().gap(px(2.0));
+            let mut list = div().flex().flex_col().gap(px(self.tokens.spacing.half));
             for branch in visible_branches {
                 list = list.child(self.render_terminal_git_branch_row(branch, cx));
             }
@@ -470,7 +470,7 @@ impl WorkspaceApp {
                 (status.paths().to_vec(), status.staged())
             })
             .unwrap_or_default();
-        let mut section = div().flex().flex_col().gap(px(8.0));
+        let mut section = div().flex().flex_col().gap(px(self.tokens.spacing.two));
 
         section = section.child(self.render_terminal_git_commit_controls(staged_count > 0, cx));
 
@@ -524,7 +524,7 @@ impl WorkspaceApp {
         let message_row = div()
             .flex()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(self.render_terminal_git_commit_message_input(cx))
             .child(self.render_terminal_git_ai_commit_action_row(cx));
         let ai_error = self
@@ -534,19 +534,19 @@ impl WorkspaceApp {
             .map(|error| self.terminal_git_ai_commit_error_message(error));
 
         div()
-            .px(px(4.0))
-            .pb(px(8.0))
+            .px(px(self.tokens.spacing.one))
+            .pb(px(self.tokens.spacing.two))
             .border_b_1()
             .border_color(rgba((theme.border << 8) | 0x52))
             .flex()
             .flex_col()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(message_row)
             .child(commit_button)
             .when_some(ai_error, |controls, error| {
                 controls.child(
                     div()
-                        .px(px(4.0))
+                        .px(px(self.tokens.spacing.one))
                         .truncate()
                         .text_size(px(10.0))
                         .text_color(rgba(0xfca5a5ff))
@@ -589,12 +589,12 @@ impl WorkspaceApp {
         let theme = self.tokens.ui;
         div()
             .min_h(px(96.0))
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .flex()
             .flex_col()
             .items_center()
             .justify_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(Self::render_lucide_icon(
                 LucideIcon::CheckCircle,
                 18.0,
@@ -620,7 +620,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(self.render_terminal_git_labeled_action_group(
                 "terminal.git.section_sync",
                 LucideIcon::RefreshCw,
@@ -682,7 +682,7 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let theme = self.tokens.ui;
-        let mut list = div().flex().flex_col().gap(px(2.0));
+        let mut list = div().flex().flex_col().gap(px(self.tokens.spacing.half));
         for action in actions {
             list = list.child(self.render_terminal_git_action_row(*action, cx));
         }
@@ -690,13 +690,13 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(
                 div()
-                    .px(px(4.0))
+                    .px(px(self.tokens.spacing.one))
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .text_size(px(11.0))
                     .font_weight(gpui::FontWeight::MEDIUM)
                     .text_color(rgb(theme.text_muted))
@@ -742,7 +742,7 @@ impl WorkspaceApp {
         actions: &[TerminalGitRepositoryAction],
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let mut list = div().flex().flex_col().gap(px(2.0));
+        let mut list = div().flex().flex_col().gap(px(self.tokens.spacing.half));
         for action in actions {
             list = list.child(self.render_terminal_git_action_row(*action, cx));
         }
@@ -755,7 +755,7 @@ impl WorkspaceApp {
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(rgba((self.tokens.ui.border << 8) | 0x66))
-            .p(px(4.0))
+            .p(px(self.tokens.spacing.one))
             .child(list)
             .into_any_element()
     }
@@ -836,7 +836,7 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let paths = paths.into_iter().take(80).collect::<Vec<_>>();
-        let mut list = div().flex().flex_col().gap(px(8.0));
+        let mut list = div().flex().flex_col().gap(px(self.tokens.spacing.two));
         list = self.append_terminal_git_path_group(
             list,
             TerminalGitPathGroup::Conflict,
@@ -879,10 +879,10 @@ impl WorkspaceApp {
         let group_label = self.i18n.t(group.label_key());
         let mut header = div()
             .h(px(28.0))
-            .px(px(6.0))
+            .px(px(self.tokens.spacing.one_half))
             .flex()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .border_b_1()
             .border_color(rgba((self.tokens.ui.border << 8) | 0x40))
             .text_size(px(11.0))
@@ -926,10 +926,10 @@ impl WorkspaceApp {
         let primary_path = path_value.clone();
         let mut row = div()
             .h(px(30.0))
-            .px(px(6.0))
+            .px(px(self.tokens.spacing.one_half))
             .flex()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .cursor_pointer()
             .hover(move |style| style.bg(rgb(theme.bg_hover)))
             .on_mouse_down(
@@ -958,7 +958,7 @@ impl WorkspaceApp {
                     .min_w(px(0.0))
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .overflow_hidden()
                     .child(
                         div()
@@ -998,7 +998,10 @@ impl WorkspaceApp {
             )
             .child(self.render_terminal_git_path_state(state));
 
-        let mut actions = div().flex().items_center().gap(px(2.0));
+        let mut actions = div()
+            .flex()
+            .items_center()
+            .gap(px(self.tokens.spacing.half));
         for action in state.row_actions() {
             actions = actions.child(self.render_terminal_git_path_action_button(
                 *action,
@@ -1118,10 +1121,10 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgba((theme.accent << 8) | 0x66))
             .bg(rgba((theme.accent << 8) | 0x14))
-            .px(px(8.0))
+            .px(px(self.tokens.spacing.two))
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .text_color(rgb(theme.accent))
             .cursor_pointer()
             .hover(move |style| style.bg(rgba((theme.accent << 8) | 0x24)))
@@ -1155,10 +1158,10 @@ impl WorkspaceApp {
             .h(px(34.0))
             .min_w(px(0.0))
             .rounded(px(self.tokens.radii.md))
-            .px(px(8.0))
+            .px(px(self.tokens.spacing.two))
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .text_color(rgb(theme.text))
             .cursor_pointer()
             .hover(move |style| style.bg(rgb(theme.bg_hover)))
@@ -1251,7 +1254,11 @@ impl WorkspaceApp {
         if status.upstream().is_none() && status.ahead() == 0 && status.behind() == 0 {
             return None;
         }
-        let mut summary = div().flex().items_center().justify_end().gap(px(4.0));
+        let mut summary = div()
+            .flex()
+            .items_center()
+            .justify_end()
+            .gap(px(self.tokens.spacing.one));
         if let Some(upstream) = status.upstream() {
             summary = summary.child(self.render_terminal_git_data_hint(upstream.to_string()));
         }
@@ -1277,7 +1284,11 @@ impl WorkspaceApp {
         status: &GitRepositoryStatus,
     ) -> Option<AnyElement> {
         let mut has_result = false;
-        let mut chips = div().flex().items_center().justify_end().gap(px(4.0));
+        let mut chips = div()
+            .flex()
+            .items_center()
+            .justify_end()
+            .gap(px(self.tokens.spacing.one));
         if status.staged() > 0 {
             has_result = true;
             chips = chips.child(self.render_terminal_git_label_count_chip(
@@ -1388,7 +1399,7 @@ impl WorkspaceApp {
             .px(px(5.0))
             .flex()
             .items_center()
-            .gap(px(2.0))
+            .gap(px(self.tokens.spacing.half))
             .text_size(px(10.0))
             .text_color(color)
             .bg(rgba(0x00000026))
@@ -1507,11 +1518,11 @@ impl WorkspaceApp {
         div()
             .min_h(px(if linked_worktree { 42.0 } else { 30.0 }))
             .rounded(px(self.tokens.radii.md))
-            .px(px(8.0))
-            .py(px(4.0))
+            .px(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.one))
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .cursor_pointer()
             .bg(if highlighted {
                 rgba((theme.accent << 8) | 0x24)
@@ -1571,7 +1582,7 @@ impl WorkspaceApp {
             .flex()
             .items_center()
             .justify_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(if matches!(icon, LucideIcon::LoaderCircle) {
                 self.render_loading_icon(
@@ -1592,7 +1603,7 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgba(0xef44444d))
             .bg(rgba(0xef44441a))
-            .p(px(8.0))
+            .p(px(self.tokens.spacing.two))
             .text_color(rgba(0xfca5a5ff))
             .child(message)
             .into_any_element()

@@ -36,9 +36,9 @@ impl WorkspaceApp {
                             .flex_1()
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
-                            .px(px(12.0))
-                            .py(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
+                            .px(px(self.tokens.spacing.three))
+                            .py(px(self.tokens.spacing.two))
                             .bg(rgba((0x7f1d1d << 8) | SFTP_DIFF_HEADER_BG_ALPHA))
                             .child(Self::render_lucide_icon(
                                 LucideIcon::File,
@@ -85,9 +85,9 @@ impl WorkspaceApp {
                             .flex_1()
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
-                            .px(px(12.0))
-                            .py(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
+                            .px(px(self.tokens.spacing.three))
+                            .py(px(self.tokens.spacing.two))
                             .bg(rgba((0x14532d << 8) | SFTP_DIFF_HEADER_BG_ALPHA))
                             .child(Self::render_lucide_icon(
                                 LucideIcon::File,

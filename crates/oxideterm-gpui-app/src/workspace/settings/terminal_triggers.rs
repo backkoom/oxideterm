@@ -77,7 +77,14 @@ fn terminal_trigger_connection_list(
                 .overflow_y_scroll()
                 .track_scroll(scroll)
                 .on_scroll_wheel(|_, _, cx| cx.stop_propagation())
-                .child(div().w_full().flex().flex_col().gap(px(row_gap)).children(rows)),
+                .child(
+                    div()
+                        .w_full()
+                        .flex()
+                        .flex_col()
+                        .gap(px(row_gap))
+                        .children(rows),
+                ),
         )
         .vertical_scrollbar(scroll)
         .into_any_element()
@@ -774,7 +781,11 @@ impl WorkspaceApp {
     }
 
     fn terminal_trigger_manager(&self, cx: &mut Context<Self>) -> AnyElement {
-        let mut rule_list = div().w_full().flex().flex_col().gap(px(self.tokens.spacing.one));
+        let mut rule_list = div()
+            .w_full()
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.one));
         if self.terminal_triggers.snapshot.triggers.is_empty() {
             rule_list = rule_list.child(
                 div()
@@ -1283,8 +1294,12 @@ impl WorkspaceApp {
                     )),
             );
 
-        let mut action_fields = div().w_full().flex().flex_col().gap(px(self.tokens.spacing.two_half)).child(
-            self.terminal_trigger_compact_field(
+        let mut action_fields = div()
+            .w_full()
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.two_half))
+            .child(self.terminal_trigger_compact_field(
                 TERMINAL_TRIGGER_COMPACT_FIELD_BASIS,
                 self.terminal_trigger_select_field(
                     self.i18n.t("settings_view.terminal.triggers.action"),
@@ -1292,8 +1307,7 @@ impl WorkspaceApp {
                     SettingsSelect::TerminalTriggerAction,
                     cx,
                 ),
-            ),
-        );
+            ));
 
         if let TerminalTriggerAction::CustomMenu { items } = &trigger.action {
             action_fields = action_fields.child(self.terminal_trigger_menu_editor(items, cx));
@@ -1597,7 +1611,11 @@ impl WorkspaceApp {
             .terminal_triggers
             .menu_item
             .min(items.len().saturating_sub(1));
-        let mut choices = div().w_full().flex().flex_wrap().gap(px(self.tokens.spacing.one_half));
+        let mut choices = div()
+            .w_full()
+            .flex()
+            .flex_wrap()
+            .gap(px(self.tokens.spacing.one_half));
         for (index, item) in items.iter().enumerate() {
             let label = if item.label.is_empty() {
                 format!(
@@ -1622,7 +1640,10 @@ impl WorkspaceApp {
                 }),
             ));
         }
-        let mut tools = div().flex().flex_wrap().gap(px(self.tokens.spacing.one_half));
+        let mut tools = div()
+            .flex()
+            .flex_wrap()
+            .gap(px(self.tokens.spacing.one_half));
         if items.len() < 16 {
             tools = tools.child(self.terminal_trigger_button(
                 self.i18n.t("settings_view.terminal.triggers.add_item"),

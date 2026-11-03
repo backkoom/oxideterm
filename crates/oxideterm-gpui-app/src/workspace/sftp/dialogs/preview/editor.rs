@@ -40,7 +40,7 @@ impl WorkspaceApp {
                             .selectable_overflow_y_scroll(
                                 &self.sftp_view().read(cx).preview_document_scroll,
                             )
-                            .p(px(16.0))
+                            .p(px(self.tokens.spacing.four))
                     })
                     .text_color(rgb(theme.text))
                     .child(body),
@@ -114,7 +114,7 @@ impl WorkspaceApp {
                 div()
                     .h(px(32.0))
                     .flex_none()
-                    .px(px(16.0))
+                    .px(px(self.tokens.spacing.four))
                     .border_t_1()
                     .border_color(rgb(theme.border))
                     .bg(rgb(theme.bg_panel))
@@ -126,7 +126,7 @@ impl WorkspaceApp {
                     .child(
                         div()
                             .flex()
-                            .gap(px(16.0))
+                            .gap(px(self.tokens.spacing.four))
                             .child(self.render_selectable_text_scoped(
                                 "sftp-editor-cursor-position",
                                 (),
@@ -183,12 +183,12 @@ impl WorkspaceApp {
                 return div()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(6.0))
+                            .gap(px(self.tokens.spacing.one_half))
                             .text_color(rgb(SFTP_ORANGE))
                             .child(Self::render_lucide_icon(
                                 LucideIcon::WifiOff,
@@ -208,11 +208,11 @@ impl WorkspaceApp {
                     .child(
                         div()
                             .h(px(20.0))
-                            .px(px(8.0))
+                            .px(px(self.tokens.spacing.two))
                             .rounded(px(self.tokens.radii.sm))
                             .flex()
                             .items_center()
-                            .gap(px(4.0))
+                            .gap(px(self.tokens.spacing.one))
                             .text_size(px(SFTP_TEXT_XS))
                             .text_color(rgb(SFTP_ORANGE))
                             .hover(|style| {

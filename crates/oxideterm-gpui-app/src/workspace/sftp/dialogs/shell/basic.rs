@@ -10,8 +10,8 @@ impl WorkspaceApp {
         let drives = local_drives();
         let drive_count = drives.len();
         div()
-            .px(px(16.0))
-            .py(px(12.0))
+            .px(px(self.tokens.spacing.four))
+            .py(px(self.tokens.spacing.three))
             .child(
                 div()
                     .rounded(px(self.tokens.radii.md))
@@ -26,9 +26,9 @@ impl WorkspaceApp {
                             .w_full()
                             .flex()
                             .items_center()
-                            .gap(px(12.0))
-                            .px(px(12.0))
-                            .py(px(10.0))
+                            .gap(px(self.tokens.spacing.three))
+                            .px(px(self.tokens.spacing.three))
+                            .py(px(self.tokens.spacing.two_half))
                             .border_b_1()
                             .border_color(rgba((theme.border << 8) | SFTP_DIALOG_BORDER_HALF_ALPHA))
                             // Browser overflow clips the first and last painted
@@ -60,7 +60,7 @@ impl WorkspaceApp {
                                         div()
                                             .flex()
                                             .items_center()
-                                            .gap(px(6.0))
+                                            .gap(px(self.tokens.spacing.one_half))
                                             .text_size(px(SFTP_TEXT_SM))
                                             .font_weight(gpui::FontWeight::MEDIUM)
                                             .text_color(rgb(theme.text))
@@ -69,8 +69,8 @@ impl WorkspaceApp {
                                                 row.child(
                                                     div()
                                                         .rounded(px(self.tokens.radii.xs))
-                                                        .px(px(4.0))
-                                                        .py(px(2.0))
+                                                        .px(px(self.tokens.spacing.one))
+                                                        .py(px(self.tokens.spacing.half))
                                                         .text_size(px(SFTP_TEXT_10))
                                                         .bg(rgba(
                                                             (SFTP_YELLOW << 8)
@@ -85,14 +85,14 @@ impl WorkspaceApp {
                                     )
                                     .child(
                                         div()
-                                            .mt(px(2.0))
+                                            .mt(px(self.tokens.spacing.half))
                                             .text_size(px(SFTP_TEXT_XS))
                                             .text_color(rgb(theme.text_muted))
                                             .child(path.clone()),
                                     )
                                     .child(
                                         div()
-                                            .mt(px(2.0))
+                                            .mt(px(self.tokens.spacing.half))
                                             .text_size(px(SFTP_TEXT_10))
                                             .text_color(rgb(theme.text_muted))
                                             .child(format!(
@@ -134,8 +134,8 @@ impl WorkspaceApp {
     ) -> AnyElement {
         let theme = self.tokens.ui;
         div()
-            .px(px(16.0))
-            .py(px(12.0))
+            .px(px(self.tokens.spacing.four))
+            .py(px(self.tokens.spacing.three))
             .child(
                 div()
                     .id("sftp-drives-scroll")
@@ -143,7 +143,7 @@ impl WorkspaceApp {
                     .selectable_overflow_y_scroll(&self.sftp_view().read(cx).drives_scroll)
                     .rounded(px(self.tokens.radii.sm))
                     .bg(rgb(theme.bg_sunken))
-                    .p(px(8.0))
+                    .p(px(self.tokens.spacing.two))
                     .text_size(px(SFTP_TEXT_XS))
                     .text_color(rgb(theme.text_muted))
                     .children(files.into_iter().map(|file| div().child(file))),
@@ -165,8 +165,8 @@ impl WorkspaceApp {
             )
         };
         div()
-            .px(px(16.0))
-            .py(px(12.0))
+            .px(px(self.tokens.spacing.four))
+            .py(px(self.tokens.spacing.three))
             .child(
                 div()
                     .h(px(36.0))
@@ -179,7 +179,7 @@ impl WorkspaceApp {
                         rgb(theme.border)
                     })
                     .bg(rgb(theme.bg))
-                    .px(px(12.0))
+                    .px(px(self.tokens.spacing.three))
                     .flex()
                     .items_center()
                     .child(self.render_sftp_inline_text(

@@ -403,19 +403,19 @@ impl WorkspaceApp {
         }
 
         let mut rule_section_body = div()
-            .ml(px(20.0))
-            .pl(px(4.0))
+            .ml(px(self.tokens.spacing.five))
+            .pl(px(self.tokens.spacing.one))
             .border_l_1()
             .border_color(rgb(theme.border))
             .flex()
             .flex_col()
             .child(
                 div()
-                    .px(px(8.0))
-                    .pb(px(4.0))
+                    .px(px(self.tokens.spacing.two))
+                    .pb(px(self.tokens.spacing.one))
                     .flex()
                     .flex_col()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .text_size(px(11.0))
                     .text_color(rgb(theme.text_muted))
                     .child(self.active_highlight_source_label(cx))
@@ -471,8 +471,8 @@ impl WorkspaceApp {
             "common.disabled"
         });
         let semantic_section_body = div()
-            .ml(px(20.0))
-            .pl(px(4.0))
+            .ml(px(self.tokens.spacing.five))
+            .pl(px(self.tokens.spacing.one))
             .border_l_1()
             .border_color(rgb(theme.border))
             .child(self.terminal_highlight_choice_row(
@@ -485,8 +485,8 @@ impl WorkspaceApp {
             ))
             .child(
                 div()
-                    .px(px(8.0))
-                    .pb(px(6.0))
+                    .px(px(self.tokens.spacing.two))
+                    .pb(px(self.tokens.spacing.one_half))
                     .text_size(px(11.0))
                     .text_color(rgb(theme.text_muted))
                     .child(
@@ -537,8 +537,8 @@ impl WorkspaceApp {
             });
 
         let command_context_section_body = div()
-            .ml(px(20.0))
-            .pl(px(4.0))
+            .ml(px(self.tokens.spacing.five))
+            .pl(px(self.tokens.spacing.one))
             .border_l_1()
             .border_color(rgb(theme.border))
             .child(self.terminal_highlight_choice_row(
@@ -593,8 +593,8 @@ impl WorkspaceApp {
                 |section| {
                     section.child(
                         div()
-                            .ml(px(20.0))
-                            .pl(px(4.0))
+                            .ml(px(self.tokens.spacing.five))
+                            .pl(px(self.tokens.spacing.one))
                             .border_l_1()
                             .border_color(rgb(theme.border))
                             .child(self.terminal_highlight_choice_row(
@@ -622,8 +622,8 @@ impl WorkspaceApp {
                             })
                             .child(
                                 div()
-                                    .px(px(8.0))
-                                    .pb(px(6.0))
+                                    .px(px(self.tokens.spacing.two))
+                                    .pb(px(self.tokens.spacing.one_half))
                                     .text_size(px(11.0))
                                     .text_color(rgb(theme.text_muted))
                                     .child(
@@ -662,7 +662,7 @@ impl WorkspaceApp {
                 .border_color(rgb(theme.border))
                 .bg(rgba((theme.bg_elevated << 8) | 0xf7))
                 .shadow_lg()
-                .p(px(8.0))
+                .p(px(self.tokens.spacing.two))
                 .text_size(px(12.0));
             if let Some(left) = anchor_left {
                 popover.left(px(left))
@@ -672,8 +672,8 @@ impl WorkspaceApp {
         })
         .child(
             div()
-                .px(px(8.0))
-                .py(px(6.0))
+                .px(px(self.tokens.spacing.two))
+                .py(px(self.tokens.spacing.one_half))
                 .font_weight(gpui::FontWeight::MEDIUM)
                 .text_color(rgb(theme.text))
                 .child(self.i18n.t("terminal.highlight_override.title")),
@@ -696,8 +696,8 @@ impl WorkspaceApp {
             .w_full()
             .flex()
             .items_center()
-            .gap(px(8.0))
-            .px(px(8.0))
+            .gap(px(self.tokens.spacing.two))
+            .px(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.md))
             .cursor_pointer()
             .hover(|row| row.bg(rgba((theme.bg_hover << 8) | 0xb3)))
@@ -741,8 +741,8 @@ impl WorkspaceApp {
             .h(px(32.0))
             .flex()
             .items_center()
-            .gap(px(8.0))
-            .px(px(8.0))
+            .gap(px(self.tokens.spacing.two))
+            .px(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.md))
             .cursor_pointer()
             .hover(|row| row.bg(rgba((theme.bg_hover << 8) | 0xb3)))
@@ -766,8 +766,8 @@ impl WorkspaceApp {
             .h(px(32.0))
             .flex()
             .items_center()
-            .gap(px(8.0))
-            .px(px(8.0))
+            .gap(px(self.tokens.spacing.two))
+            .px(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.md))
             .cursor_pointer()
             .text_color(rgb(theme.text))

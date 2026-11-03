@@ -164,8 +164,8 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_center()
-            .gap(px(8.0))
-            .p(px(8.0))
+            .gap(px(self.tokens.spacing.two))
+            .p(px(self.tokens.spacing.two))
             .border_b_1()
             .border_color(file_manager_border(theme.border, has_background))
             .bg(file_manager_panel_bg(
@@ -356,7 +356,7 @@ impl WorkspaceApp {
             .flex_1()
             .min_h(px(0.0))
             .overflow_y_scrollbar()
-            .py(px(8.0))
+            .py(px(self.tokens.spacing.two))
             .child(self.render_file_manager_sidebar_section_header(
                 self.i18n.t("fileManager.favorites"),
                 true,
@@ -386,7 +386,7 @@ impl WorkspaceApp {
             ));
             item_geometry = item_geometry.next();
         }
-        navigation = navigation.child(div().mt(px(10.0)).child(
+        navigation = navigation.child(div().mt(px(self.tokens.spacing.two_half)).child(
             self.render_file_manager_sidebar_section_header(
                 self.i18n.t("fileManager.sidebarLocations"),
                 false,
@@ -412,15 +412,15 @@ impl WorkspaceApp {
             div()
                 .border_t_1()
                 .border_color(file_manager_border(theme.border, has_background))
-                .p(px(8.0))
+                .p(px(self.tokens.spacing.two))
                 .child(
                     div()
                         .h(px(28.0))
                         .w_full()
                         .flex()
                         .items_center()
-                        .gap(px(8.0))
-                        .px(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
+                        .px(px(self.tokens.spacing.two))
                         .rounded(px(self.tokens.radii.sm))
                         .cursor_pointer()
                         .hover(move |button| {
@@ -510,7 +510,7 @@ impl WorkspaceApp {
         let title = div()
             .flex()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .when(show_sidebar_collapse, |title| {
                 title.child(self.render_file_manager_icon_button(
                     LucideIcon::PanelLeftClose,
@@ -531,7 +531,7 @@ impl WorkspaceApp {
             .flex()
             .items_center()
             .justify_between()
-            .px(px(12.0))
+            .px(px(self.tokens.spacing.three))
             .text_size(px(FILE_MANAGER_TEXT_XS))
             .font_weight(gpui::FontWeight::SEMIBOLD)
             .text_color(rgb(theme.text_muted))
@@ -568,12 +568,12 @@ impl WorkspaceApp {
         let selection_surface = self.render_file_manager_sidebar_selection(active, item_geometry);
         div()
             .h(px(FILE_MANAGER_SIDEBAR_ROW_HEIGHT))
-            .mx(px(8.0))
-            .px(px(8.0))
+            .mx(px(self.tokens.spacing.two))
+            .px(px(self.tokens.spacing.two))
             .relative()
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.sm))
             .bg(rgba(theme.bg << 8))
             .hover(move |row| row.bg(file_manager_hover_bg(theme.bg_hover, has_background)))
@@ -643,12 +643,12 @@ impl WorkspaceApp {
             )))
             .debug_selector(move || bookmark_selector)
             .h(px(FILE_MANAGER_SIDEBAR_ROW_HEIGHT))
-            .mx(px(8.0))
-            .px(px(8.0))
+            .mx(px(self.tokens.spacing.two))
+            .px(px(self.tokens.spacing.two))
             .relative()
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.sm))
             .bg(rgba(theme.bg << 8))
             .hover(move |row| row.bg(file_manager_hover_bg(theme.bg_hover, has_background)))
@@ -923,7 +923,7 @@ impl WorkspaceApp {
             .flex_row()
             .items_center()
             .gap(px(FILE_MANAGER_HEADER_GAP))
-            .p(px(8.0))
+            .p(px(self.tokens.spacing.two))
             .border_b_1()
             .border_color(file_manager_border(theme.border, has_background))
             .bg(file_manager_panel_bg(theme.bg_panel, has_background, 0xff))
@@ -1010,9 +1010,9 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .px(px(FILE_MANAGER_PATH_BAR_HORIZONTAL_PADDING))
-            .py(px(2.0))
+            .py(px(self.tokens.spacing.half))
             .rounded(px(self.tokens.radii.sm))
             .border_1()
             .border_color(if focused {
@@ -1231,7 +1231,7 @@ impl WorkspaceApp {
             .h(px(28.0))
             .flex()
             .items_center()
-            .px(px(8.0))
+            .px(px(self.tokens.spacing.two))
             .border_b_1()
             .border_color(file_manager_border(self.tokens.ui.border, has_background))
             .bg(file_manager_panel_bg(
@@ -1299,7 +1299,7 @@ impl WorkspaceApp {
             .h_full()
             .flex()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .text_size(px(FILE_MANAGER_TEXT_XS))
             .text_color(if active {
                 rgb(self.tokens.ui.accent)
@@ -1433,11 +1433,11 @@ impl WorkspaceApp {
                 .child(
                     div()
                         .w_full()
-                        .py(px(48.0))
+                        .py(px(self.tokens.spacing.twelve))
                         .flex()
                         .items_center()
                         .justify_center()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .text_size(px(FILE_MANAGER_TEXT_XS))
                         .text_color(rgb(theme.text_muted))
                         .child(self.render_loading_icon(
@@ -1459,8 +1459,8 @@ impl WorkspaceApp {
             return list
                 .child(
                     div()
-                        .m(px(12.0))
-                        .p(px(12.0))
+                        .m(px(self.tokens.spacing.three))
+                        .p(px(self.tokens.spacing.three))
                         .rounded(px(self.tokens.radii.sm))
                         .border_1()
                         .border_color(rgba((FILE_MANAGER_RED << 8) | 0x80))
@@ -1482,23 +1482,20 @@ impl WorkspaceApp {
                 .child(
                     div()
                         .w_full()
-                        .py(px(48.0))
+                        .py(px(self.tokens.spacing.twelve))
                         .flex()
                         .flex_col()
                         .items_center()
                         .justify_center()
                         .text_size(px(FILE_MANAGER_TEXT_XS))
                         .text_color(rgb(theme.text_muted))
-                        .child(
-                            div()
-                                .mb(px(8.0))
-                                .opacity(0.4)
-                                .child(Self::render_lucide_icon(
-                                    LucideIcon::FolderOpen,
-                                    32.0,
-                                    rgb(theme.text_muted),
-                                )),
-                        )
+                        .child(div().mb(px(self.tokens.spacing.two)).opacity(0.4).child(
+                            Self::render_lucide_icon(
+                                LucideIcon::FolderOpen,
+                                32.0,
+                                rgb(theme.text_muted),
+                            ),
+                        ))
                         .child(self.render_selectable_display_text(
                             "file-manager-list-empty",
                             (),
@@ -1514,6 +1511,7 @@ impl WorkspaceApp {
         let row_count = files.len();
         let list_items = files;
         let row_items = rows;
+        let row_spacing = self.tokens.spacing;
         list.child(
             tauri_virtual_uniform_list(
                 "file-manager-list-virtual",
@@ -1534,8 +1532,8 @@ impl WorkspaceApp {
                                 .flex()
                                 .flex_row()
                                 .items_center()
-                                .px(px(8.0))
-                                .py(px(4.0))
+                                .px(px(row_spacing.two))
+                                .py(px(row_spacing.one))
                                 .border_b_1()
                                 .border_color(rgba(theme.border << 8))
                                 .text_size(px(FILE_MANAGER_TEXT_XS))
@@ -1559,7 +1557,7 @@ impl WorkspaceApp {
                                         .min_w(px(0.0))
                                         .flex()
                                         .items_center()
-                                        .gap(px(8.0))
+                                        .gap(px(row_spacing.two))
                                         .child(row.icon.render(FILE_MANAGER_ICON_MD, &tokens))
                                         // Tauri marks file rows as `select-none`. Plain text keeps
                                         // virtual-list scrolling free of per-cell anchor probes.
@@ -1696,13 +1694,13 @@ impl WorkspaceApp {
             .bg(rgba((theme.bg_elevated << 8) | 0xf2))
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .text_size(px(FILE_MANAGER_TEXT_XS))
                     .text_color(rgb(theme.text_muted))
                     .child(div().max_w(relative(0.7)).truncate().child(

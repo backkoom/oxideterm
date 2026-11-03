@@ -702,7 +702,11 @@ impl WorkspaceApp {
         } else {
             self.tokens.ui.text_muted
         };
-        let mut actions = div().flex().flex_row().flex_wrap().gap(px(8.0));
+        let mut actions = div()
+            .flex()
+            .flex_row()
+            .flex_wrap()
+            .gap(px(self.tokens.spacing.two));
         if configured {
             actions = actions
                 .child(self.app_lock_settings_action_button(
@@ -734,7 +738,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_wrap()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(Self::render_lucide_icon(
                         LucideIcon::Lock,
                         16.0,
@@ -828,11 +832,11 @@ impl WorkspaceApp {
             }),
         );
         let mut fields = div()
-            .px(px(24.0))
+            .px(px(self.tokens.spacing.six))
             .py(px(18.0))
             .flex()
             .flex_col()
-            .gap(px(12.0));
+            .gap(px(self.tokens.spacing.three));
         if matches!(dialog, AppLockDialog::Change | AppLockDialog::Remove) {
             fields = fields.child(self.portable_password_field(
                 "settings_view.general.app_lock_current_password",
@@ -952,7 +956,7 @@ impl WorkspaceApp {
                 .flex()
                 .flex_col()
                 .items_center()
-                .gap(px(16.0))
+                .gap(px(self.tokens.spacing.four))
                 .child(
                     div()
                         .size(px(54.0))
@@ -988,7 +992,7 @@ impl WorkspaceApp {
                         .w_full()
                         .flex()
                         .flex_col()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .child(
                             div()
                                 .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -1013,7 +1017,7 @@ impl WorkspaceApp {
                         .flex_wrap()
                         .items_center()
                         .justify_center()
-                        .gap(px(10.0))
+                        .gap(px(self.tokens.spacing.two_half))
                         .when(self.app_lock.biometric_available, |actions| {
                             actions.child(self.standard_footer_action_button(
                                 if self.app_lock.pending {
@@ -1086,7 +1090,7 @@ impl WorkspaceApp {
                     .flex()
                     .items_center()
                     .justify_center()
-                    .p(px(24.0))
+                    .p(px(self.tokens.spacing.six))
                     .child(card),
             )
             .when(
@@ -1113,8 +1117,8 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgba((self.tokens.ui.error << 8) | 0x4d))
             .bg(rgba((self.tokens.ui.error << 8) | 0x1a))
-            .px(px(10.0))
-            .py(px(8.0))
+            .px(px(self.tokens.spacing.two_half))
+            .py(px(self.tokens.spacing.two))
             .text_size(px(self.tokens.metrics.ui_text_sm))
             .text_color(rgb(self.tokens.ui.error))
             .child(message)

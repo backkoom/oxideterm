@@ -358,8 +358,12 @@ impl WorkspaceApp {
         suffix: Option<&'static str>,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let mut control = div().flex_none().flex().items_center().gap(px(self.tokens.spacing.one)).child(
-            self.settings_text_input_control_with_align(
+        let mut control = div()
+            .flex_none()
+            .flex()
+            .items_center()
+            .gap(px(self.tokens.spacing.one))
+            .child(self.settings_text_input_control_with_align(
                 input,
                 value,
                 placeholder,
@@ -369,8 +373,7 @@ impl WorkspaceApp {
                 // controls while ordinary text settings remain start-aligned.
                 TextInputContentAlign::Center,
                 cx,
-            ),
-        );
+            ));
         if let Some(suffix) = suffix {
             control = control.child(
                 div()

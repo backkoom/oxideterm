@@ -369,10 +369,10 @@ impl WorkspaceApp {
                         .unwrap_or_default();
                     div()
                         .h(px(32.0))
-                        .px(px(8.0))
+                        .px(px(self.tokens.spacing.two))
                         .flex()
                         .items_center()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .rounded(px(self.tokens.radii.sm))
                         .cursor_pointer()
                         .hover(|row| row.bg(rgb(theme.bg_hover)))
@@ -492,7 +492,7 @@ impl WorkspaceApp {
                             div()
                                 .flex()
                                 .items_center()
-                                .gap(px(6.0))
+                                .gap(px(self.tokens.spacing.one_half))
                                 .child(self.workspace_toolbar_action_button(
                                     self.i18n.t("remote_desktop.file_browser_up"),
                                     Some(Self::render_lucide_icon(
@@ -540,17 +540,17 @@ impl WorkspaceApp {
                                 .border_1()
                                 .border_color(rgb(theme.border))
                                 .rounded(px(self.tokens.radii.sm))
-                                .p(px(4.0))
+                                .p(px(self.tokens.spacing.one))
                                 .children(rows),
                         )
                         .child(
                             div()
                                 .flex()
                                 .items_center()
-                                .gap(px(6.0))
+                                .gap(px(self.tokens.spacing.one_half))
                                 .child(
                                     div()
-                                        .mr(px(4.0))
+                                        .mr(px(self.tokens.spacing.one))
                                         .text_size(px(self.tokens.metrics.ui_text_xs))
                                         .text_color(rgb(theme.text_muted))
                                         .child(self.i18n.t("remote_desktop.file_conflict_policy")),

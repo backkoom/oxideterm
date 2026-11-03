@@ -13,9 +13,9 @@ impl WorkspaceApp {
             .flex_none()
             .flex()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .min_w_0()
-            .px(px(12.0))
+            .px(px(self.tokens.spacing.three))
             // A shorter footer lets the chat body lower the divider together with its controls.
             .pt(px(self.tokens.spacing.one))
             .border_t_1()
@@ -94,7 +94,7 @@ impl WorkspaceApp {
                 .flex()
                 .min_w_0()
                 .items_center()
-                .gap(px(4.0))
+                .gap(px(self.tokens.spacing.one))
                 .text_size(px(9.0))
                 .font_weight(gpui::FontWeight::BOLD)
                 .text_color(rgb(self.tokens.ui.accent))
@@ -120,7 +120,7 @@ impl WorkspaceApp {
             .flex()
             .min_w_0()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(self.render_ai_image_add_button(enabled, cx))
             .child(footer_leading);
         let footer_trailing = div()
@@ -130,7 +130,7 @@ impl WorkspaceApp {
             .flex_wrap()
             .justify_end()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .when(loading, |row| {
                 row.child(self.agent_control(
                     "ai-stop-running-group".into(), self.i18n.t("ai.input.stop"),
@@ -530,7 +530,7 @@ impl WorkspaceApp {
             return None;
         }
 
-        let mut method_list = div().flex().flex_col().gap(px(6.0));
+        let mut method_list = div().flex().flex_col().gap(px(self.tokens.spacing.one_half));
         for method in methods {
             let method_id = method.method_id.clone();
             let target_conversation_id = conversation_id.clone();
@@ -561,7 +561,7 @@ impl WorkspaceApp {
                     .min_w_0()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .min_w_0()
@@ -625,16 +625,16 @@ impl WorkspaceApp {
 
         Some(
             div()
-                .mx(px(8.0))
-                .mt(px(8.0))
-                .p(px(8.0))
+                .mx(px(self.tokens.spacing.two))
+                .mt(px(self.tokens.spacing.two))
+                .p(px(self.tokens.spacing.two))
                 .rounded(px(self.tokens.radii.md))
                 .border_1()
                 .border_color(rgba((self.tokens.ui.warning << 8) | 0x66))
                 .bg(rgba((self.tokens.ui.warning << 8) | 0x0f))
                 .flex()
                 .flex_col()
-                .gap(px(6.0))
+                .gap(px(self.tokens.spacing.one_half))
                 .child(
                     div()
                         .text_size(px(11.0))
@@ -1005,7 +1005,7 @@ impl WorkspaceApp {
             div()
                 .flex()
                 .items_center()
-                .gap(px(4.0))
+                .gap(px(self.tokens.spacing.one))
                 .child(Self::render_lucide_icon(
                     LucideIcon::Wrench,
                     10.0,
@@ -1133,7 +1133,7 @@ impl WorkspaceApp {
                 .flex()
                 .min_w_0()
                 .items_center()
-                .gap(px(4.0))
+                .gap(px(self.tokens.spacing.one))
                 .text_size(px(10.0))
                 .text_color(rgb(self.tokens.ui.text_muted))
                 .child(Self::render_lucide_icon(
@@ -1186,11 +1186,11 @@ impl WorkspaceApp {
             )
             .child(
                 div()
-                    .px(px(12.0))
-                    .py(px(8.0))
+                    .px(px(self.tokens.spacing.three))
+                    .py(px(self.tokens.spacing.two))
                     .child(
                         div()
-                            .mb(px(6.0))
+                            .mb(px(self.tokens.spacing.one_half))
                             .text_size(px(10.0))
                             .font_weight(gpui::FontWeight::SEMIBOLD)
                             .text_color(rgb(self.tokens.ui.text_muted))
@@ -1226,11 +1226,11 @@ impl WorkspaceApp {
             )
             .child(
                 div()
-                    .px(px(12.0))
-                    .py(px(8.0))
+                    .px(px(self.tokens.spacing.three))
+                    .py(px(self.tokens.spacing.two))
                     .child(
                         div()
-                            .mb(px(6.0))
+                            .mb(px(self.tokens.spacing.one_half))
                             .text_size(px(10.0))
                             .font_weight(gpui::FontWeight::SEMIBOLD)
                             .text_color(rgb(self.tokens.ui.text_muted))
@@ -1269,18 +1269,18 @@ impl WorkspaceApp {
                             div()
                                 .border_t_1()
                                 .border_color(self.workspace_chrome_divider())
-                                .px(px(12.0))
-                                .py(px(8.0))
+                                .px(px(self.tokens.spacing.three))
+                                .py(px(self.tokens.spacing.two))
                                 .child(
                                 div()
                                     .w_full()
                                     .flex()
                                     .items_center()
                                     .justify_center()
-                                    .gap(px(6.0))
+                                    .gap(px(self.tokens.spacing.one_half))
                                     .rounded_none()
-                                    .px(px(12.0))
-                                    .py(px(6.0))
+                                    .px(px(self.tokens.spacing.three))
+                                    .py(px(self.tokens.spacing.one_half))
                                     .text_size(px(11.0))
                                     .font_weight(gpui::FontWeight::MEDIUM)
                                     .text_color(rgb(self.tokens.ui.text))
@@ -1333,7 +1333,7 @@ impl WorkspaceApp {
             .flex()
             .items_center()
             .justify_between()
-            .py(px(2.0))
+            .py(px(self.tokens.spacing.half))
             .child(
                 div()
                     .text_size(px(11.0))

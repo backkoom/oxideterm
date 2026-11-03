@@ -122,9 +122,10 @@ impl CloudSyncPageRenderer {
         } else {
             recent
                 .iter()
-                .fold(div().flex().flex_col().gap(px(8.0)), |list, entry| {
-                    list.child(self.render_cloud_sync_history_entry(entry, cx))
-                })
+                .fold(
+                    div().flex().flex_col().gap(px(self.tokens.spacing.two)),
+                    |list, entry| list.child(self.render_cloud_sync_history_entry(entry, cx)),
+                )
                 .into_any_element()
         };
         self.cloud_sync_plugin_card(self.cloud_sync_has_background())
@@ -332,16 +333,16 @@ impl CloudSyncPageRenderer {
             // independent cards. A divider preserves scanability responsively.
             .border_b_1()
             .border_color(rgba((theme.border << 8) | 0x40))
-            .py(px(12.0))
+            .py(px(self.tokens.spacing.three))
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(10.0))
+                    .gap(px(self.tokens.spacing.two_half))
                     .child(
                         div()
                             .min_w(px(0.0))
@@ -419,10 +420,10 @@ impl CloudSyncPageRenderer {
                 .min_w(px(0.0))
                 .flex()
                 .flex_col()
-                .gap(px(6.0))
+                .gap(px(self.tokens.spacing.one_half))
                 .child(
                     div()
-                        .pb(px(4.0))
+                        .pb(px(self.tokens.spacing.one))
                         .text_size(px(self.tokens.metrics.ui_text_xs))
                         .font_weight(FontWeight::MEDIUM)
                         .text_color(rgb(theme.text_heading))
@@ -601,7 +602,7 @@ impl CloudSyncListRenderProjection {
         .min_w(px(0.0))
         .flex()
         .flex_col()
-        .gap(px(16.0))
+        .gap(px(self.tokens.spacing.four))
     }
 
     pub(super) fn inline_button(

@@ -341,7 +341,7 @@ impl WorkspaceApp {
                             )
                             .child(
                                 div()
-                                    .mt(px(8.0))
+                                    .mt(px(self.tokens.spacing.two))
                                     .text_size(px(self.tokens.metrics.form_text_font_size))
                                     .text_color(rgb(theme.text_muted))
                                     .child(format!("{}:{}", challenge.host, challenge.port)),
@@ -352,7 +352,7 @@ impl WorkspaceApp {
                             .p(px(self.tokens.metrics.modal_body_padding))
                             .flex()
                             .flex_col()
-                            .gap(px(12.0))
+                            .gap(px(self.tokens.spacing.three))
                             .child(
                                 div()
                                     .rounded(px(self.tokens.radii.md))
@@ -367,7 +367,7 @@ impl WorkspaceApp {
                                     } else {
                                         rgba((theme.warning << 8) | 0x14)
                                     })
-                                    .p(px(12.0))
+                                    .p(px(self.tokens.spacing.three))
                                     .text_size(px(self.tokens.metrics.form_text_font_size))
                                     .text_color(rgb(if changed {
                                         theme.error
@@ -394,12 +394,12 @@ impl WorkspaceApp {
                     .child(
                         div()
                             .px(px(self.tokens.metrics.modal_footer_padding_x))
-                            .py(px(12.0))
+                            .py(px(self.tokens.spacing.three))
                             .border_t_1()
                             .border_color(rgb(theme.border))
                             .flex()
                             .justify_end()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(self.render_host_key_button(
                                 self.i18n.t("ssh.host_key.actions.cancel"),
                                 false,
@@ -444,7 +444,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.form_label_font_size))
@@ -461,7 +461,7 @@ impl WorkspaceApp {
                 div()
                     .rounded(px(self.tokens.radii.sm))
                     .bg(rgb(self.tokens.ui.bg_hover))
-                    .p(px(8.0))
+                    .p(px(self.tokens.spacing.two))
                     .text_size(px(self.tokens.metrics.form_text_font_size))
                     .text_color(rgb(self.tokens.ui.text))
                     .font_family(SharedString::from("SF Mono"))

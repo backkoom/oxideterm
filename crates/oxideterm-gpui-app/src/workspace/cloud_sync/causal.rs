@@ -391,7 +391,7 @@ impl CloudSyncPageRenderer {
         cx: &mut App,
     ) -> AnyElement {
         let mut body = Vec::new();
-        let mut directions = div().flex().flex_wrap().gap(px(8.0));
+        let mut directions = div().flex().flex_wrap().gap(px(self.tokens.spacing.two));
         for (direction, key) in [
             (SyncDirection::Download, "plugin.cloud_sync.causal.download"),
             (SyncDirection::Merge, "plugin.cloud_sync.causal.merge"),
@@ -435,7 +435,7 @@ impl CloudSyncPageRenderer {
                         .unwrap_or_else(|| self.i18n.t("plugin.cloud_sync.causal.configuration")),
                 )
                 .into_any_element();
-            let mut buttons = div().flex().flex_wrap().gap(px(8.0));
+            let mut buttons = div().flex().flex_wrap().gap(px(self.tokens.spacing.two));
             for (candidate, _) in conflict.candidates.iter().enumerate() {
                 let label = format!(
                     "{} {}{}",
@@ -474,7 +474,7 @@ impl CloudSyncPageRenderer {
                     div()
                         .flex()
                         .flex_col()
-                        .gap(px(4.0))
+                        .gap(px(self.tokens.spacing.one))
                         .child(div().max_w(px(360.0)).child(value))
                         .child(
                             self.workspace_toolbar_action_button(
@@ -503,7 +503,7 @@ impl CloudSyncPageRenderer {
         }
         let actions = div()
             .flex()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 self.render_cloud_sync_action_button(
                     match summary.direction {

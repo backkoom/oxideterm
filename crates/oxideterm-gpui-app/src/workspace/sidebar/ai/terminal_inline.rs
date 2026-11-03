@@ -284,9 +284,9 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
-                            .px(px(12.0))
-                            .py(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
+                            .px(px(self.tokens.spacing.three))
+                            .py(px(self.tokens.spacing.two))
                             .child(Self::render_lucide_icon(
                                 LucideIcon::Sparkles,
                                 16.0,
@@ -387,8 +387,8 @@ window.focus(&this.focus_handle, cx);
                                         div()
                                             .max_h(px(120.0))
                                             .overflow_hidden()
-                                            .px(px(12.0))
-                                            .py(px(8.0))
+                                            .px(px(self.tokens.spacing.three))
+                                            .py(px(self.tokens.spacing.two))
                                             .bg(rgb(theme.bg_sunken))
                                             .font_family(settings_mono_font_family(self.settings_store.settings()))
                                             .text_size(px(13.0))
@@ -407,7 +407,7 @@ window.focus(&this.focus_handle, cx);
                                                 div()
                                                     .flex()
                                                     .items_center()
-                                                    .gap(px(4.0))
+                                                    .gap(px(self.tokens.spacing.one))
                                                     .border_t_1()
                                                     .border_color(rgb(theme.border))
                                                     .bg(rgb(theme.bg_elevated))
@@ -416,8 +416,8 @@ window.focus(&this.focus_handle, cx);
                                                             self.tokens.radii.md,
                                                         ),
                                                     ))
-                                                    .px(px(8.0))
-                                                    .py(px(6.0))
+                                                    .px(px(self.tokens.spacing.two))
+                                                    .py(px(self.tokens.spacing.one_half))
                                                     .child(self.render_terminal_ai_inline_action(
                                                         LucideIcon::Play,
                                                         self.i18n.t("terminal.ai.execute"),
@@ -527,7 +527,7 @@ window.focus(&this.focus_handle, cx);
         div()
             .flex()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .text_size(px(10.0))
             .text_color(rgb(theme.text_muted))
             .when(!response_has_text && !loading && prompt_has_text, |hints| {
@@ -571,17 +571,17 @@ window.focus(&this.focus_handle, cx);
         fg: Rgba,
     ) -> AnyElement {
         div()
-            .mx(px(12.0))
-            .mb(px(8.0))
+            .mx(px(self.tokens.spacing.three))
+            .mb(px(self.tokens.spacing.two))
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(border)
             .bg(bg)
-            .px(px(8.0))
-            .py(px(6.0))
+            .px(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.one_half))
             .text_size(px(12.0))
             .text_color(fg)
             .child(Self::render_lucide_icon(icon, 14.0, fg))
@@ -606,10 +606,10 @@ window.focus(&this.focus_handle, cx);
         div()
             .flex()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .rounded(px(self.tokens.radii.md))
-            .px(px(8.0))
-            .py(px(4.0))
+            .px(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.one))
             .text_size(px(11.0))
             .text_color(fg)
             .bg(if primary {
@@ -819,7 +819,7 @@ pub(in crate::workspace) fn inline_ai_keycap(tokens: &ThemeTokens, label: String
     div()
         .rounded(px(tokens.radii.sm))
         .bg(rgb(tokens.ui.bg_hover))
-        .px(px(4.0))
+        .px(px(tokens.spacing.one))
         .py(px(1.0))
         .text_size(px(9.0))
         .child(label)

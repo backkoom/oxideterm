@@ -297,7 +297,7 @@ impl WorkspaceApp {
                 .min_w(px(0.0))
                 .flex()
                 .items_center()
-                .gap(px(8.0))
+                .gap(px(self.tokens.spacing.two))
                 .child(Self::render_lucide_icon(icon, 16.0, rgb(theme.accent)))
                 .child(
                     div()
@@ -909,7 +909,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .items_start()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(div().mt(px(1.0)).child(Self::render_lucide_icon(
                         icon,
                         14.0,
@@ -923,7 +923,7 @@ impl WorkspaceApp {
                                 div()
                                     .flex()
                                     .items_center()
-                                    .gap(px(6.0))
+                                    .gap(px(self.tokens.spacing.one_half))
                                     .child(
                                         div()
                                             .min_w(px(0.0))

@@ -166,7 +166,7 @@ impl WorkspaceApp {
                     }])
                     .child(
                         div()
-                            .px(px(16.0))
+                            .px(px(self.tokens.spacing.four))
                             .py(px(header_py))
                             .border_b_1()
                             .border_color(rgb(theme.border))
@@ -180,7 +180,7 @@ impl WorkspaceApp {
                                 div()
                                     .flex()
                                     .items_center()
-                                    .gap(px(8.0))
+                                    .gap(px(self.tokens.spacing.two))
                                     .text_size(px(SFTP_TEXT_SM))
                                     .font_weight(gpui::FontWeight::SEMIBOLD)
                                     .text_color(rgb(theme.text_heading))
@@ -214,7 +214,7 @@ impl WorkspaceApp {
                             .when(show_description, |header| {
                                 header.child(
                                     div()
-                                        .mt(px(6.0))
+                                        .mt(px(self.tokens.spacing.one_half))
                                         .text_size(px(
                                             if matches!(&dialog, SftpDialog::Diff { .. }) {
                                                 SFTP_TEXT_XS
@@ -227,7 +227,7 @@ impl WorkspaceApp {
                                             let remaining = self.sftp_conflict_remaining_count(cx);
                                             desc.flex()
                                                 .items_center()
-                                                .gap(px(4.0))
+                                                .gap(px(self.tokens.spacing.one))
                                                 .child(self.render_selectable_text_scoped(
                                                     "sftp-dialog-description",
                                                     &title,
@@ -325,7 +325,7 @@ impl WorkspaceApp {
             .flex_row()
             .flex_wrap()
             .justify_end()
-            .gap(px(8.0));
+            .gap(px(self.tokens.spacing.two));
 
         if let SftpDialog::Preview { name } = dialog.clone() {
             let (path, markdown_source_mode, can_download) = {
@@ -345,7 +345,7 @@ impl WorkspaceApp {
                     div()
                         .flex_1()
                         .min_w(px(0.0))
-                        .px(px(8.0))
+                        .px(px(self.tokens.spacing.two))
                         .truncate()
                         .text_size(px(SFTP_TEXT_XS))
                         .text_color(rgb(theme.text_muted))
@@ -354,7 +354,7 @@ impl WorkspaceApp {
                 .child(
                     div()
                         .flex()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .when(is_markdown, |actions| {
                             let label = if markdown_source_mode {
                                 self.i18n.t("sftp.preview.rendered")
@@ -448,7 +448,7 @@ impl WorkspaceApp {
                     div()
                         .flex_1()
                         .min_w(px(0.0))
-                        .px(px(8.0))
+                        .px(px(self.tokens.spacing.two))
                         .truncate()
                         .text_size(px(SFTP_TEXT_XS))
                         .text_color(rgb(theme.text_muted))
@@ -457,7 +457,7 @@ impl WorkspaceApp {
                 .child(
                     div()
                         .flex()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .child(self.render_sftp_text_button(
                             save_label,
                             true,
@@ -569,7 +569,7 @@ impl WorkspaceApp {
                 .child(
                     div()
                         .flex()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .child(self.render_sftp_button_variant(
                             self.i18n.t("sftp.conflict.skip"),
                             SftpButtonVariant::Ghost,
@@ -600,7 +600,7 @@ impl WorkspaceApp {
                 .child(
                     div()
                         .flex()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .child(self.render_sftp_button_variant(
                             self.i18n.t("sftp.conflict.keep_both"),
                             SftpButtonVariant::Default,

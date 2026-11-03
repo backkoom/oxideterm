@@ -46,10 +46,10 @@ impl WorkspaceApp {
                             .flex()
                             .flex_col()
                             .items_center()
-                            .gap(px(12.0))
-                            .px(px(24.0))
-                            .pt(px(24.0))
-                            .pb(px(16.0))
+                            .gap(px(self.tokens.spacing.three))
+                            .px(px(self.tokens.spacing.six))
+                            .pt(px(self.tokens.spacing.six))
+                            .pb(px(self.tokens.spacing.four))
                             .child(
                                 div()
                                     .w(px(48.0))
@@ -87,7 +87,7 @@ impl WorkspaceApp {
                             .child(
                                 div()
                                     .flex_1()
-                                    .py(px(10.0))
+                                    .py(px(self.tokens.spacing.two_half))
                                     .border_r_1()
                                     .border_color(rgba(
                                         (theme.border << 8) | SFTP_DIALOG_DIVIDER_ALPHA,
@@ -117,7 +117,7 @@ impl WorkspaceApp {
                             .child(
                                 div()
                                     .flex_1()
-                                    .py(px(10.0))
+                                    .py(px(self.tokens.spacing.two_half))
                                     .text_center()
                                     .text_size(px(SFTP_TEXT_SM))
                                     .font_weight(gpui::FontWeight::SEMIBOLD)

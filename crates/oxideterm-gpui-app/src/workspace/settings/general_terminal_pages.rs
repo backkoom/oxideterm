@@ -372,15 +372,20 @@ impl WorkspaceApp {
         // TODO(signing): Once every macOS artifact is Developer ID signed and
         // notarized, replace this system-settings handoff with an in-app
         // SMAppService register/unregister toggle and remove the manual copy.
-        let mut description = div().min_w(px(0.0)).flex().flex_col().gap(px(self.tokens.spacing.one)).child(
-            div()
-                .text_size(px(self.tokens.metrics.ui_text_xs))
-                .text_color(rgb(self.tokens.ui.text_muted))
-                .child(
-                    self.i18n
-                        .t("settings_view.general.launch_at_login_macos_hint"),
-                ),
-        );
+        let mut description = div()
+            .min_w(px(0.0))
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.one))
+            .child(
+                div()
+                    .text_size(px(self.tokens.metrics.ui_text_xs))
+                    .text_color(rgb(self.tokens.ui.text_muted))
+                    .child(
+                        self.i18n
+                            .t("settings_view.general.launch_at_login_macos_hint"),
+                    ),
+            );
         if let Some(error) = launch_at_login.error {
             let error = match error {
                 LaunchAtLoginError::OperationFailed(error) => error,
@@ -460,12 +465,17 @@ impl WorkspaceApp {
                     }),
                 ),
             );
-        let mut label = div().min_w(px(0.0)).flex().flex_col().gap(px(self.tokens.spacing.one)).child(
-            div()
-                .text_size(px(self.tokens.metrics.ui_text_xs))
-                .text_color(rgb(self.tokens.ui.text_muted))
-                .child(self.i18n.t("settings_view.general.launch_at_login_hint")),
-        );
+        let mut label = div()
+            .min_w(px(0.0))
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.one))
+            .child(
+                div()
+                    .text_size(px(self.tokens.metrics.ui_text_xs))
+                    .text_color(rgb(self.tokens.ui.text_muted))
+                    .child(self.i18n.t("settings_view.general.launch_at_login_hint")),
+            );
         if loading {
             label = label.child(
                 div()
@@ -1504,7 +1514,12 @@ impl WorkspaceApp {
             },
         );
 
-        let mut presets = div().w_full().flex().flex_row().flex_wrap().gap(px(self.tokens.spacing.two));
+        let mut presets = div()
+            .w_full()
+            .flex()
+            .flex_row()
+            .flex_wrap()
+            .gap(px(self.tokens.spacing.two));
         for command in RECOMMENDED_FOCUS_HANDOFF_COMMANDS {
             let enabled = settings
                 .terminal

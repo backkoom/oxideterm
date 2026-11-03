@@ -1611,7 +1611,7 @@ impl WorkspaceApp {
         if hop_count == 0 {
             list = list.child(
                 div()
-                    .py(px(24.0))
+                    .py(px(self.tokens.spacing.six))
                     .text_align(gpui::TextAlign::Center)
                     .text_size(px(self.tokens.metrics.ui_text_sm))
                     .text_color(rgb(self.tokens.ui.text_muted))
@@ -1682,7 +1682,7 @@ impl WorkspaceApp {
                 list.into_any_element()
             } else {
                 div()
-                    .py(px(24.0))
+                    .py(px(self.tokens.spacing.six))
                     .text_align(gpui::TextAlign::Center)
                     .text_size(px(self.tokens.metrics.ui_text_sm))
                     .text_color(rgb(self.tokens.ui.text_muted))
@@ -1911,60 +1911,69 @@ impl WorkspaceApp {
                     ),
             )
             .child(
-                div().flex().items_start().gap(px(24.0)).pl(px(48.0)).child(
-                    div()
-                        .flex_1()
-                        .border_1()
-                        .border_color(rgb(self.tokens.ui.border))
-                        .rounded(px(self.tokens.radii.lg))
-                        .p(px(TAURI_PROXY_CHAIN_CARD_PADDING))
-                        .flex()
-                        .flex_col()
-                        .gap_2()
-                        .child(
-                            div()
-                                .flex()
-                                .items_center()
-                                .justify_between()
-                                .child(
-                                    div()
-                                        .text_size(px(self.tokens.metrics.ui_text_sm))
-                                        .font_weight(gpui::FontWeight::MEDIUM)
-                                        .text_color(rgb(self.tokens.ui.text_muted))
-                                        .child(format!("{}. {}", index + 1, hop_title)),
-                                )
-                                .child(
-                                    div()
-                                        .flex()
-                                        .items_center()
-                                        .gap_1()
-                                        .child(self.render_edit_jump_button(index, secondary, cx))
-                                        .child(
-                                            self.render_remove_jump_button(index, secondary, cx),
-                                        ),
-                                ),
-                        )
-                        .child(self.render_proxy_hop_line(
-                            self.i18n.t("ssh.form.proxy_chain_host"),
-                            hop.host.clone(),
-                            cx,
-                        ))
-                        .child(self.render_proxy_hop_line(
-                            self.i18n.t("ssh.form.proxy_chain_port"),
-                            hop.port.clone(),
-                            cx,
-                        ))
-                        .child(self.render_proxy_hop_line(
-                            self.i18n.t("ssh.form.proxy_chain_username"),
-                            hop.username.clone(),
-                            cx,
-                        ))
-                        .child(self.render_proxy_hop_line(
-                            self.i18n.t("ssh.form.proxy_chain_auth"),
-                            auth_label,
-                            cx,
-                        )),
-                ),
+                div()
+                    .flex()
+                    .items_start()
+                    .gap(px(self.tokens.spacing.six))
+                    .pl(px(self.tokens.spacing.twelve))
+                    .child(
+                        div()
+                            .flex_1()
+                            .border_1()
+                            .border_color(rgb(self.tokens.ui.border))
+                            .rounded(px(self.tokens.radii.lg))
+                            .p(px(TAURI_PROXY_CHAIN_CARD_PADDING))
+                            .flex()
+                            .flex_col()
+                            .gap_2()
+                            .child(
+                                div()
+                                    .flex()
+                                    .items_center()
+                                    .justify_between()
+                                    .child(
+                                        div()
+                                            .text_size(px(self.tokens.metrics.ui_text_sm))
+                                            .font_weight(gpui::FontWeight::MEDIUM)
+                                            .text_color(rgb(self.tokens.ui.text_muted))
+                                            .child(format!("{}. {}", index + 1, hop_title)),
+                                    )
+                                    .child(
+                                        div()
+                                            .flex()
+                                            .items_center()
+                                            .gap_1()
+                                            .child(
+                                                self.render_edit_jump_button(index, secondary, cx),
+                                            )
+                                            .child(
+                                                self.render_remove_jump_button(
+                                                    index, secondary, cx,
+                                                ),
+                                            ),
+                                    ),
+                            )
+                            .child(self.render_proxy_hop_line(
+                                self.i18n.t("ssh.form.proxy_chain_host"),
+                                hop.host.clone(),
+                                cx,
+                            ))
+                            .child(self.render_proxy_hop_line(
+                                self.i18n.t("ssh.form.proxy_chain_port"),
+                                hop.port.clone(),
+                                cx,
+                            ))
+                            .child(self.render_proxy_hop_line(
+                                self.i18n.t("ssh.form.proxy_chain_username"),
+                                hop.username.clone(),
+                                cx,
+                            ))
+                            .child(self.render_proxy_hop_line(
+                                self.i18n.t("ssh.form.proxy_chain_auth"),
+                                auth_label,
+                                cx,
+                            )),
+                    ),
             )
             .into_any_element()
     }

@@ -98,10 +98,10 @@ impl WorkspaceApp {
             .flex_col()
             .child(
                 div()
-                    .mb(px(8.0))
+                    .mb(px(self.tokens.spacing.two))
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .text_size(px(SFTP_TEXT_XS))
                     .text_color(rgb(theme.text_muted))
                     .child(self.render_selectable_display_text(
@@ -157,19 +157,23 @@ impl WorkspaceApp {
                 } else {
                     self.i18n.t("sftp.preview.load_more")
                 };
-                body.child(div().mt(px(16.0)).flex().justify_center().child(
-                    self.render_sftp_text_button(
-                        label,
-                        false,
-                        self.sftp_listener(cx, move |this, _event, _window, cx| {
-                            if !loading_more {
-                                this.load_more_sftp_preview_hex(cx);
-                            }
-                            cx.stop_propagation();
-                            cx.notify();
-                        }),
-                    ),
-                ))
+                body.child(
+                    div()
+                        .mt(px(self.tokens.spacing.four))
+                        .flex()
+                        .justify_center()
+                        .child(self.render_sftp_text_button(
+                            label,
+                            false,
+                            self.sftp_listener(cx, move |this, _event, _window, cx| {
+                                if !loading_more {
+                                    this.load_more_sftp_preview_hex(cx);
+                                }
+                                cx.stop_propagation();
+                                cx.notify();
+                            }),
+                        )),
+                )
             })
             .into_any_element()
     }

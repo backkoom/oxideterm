@@ -435,7 +435,7 @@ impl PortableBootstrapWindow {
             .w_full()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -512,7 +512,7 @@ impl PortableBootstrapWindow {
             .w_full()
             .flex()
             .flex_col()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -522,7 +522,7 @@ impl PortableBootstrapWindow {
             .child(
                 div()
                     .w_full()
-                    .p(px(10.0))
+                    .p(px(self.tokens.spacing.two_half))
                     .rounded(px(self.tokens.radii.sm))
                     .bg(rgb(self.tokens.ui.bg_sunken))
                     .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -567,18 +567,17 @@ impl Render for PortableBootstrapWindow {
                 )
             });
 
-        let mut form =
-            div()
-                .w_full()
-                .flex()
-                .flex_col()
-                .gap(px(16.0))
-                .child(self.render_password_input(
-                    PortableBootstrapInput::Password,
-                    "portable_bootstrap.password_label",
-                    "portable_bootstrap.password_placeholder",
-                    cx,
-                ));
+        let mut form = div()
+            .w_full()
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.four))
+            .child(self.render_password_input(
+                PortableBootstrapInput::Password,
+                "portable_bootstrap.password_label",
+                "portable_bootstrap.password_placeholder",
+                cx,
+            ));
         if setup {
             form = form.child(self.render_password_input(
                 PortableBootstrapInput::ConfirmPassword,
@@ -591,7 +590,7 @@ impl Render for PortableBootstrapWindow {
             form = form.child(
                 div()
                     .w_full()
-                    .p(px(10.0))
+                    .p(px(self.tokens.spacing.two_half))
                     .rounded(px(self.tokens.radii.sm))
                     .border_1()
                     .border_color(rgba((self.tokens.ui.error << 8) | 0x66))
@@ -621,7 +620,7 @@ impl Render for PortableBootstrapWindow {
             .flex()
             .items_center()
             .justify_center()
-            .p(px(32.0))
+            .p(px(self.tokens.spacing.eight))
             .bg(rgb(self.tokens.ui.bg))
             .text_color(rgb(self.tokens.ui.text))
             .font_family(self.tokens.metrics.font_family)
@@ -660,7 +659,7 @@ impl Render for PortableBootstrapWindow {
                             .w_full()
                             .flex()
                             .flex_col()
-                            .gap(px(12.0))
+                            .gap(px(self.tokens.spacing.three))
                             .child(self.render_path_row(
                                 "portable_bootstrap.data_dir_label",
                                 self.status.data_dir.clone(),

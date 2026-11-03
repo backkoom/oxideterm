@@ -292,7 +292,7 @@ impl WorkspaceApp {
                         let wrapper = |detail: AnyElement| {
                             div()
                                 .w_full()
-                                .pl(px(24.0))
+                                .pl(px(self.tokens.spacing.six))
                                 .py(px(self.tokens.spacing.two))
                                 .child(detail)
                         };

@@ -11,7 +11,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_start()
-            .gap(px(10.0))
+            .gap(px(self.tokens.spacing.two_half))
             .child(
                 div()
                     .size(px(ONBOARDING_STEP_ICON_SLOT))
@@ -60,17 +60,17 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(10.0))
+            .gap(px(self.tokens.spacing.two_half))
             .child(
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .child(
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(Self::render_lucide_icon(
                                 icon,
                                 ONBOARDING_ICON_SIZE,
@@ -125,7 +125,7 @@ impl WorkspaceApp {
                     .rounded(px(self.tokens.radii.xs))
                     .border_1()
                     .border_color(rgb(self.tokens.ui.border))
-                    .px(px(4.0))
+                    .px(px(self.tokens.spacing.one))
                     .py(px(1.0))
                     .text_size(px(9.0))
                     .text_color(rgb(self.tokens.ui.text_muted))
@@ -140,7 +140,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(2.0))
+            .gap(px(self.tokens.spacing.half))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -156,8 +156,8 @@ impl WorkspaceApp {
             )
             .into_any_element();
         div()
-            .py(px(8.0))
-            .px(px(10.0))
+            .py(px(self.tokens.spacing.two))
+            .px(px(self.tokens.spacing.two_half))
             .rounded(px(self.tokens.radii.md))
             .when(highlight, |card| {
                 card.bg(rgba(
@@ -188,7 +188,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .items_start()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .size(px(28.0))
@@ -210,12 +210,12 @@ impl WorkspaceApp {
                     .min_w_0()
                     .flex()
                     .flex_col()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(Self::render_lucide_icon(
                                 icon,
                                 16.0,
@@ -244,7 +244,7 @@ impl WorkspaceApp {
         title_key: &str,
         items: &[(LucideIcon, &str)],
     ) -> AnyElement {
-        let mut grid = div().grid().grid_cols(2).gap(px(8.0));
+        let mut grid = div().grid().grid_cols(2).gap(px(self.tokens.spacing.two));
         for (icon, key) in items {
             grid = grid.child(self.onboarding_capability_chip(*icon, key));
         }
@@ -261,7 +261,10 @@ impl WorkspaceApp {
         title_key: &str,
         items: &[(LucideIcon, &str)],
     ) -> AnyElement {
-        let mut list = div().flex().flex_col().gap(px(6.0));
+        let mut list = div()
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.one_half));
         for (icon, key) in items {
             list = list.child(self.onboarding_capability_chip(*icon, key));
         }
@@ -276,8 +279,8 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_start()
-            .gap(px(8.0))
-            .py(px(6.0))
+            .gap(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.one_half))
             .child(Self::render_lucide_icon(
                 icon,
                 14.0,
@@ -306,7 +309,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .p(px(14.0))
             .rounded(px(self.tokens.radii.md))
             .border_1()
@@ -388,8 +391,8 @@ impl WorkspaceApp {
     ) -> AnyElement {
         div()
             .flex()
-            .gap(px(10.0))
-            .py(px(8.0))
+            .gap(px(self.tokens.spacing.two_half))
+            .py(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.md))
             .when(accent, |card| {
                 card.bg(rgba(
@@ -435,8 +438,8 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .gap(px(10.0))
-            .p(px(12.0))
+            .gap(px(self.tokens.spacing.two_half))
+            .p(px(self.tokens.spacing.three))
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
@@ -472,8 +475,8 @@ impl WorkspaceApp {
         let text = self.onboarding_i18n_with(key, replacements);
         div()
             .flex()
-            .gap(px(10.0))
-            .p(px(12.0))
+            .gap(px(self.tokens.spacing.two_half))
+            .p(px(self.tokens.spacing.three))
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(rgba(

@@ -834,8 +834,8 @@ impl WorkspaceApp {
         div()
             .grid()
             .grid_cols(2)
-            .gap(px(2.0))
-            .p(px(2.0))
+            .gap(px(self.tokens.spacing.half))
+            .p(px(self.tokens.spacing.half))
             .rounded(px(self.tokens.radii.md))
             .bg(rgb(theme.bg_panel))
             .child(self.render_graphics_mode_tab(
@@ -903,7 +903,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(self.render_graphics_warning(self.i18n.t("graphics.desktop_experimental"), None))
             .children(
                 distros
@@ -931,7 +931,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(self.render_graphics_warning(
                 self.i18n.t("graphics.desktop_experimental"),
                 Some(self.i18n.t("graphics.app_experimental_note")),
@@ -940,7 +940,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(self.render_graphics_label("graphics.app_distro_label"))
                     .child(self.render_graphics_app_distro_selector(cx))
                     .when_some(selected_status.as_ref(), |field, status| {
@@ -951,7 +951,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(self.render_graphics_label("graphics.app_command_label"))
                     .child(self.render_graphics_app_command_input(cx)),
             )
@@ -959,7 +959,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .text_size(px(12.0))
@@ -1008,7 +1008,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .text_size(px(12.0))
@@ -1035,9 +1035,9 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .gap(px(10.0))
-            .px(px(10.0))
-            .py(px(8.0))
+            .gap(px(self.tokens.spacing.two_half))
+            .px(px(self.tokens.spacing.two_half))
+            .py(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(rgb(theme.border))
@@ -1048,7 +1048,7 @@ impl WorkspaceApp {
                     .min_w(px(0.0))
                     .flex()
                     .flex_col()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .child(
                         div()
                             .truncate()
@@ -1140,7 +1140,7 @@ impl WorkspaceApp {
                     .min_w(px(0.0))
                     .flex()
                     .flex_col()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .child(
                         div()
                             .flex()
@@ -1157,7 +1157,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .text_size(px(12.0))
                             .text_color(rgb(theme.text_muted))
                             .child(if distro.is_running {
@@ -1189,17 +1189,17 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .children(self.graphics.read(cx).distros.iter().map(|distro| {
                 let selected =
                     self.graphics.read(cx).selected_distro.as_deref() == Some(&distro.name);
                 let distro_name = distro.name.clone();
                 div()
                     .h(px(34.0))
-                    .px(px(10.0))
+                    .px(px(self.tokens.spacing.two_half))
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .rounded(px(self.tokens.radii.sm))
                     .border_1()
                     .border_color(rgb(if selected { theme.accent } else { theme.border }))
@@ -1437,8 +1437,8 @@ impl WorkspaceApp {
                     .absolute()
                     .right(px(16.0))
                     .bottom(px(16.0))
-                    .px(px(8.0))
-                    .py(px(4.0))
+                    .px(px(self.tokens.spacing.two))
+                    .py(px(self.tokens.spacing.one))
                     .rounded(px(self.tokens.radii.sm))
                     .bg(rgba((theme.bg_panel << 8) | GRAPHICS_ALPHA_90))
                     .border_1()
@@ -1472,7 +1472,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .min_w(px(0.0))
                     .flex_1()
                     .child(
@@ -1493,7 +1493,7 @@ impl WorkspaceApp {
                             div()
                                 .flex()
                                 .items_center()
-                                .gap(px(8.0))
+                                .gap(px(self.tokens.spacing.two))
                                 .text_size(px(11.0))
                                 .text_color(rgb(theme.text_muted))
                                 .child(session.distro.clone())
@@ -1624,7 +1624,7 @@ impl WorkspaceApp {
                     .border_color(rgba((theme.border << 8) | GRAPHICS_ALPHA_50))
                     .flex()
                     .items_center()
-                    .gap(px(10.0))
+                    .gap(px(self.tokens.spacing.two_half))
                     .child(if matches!(icon, LucideIcon::LoaderCircle) {
                         self.render_loading_icon("graphics-status-loading", 16.0, rgb(color))
                     } else {
@@ -1691,7 +1691,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_col()
                     .items_center()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .text_align(gpui::TextAlign::Center)
                     .child(if matches!(icon, LucideIcon::LoaderCircle) {
                         self.render_loading_icon("graphics-center-loading", 28.0, rgb(color))
@@ -1749,9 +1749,9 @@ impl WorkspaceApp {
                     .border_1()
                     .border_color(rgba((GRAPHICS_AMBER_500 << 8) | GRAPHICS_ALPHA_20))
                     .bg(rgba((GRAPHICS_AMBER_500 << 8) | GRAPHICS_ALPHA_10))
-                    .p(px(16.0))
+                    .p(px(self.tokens.spacing.four))
                     .flex()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(Self::render_lucide_icon(
                         LucideIcon::AlertTriangle,
                         20.0,
@@ -1761,7 +1761,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .flex_col()
-                            .gap(px(4.0))
+                            .gap(px(self.tokens.spacing.one))
                             .child(
                                 div()
                                     .text_size(px(14.0))
@@ -1809,7 +1809,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_wrap()
                     .items_center()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .child(div().font_weight(gpui::FontWeight::SEMIBOLD).child(strong))
                     .when_some(detail, |line, detail| {
                         // WSL diagnostics can be longer than the settings
@@ -1823,9 +1823,9 @@ impl WorkspaceApp {
     fn render_graphics_default_badge(&self) -> AnyElement {
         let theme = self.tokens.ui;
         div()
-            .ml(px(8.0))
-            .px(px(6.0))
-            .py(px(2.0))
+            .ml(px(self.tokens.spacing.two))
+            .px(px(self.tokens.spacing.one_half))
+            .py(px(self.tokens.spacing.half))
             .rounded(px(self.tokens.radii.sm))
             .bg(rgba((theme.accent << 8) | GRAPHICS_ALPHA_10))
             .text_size(px(11.0))
@@ -1837,8 +1837,8 @@ impl WorkspaceApp {
     fn render_graphics_wslg_badge(&self, status: Option<&WslgStatus>) -> AnyElement {
         let Some(status) = status else {
             return div()
-                .px(px(6.0))
-                .py(px(2.0))
+                .px(px(self.tokens.spacing.one_half))
+                .py(px(self.tokens.spacing.half))
                 .rounded(px(self.tokens.radii.sm))
                 .bg(rgba((self.tokens.ui.text_muted << 8) | GRAPHICS_ALPHA_10))
                 .text_size(px(GRAPHICS_BADGE_TEXT_SIZE))
@@ -1848,8 +1848,8 @@ impl WorkspaceApp {
         };
         if !status.available {
             return div()
-                .px(px(6.0))
-                .py(px(2.0))
+                .px(px(self.tokens.spacing.one_half))
+                .py(px(self.tokens.spacing.half))
                 .rounded(px(self.tokens.radii.sm))
                 .bg(rgba((self.tokens.ui.text_muted << 8) | GRAPHICS_ALPHA_10))
                 .text_size(px(GRAPHICS_BADGE_TEXT_SIZE))
@@ -1866,14 +1866,14 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(4.0))
-                    .px(px(6.0))
-                    .py(px(2.0))
+                    .gap(px(self.tokens.spacing.one))
+                    .px(px(self.tokens.spacing.one_half))
+                    .py(px(self.tokens.spacing.half))
                     .rounded(px(self.tokens.radii.sm))
                     .bg(rgba((GRAPHICS_GREEN_500 << 8) | GRAPHICS_ALPHA_10))
                     .text_size(px(GRAPHICS_BADGE_TEXT_SIZE))
@@ -1889,8 +1889,8 @@ impl WorkspaceApp {
             .when(!status.has_openbox, |row| {
                 row.child(
                     div()
-                        .px(px(6.0))
-                        .py(px(2.0))
+                        .px(px(self.tokens.spacing.one_half))
+                        .py(px(self.tokens.spacing.half))
                         .rounded(px(self.tokens.radii.sm))
                         .bg(rgba((GRAPHICS_AMBER_500 << 8) | GRAPHICS_ALPHA_10))
                         .text_size(px(GRAPHICS_BADGE_TEXT_SIZE))

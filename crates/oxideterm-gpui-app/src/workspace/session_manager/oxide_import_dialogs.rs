@@ -139,11 +139,11 @@ impl WorkspaceApp {
                             .when(!has_file, |body| {
                                 body.child(
                                     div()
-                                        .py(px(32.0))
+                                        .py(px(self.tokens.spacing.eight))
                                         .flex()
                                         .flex_col()
                                         .items_center()
-                                        .gap(px(24.0))
+                                        .gap(px(self.tokens.spacing.six))
                                         .child(
                                             // Tauri OxideImportModal uses the
                                             // default accent Button for first
@@ -335,7 +335,7 @@ impl WorkspaceApp {
             div()
                 .flex()
                 .items_baseline()
-                .gap(px(4.0))
+                .gap(px(self.tokens.spacing.one))
                 .text_size(px(self.tokens.metrics.ui_text_sm))
                 .text_color(rgb(self.tokens.ui.text))
                 .child(div().text_color(rgb(self.tokens.ui.text_muted)).child(
@@ -363,7 +363,7 @@ impl WorkspaceApp {
         }));
         children.push(
             div()
-                .mt(px(4.0))
+                .mt(px(self.tokens.spacing.one))
                 .text_size(px(self.tokens.metrics.ui_text_xs))
                 .line_height(px(16.0))
                 .text_color(rgb(self.tokens.ui.text_muted))
@@ -393,7 +393,7 @@ impl WorkspaceApp {
                 .min(128.0);
             let list = div()
                 .id("oxide-import-connections-preview")
-                .mt(px(4.0))
+                .mt(px(self.tokens.spacing.one))
                 .h(px(list_height))
                 .child(tauri_virtual_list(
                     state,
@@ -402,7 +402,7 @@ impl WorkspaceApp {
                 ));
             children.push(
                 div()
-                    .mt(px(4.0))
+                    .mt(px(self.tokens.spacing.one))
                     .text_size(px(self.tokens.metrics.ui_text_sm))
                     .font_weight(gpui::FontWeight::SEMIBOLD)
                     .text_color(rgb(self.tokens.ui.text))
@@ -459,7 +459,7 @@ impl WorkspaceApp {
             (ImportConflictStrategy::Replace, "替换现有项"),
             (ImportConflictStrategy::Merge, "合并到现有项"),
         ];
-        let mut row = div().grid().grid_cols(2).gap(px(8.0));
+        let mut row = div().grid().grid_cols(2).gap(px(self.tokens.spacing.two));
         for (strategy, label) in strategies {
             let selected = current == strategy;
             let strategy_key = match strategy {
@@ -527,7 +527,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -556,7 +556,7 @@ impl WorkspaceApp {
             .text_color(rgb(OXIDE_YELLOW_500))
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))

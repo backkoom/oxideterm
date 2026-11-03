@@ -61,6 +61,9 @@ struct SftpTransferRowRenderer {
     sftp: Entity<SftpWorkspaceEntity>,
     theme: AppUiColors,
     radius: f32,
+    // Snapshot of the rhythm so the row can lay itself out without borrowing
+    // the whole token set.
+    spacing: oxideterm_theme::UiSpacing,
     mono_font: SharedString,
     labels: SftpTransferRowLabels,
 }
@@ -188,7 +191,7 @@ impl SftpTransferRowRenderer {
         div()
             .flex()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.spacing.one))
             .child(match transfer.state {
                 SftpTransferState::Completed => {
                     WorkspaceApp::render_lucide_icon(LucideIcon::Check, 16.0, rgb(SFTP_GREEN))
@@ -280,7 +283,7 @@ impl SftpTransferRowRenderer {
         div()
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.spacing.one))
             .px_2()
             .py_1()
             .border_t_1()
@@ -327,7 +330,7 @@ impl SftpTransferRowRenderer {
                     .ml(px(18.0))
                     .flex()
                     .flex_col()
-                    .gap(px(2.0))
+                    .gap(px(self.spacing.half))
                     .child(
                         div()
                             .h(px(4.0))
@@ -401,16 +404,16 @@ impl SftpTransferRowRenderer {
         };
 
         div()
-            .px(px(8.0))
-            .when(index == 0, |item| item.pt(px(8.0)))
+            .px(px(self.spacing.two))
+            .when(index == 0, |item| item.pt(px(self.spacing.two)))
             .pb(px(if index + 1 == total { 8.0 } else { 8.0 }))
             .child(
                 div()
                     .flex()
                     .flex_row()
                     .items_center()
-                    .gap(px(12.0))
-                    .p(px(8.0))
+                    .gap(px(self.spacing.three))
+                    .p(px(self.spacing.two))
                     .rounded(px(self.radius))
                     .border_1()
                     .border_color(match transfer.state {
@@ -466,7 +469,7 @@ impl SftpTransferRowRenderer {
                             .min_w(px(0.0))
                             .flex()
                             .flex_col()
-                            .gap(px(4.0))
+                            .gap(px(self.spacing.one))
                             .child(
                                 div()
                                     .h(px(6.0))
@@ -558,16 +561,16 @@ impl SftpTransferRowRenderer {
         let transfer_id = transfer.transfer_id.clone();
 
         div()
-            .px(px(8.0))
-            .when(index == 0, |item| item.pt(px(8.0)))
-            .pb(px(4.0))
+            .px(px(self.spacing.two))
+            .when(index == 0, |item| item.pt(px(self.spacing.two)))
+            .pb(px(self.spacing.one))
             .child(
                 div()
                     .flex()
                     .flex_row()
                     .items_center()
-                    .gap(px(8.0))
-                    .p(px(8.0))
+                    .gap(px(self.spacing.two))
+                    .p(px(self.spacing.two))
                     .rounded(px(self.radius))
                     .border_1()
                     .border_color(rgba(
@@ -603,7 +606,7 @@ impl SftpTransferRowRenderer {
                             .child(
                                 div()
                                     .flex()
-                                    .gap(px(8.0))
+                                    .gap(px(self.spacing.two))
                                     .text_size(px(SFTP_TEXT_10))
                                     .text_color(rgb(theme.text_muted))
                                     .child(format!("{transfer_type} · {protocol}"))
@@ -658,14 +661,14 @@ impl SftpTransferRowRenderer {
 
     fn render_loading_item(&self) -> AnyElement {
         div()
-            .px(px(8.0))
-            .py(px(8.0))
+            .px(px(self.spacing.two))
+            .py(px(self.spacing.two))
             .child(
                 div()
                     .flex()
                     .items_center()
                     .justify_center()
-                    .gap(px(8.0))
+                    .gap(px(self.spacing.two))
                     .text_size(px(SFTP_TEXT_XS))
                     .text_color(rgb(self.theme.text_muted))
                     .child(WorkspaceApp::render_lucide_icon(
@@ -685,6 +688,7 @@ impl WorkspaceApp {
             sftp: self.sftp_view().clone(),
             theme: self.tokens.ui,
             radius: self.tokens.radii.sm,
+            spacing: self.tokens.spacing,
             mono_font: settings_mono_font_family(self.settings_store.settings()),
             labels: SftpTransferRowLabels {
                 waiting: self.i18n.t("sftp.queue.status_waiting"),
@@ -830,8 +834,8 @@ impl WorkspaceApp {
                     .flex_row()
                     .items_center()
                     .justify_between()
-                    .px(px(8.0))
-                    .py(px(4.0))
+                    .px(px(self.tokens.spacing.two))
+                    .py(px(self.tokens.spacing.one))
                     .bg(sftp_panel_bg(theme.bg_panel, has_background, 0xff))
                     .border_b_1()
                     .border_color(sftp_border(theme.border, has_background))
@@ -842,7 +846,7 @@ impl WorkspaceApp {
                             .min_w(px(0.0))
                             .flex_row()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .text_size(px(SFTP_TEXT_XS))
                             .font_weight(gpui::FontWeight::SEMIBOLD)
                             .text_color(rgb(theme.text_muted))
@@ -867,7 +871,7 @@ impl WorkspaceApp {
                                         div()
                                             .flex()
                                             .items_center()
-                                            .gap(px(4.0))
+                                            .gap(px(self.tokens.spacing.one))
                                             .text_color(rgb(theme.accent))
                                             .child(Self::render_lucide_icon(
                                                 LucideIcon::History,
@@ -1014,8 +1018,8 @@ impl WorkspaceApp {
         )
         .child(
             div()
-                .px(px(8.0))
-                .py(px(4.0))
+                .px(px(self.tokens.spacing.two))
+                .py(px(self.tokens.spacing.one))
                 .text_size(px(SFTP_TEXT_10))
                 .text_color(rgb(theme.text_muted))
                 .child(self.render_selectable_display_text(

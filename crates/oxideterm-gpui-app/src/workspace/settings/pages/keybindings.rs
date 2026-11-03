@@ -301,7 +301,11 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let selected = self.settings_workspace.read(cx).keybinding_scope_filter();
-        let mut filters = div().flex().flex_wrap().gap(px(self.tokens.spacing.one)).max_w_full();
+        let mut filters = div()
+            .flex()
+            .flex_wrap()
+            .gap(px(self.tokens.spacing.one))
+            .max_w_full();
         for filter in SettingsKeybindingScopeFilter::all().iter().copied() {
             let active = filter == selected;
             let item = oxideterm_gpui_ui::segmented_control_item(

@@ -1501,7 +1501,7 @@ impl WorkspaceApp {
                 div()
                     .h(px(54.0))
                     .flex_none()
-                    .px(px(16.0))
+                    .px(px(self.tokens.spacing.four))
                     .flex()
                     .flex_row()
                     .items_center()
@@ -1510,7 +1510,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(Self::render_lucide_icon(
                                 LucideIcon::Zap,
                                 16.0,
@@ -1528,7 +1528,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(4.0))
+                            .gap(px(self.tokens.spacing.one))
                             .child(self.quick_command_tooltip_icon_button(
                                 LucideIcon::Upload,
                                 "quick-commands-import",
@@ -1825,7 +1825,7 @@ impl WorkspaceApp {
                 .flex_col()
                 .items_center()
                 .justify_center()
-                .gap(px(10.0))
+                .gap(px(self.tokens.spacing.two_half))
                 .text_color(rgb(theme.text_muted))
                 .child(Self::render_lucide_icon(
                     LucideIcon::Pencil,
@@ -1872,13 +1872,13 @@ impl WorkspaceApp {
                     rgba((theme.bg << 8) | 0x73)
                 },
             )
-            .p(px(8.0))
+            .p(px(self.tokens.spacing.two))
             .flex()
             .flex_col()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(
                 div()
-                    .mb(px(2.0))
+                    .mb(px(self.tokens.spacing.half))
                     .flex()
                     .items_center()
                     .justify_between()
@@ -1908,7 +1908,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(4.0))
+                            .gap(px(self.tokens.spacing.one))
                             .when(!snapshot.managing, |actions| {
                                 actions.child(self.quick_command_pin_button(
                                     snapshot.pinned,
@@ -1948,7 +1948,10 @@ impl WorkspaceApp {
                     ),
             );
 
-        let mut category_list = div().flex().flex_col().gap(px(6.0));
+        let mut category_list = div()
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.one_half));
         for category in &snapshot.categories {
             let category_id = category.id.clone();
             let active = category.id == snapshot.active_category;
@@ -1967,11 +1970,11 @@ impl WorkspaceApp {
                     .group("quick-command-category")
                     .cursor_pointer()
                     .rounded(px(self.tokens.radii.md))
-                    .px(px(8.0))
-                    .py(px(6.0))
+                    .px(px(self.tokens.spacing.two))
+                    .py(px(self.tokens.spacing.one_half))
                     .flex()
                     .items_center()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .bg(if active {
                         rgba((theme.accent << 8) | 0x1f)
                     } else {
@@ -2040,14 +2043,19 @@ impl WorkspaceApp {
                                 .rounded(px(self.tokens.radii.sm))
                                 .cursor(gpui::CursorStyle::OpenHand)
                                 .hover(move |handle| handle.bg(rgb(theme.bg_hover)))
-                                .child(div().w(px(6.0)).flex().flex_wrap().gap(px(2.0)).children(
-                                    (0..6).map(move |_| {
-                                        div()
-                                            .size(px(2.0))
-                                            .rounded(px(1.0))
-                                            .bg(rgb(theme.text_muted))
-                                    }),
-                                ))
+                                .child(
+                                    div()
+                                        .w(px(6.0))
+                                        .flex()
+                                        .flex_wrap()
+                                        .gap(px(self.tokens.spacing.half))
+                                        .children((0..6).map(move |_| {
+                                            div()
+                                                .size(px(2.0))
+                                                .rounded(px(1.0))
+                                                .bg(rgb(theme.text_muted))
+                                        })),
+                                )
                                 .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
                                 .on_drag(drag, |drag, position, _, cx| {
                                     let mut preview = drag.clone();
@@ -2062,7 +2070,7 @@ impl WorkspaceApp {
                             .min_w(px(0.0))
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .text_size(px(self.tokens.metrics.ui_text_sm))
                             .font_weight(gpui::FontWeight::MEDIUM)
                             .child(Self::render_lucide_icon(
@@ -2167,7 +2175,7 @@ impl WorkspaceApp {
                         .border_1()
                         .border_color(rgba(0xef444480))
                         .bg(rgba(0xef44441a))
-                        .p(px(6.0))
+                        .p(px(self.tokens.spacing.one_half))
                         .text_size(px(self.tokens.metrics.ui_text_xs))
                         .text_color(rgba(0xfca5a5ff))
                         .child(self.i18n.t("terminal.quick_commands.persist_failed")),
@@ -2215,10 +2223,10 @@ impl WorkspaceApp {
             .flex_none()
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .border_b_1()
             .border_color(rgba((theme.border << 8) | 0x99))
-            .p(px(8.0))
+            .p(px(self.tokens.spacing.two))
             .child(
                 div()
                     .flex_1()
@@ -2234,10 +2242,10 @@ impl WorkspaceApp {
             .child(
                 div()
                     .h(px(32.0))
-                    .px(px(8.0))
+                    .px(px(self.tokens.spacing.two))
                     .flex()
                     .items_center()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .rounded(px(self.tokens.radii.md))
                     .border_1()
                     .border_color(rgba((theme.border << 8) | 0x99))
@@ -2308,7 +2316,7 @@ impl WorkspaceApp {
         let can_run = prepared
             .as_ref()
             .is_ok_and(|prepared| !prepared.targets.is_empty());
-        let mut parameters = div().flex().flex_col().gap(px(8.0));
+        let mut parameters = div().flex().flex_col().gap(px(self.tokens.spacing.two));
         for (index, parameter) in execution.command.parameters.iter().enumerate() {
             let value = execution
                 .parameter_values
@@ -2335,7 +2343,7 @@ impl WorkspaceApp {
             let mut field = div()
                 .flex()
                 .flex_col()
-                .gap(px(4.0))
+                .gap(px(self.tokens.spacing.one))
                 .child(
                     div()
                         .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -2344,7 +2352,11 @@ impl WorkspaceApp {
                 )
                 .child(input);
             if parameter.kind == QuickCommandParameterKind::Choice {
-                let mut choices = div().flex().items_center().gap(px(4.0)).flex_wrap();
+                let mut choices = div()
+                    .flex()
+                    .items_center()
+                    .gap(px(self.tokens.spacing.one))
+                    .flex_wrap();
                 for choice in &parameter.choices {
                     let choice_for_click = choice.clone();
                     let selected = choice == value.as_str();
@@ -2384,7 +2396,10 @@ impl WorkspaceApp {
             });
         let preview = match &prepared {
             Ok(prepared) => {
-                let mut rows = div().flex().flex_col().gap(px(6.0));
+                let mut rows = div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(self.tokens.spacing.one_half));
                 for target in &prepared.targets {
                     let risk = target.risk;
                     rows = rows.child(
@@ -2400,7 +2415,7 @@ impl WorkspaceApp {
                                 div()
                                     .flex()
                                     .items_center()
-                                    .gap(px(6.0))
+                                    .gap(px(self.tokens.spacing.one_half))
                                     .child(
                                         div()
                                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -2472,10 +2487,10 @@ impl WorkspaceApp {
         let form = div()
             .w_full()
             .flex_none()
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .flex()
             .flex_col()
-            .gap(px(10.0))
+            .gap(px(self.tokens.spacing.two_half))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -2501,7 +2516,7 @@ impl WorkspaceApp {
         let footer = div()
             .flex()
             .justify_end()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(self.quick_command_text_button(
                 self.i18n.t("terminal.quick_commands.cancel"),
                 true,
@@ -2525,7 +2540,7 @@ impl WorkspaceApp {
                     rgba(0x00000000)
                 }),
             )
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .into_any_element();
         let scroll = self.terminal.read(cx).quick_commands.editor_scroll.clone();
         div()
@@ -2554,7 +2569,7 @@ impl WorkspaceApp {
                 .flex_col()
                 .items_center()
                 .justify_center()
-                .gap(px(8.0))
+                .gap(px(self.tokens.spacing.two))
                 .text_color(rgb(theme.text_muted))
                 .child(Self::render_lucide_icon(
                     LucideIcon::Zap,
@@ -2625,8 +2640,8 @@ impl WorkspaceApp {
             return div().into_any_element();
         };
         div()
-            .px(px(8.0))
-            .when(index == 0, |item| item.pt(px(8.0)))
+            .px(px(self.tokens.spacing.two))
+            .when(index == 0, |item| item.pt(px(self.tokens.spacing.two)))
             .pb(px(if index + 1 == total { 8.0 } else { 4.0 }))
             .child(self.render_quick_command_row(
                 command,
@@ -2663,11 +2678,11 @@ impl WorkspaceApp {
         );
         div()
             .rounded(px(self.tokens.radii.md))
-            .px(px(8.0))
-            .py(px(8.0))
+            .px(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.two))
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .text_color(rgb(theme.text_muted))
             .bg(if highlighted {
                 rgba((theme.bg_hover << 8) | 0xb3)
@@ -2699,7 +2714,7 @@ impl WorkspaceApp {
                     .min_w(px(0.0))
                     .flex()
                     .flex_col()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .cursor_pointer()
                     .on_mouse_down(
                         MouseButton::Left,
@@ -2730,7 +2745,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(6.0))
+                            .gap(px(self.tokens.spacing.one_half))
                             .child(
                                 div()
                                     .truncate()
@@ -2884,7 +2899,7 @@ impl WorkspaceApp {
         let can_save = quick_command_category_draft_can_save(draft);
         let parsed_color = oxideterm_quick_commands::parse_icon_color(&draft.icon_color);
         let invalid_color = !draft.icon_color.trim().is_empty() && parsed_color.is_none();
-        let mut icon_options = div().flex().items_center().gap(px(4.0));
+        let mut icon_options = div().flex().items_center().gap(px(self.tokens.spacing.one));
         for icon in [
             QuickCommandIcon::Terminal,
             QuickCommandIcon::Server,
@@ -2896,10 +2911,10 @@ impl WorkspaceApp {
             icon_options = icon_options.child(
                 div()
                     .h(px(30.0))
-                    .px(px(8.0))
+                    .px(px(self.tokens.spacing.two))
                     .flex()
                     .items_center()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .rounded(px(self.tokens.radii.md))
                     .border_1()
                     .border_color(if active {
@@ -2957,21 +2972,24 @@ impl WorkspaceApp {
             .bg(rgba((theme.bg << 8) | 0x59))
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .when(snapshot.managing, |editor| {
-                editor.h_full().min_h(px(0.0)).p(px(16.0))
+                editor
+                    .h_full()
+                    .min_h(px(0.0))
+                    .p(px(self.tokens.spacing.four))
             })
             .when(!snapshot.managing, |editor| {
                 editor
                     .border_b_1()
                     .border_color(rgba((theme.border << 8) | 0x99))
-                    .p(px(8.0))
+                    .p(px(self.tokens.spacing.two))
             })
             .overflow_y_scrollbar()
             .when(snapshot.managing, |editor| {
                 editor.child(
                     div()
-                        .mb(px(4.0))
+                        .mb(px(self.tokens.spacing.one))
                         .text_size(px(self.tokens.metrics.ui_text_sm))
                         .font_weight(gpui::FontWeight::SEMIBOLD)
                         .text_color(rgb(theme.text))
@@ -2985,7 +3003,7 @@ impl WorkspaceApp {
             .child(
                 div()
                     .grid()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         self.render_quick_command_text_input(
                             QuickCommandInput::CategoryName,
@@ -3006,7 +3024,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(
                                 div()
                                     .size(px(28.0))
@@ -3071,14 +3089,18 @@ impl WorkspaceApp {
             return div().into_any_element();
         };
         let can_save = quick_command_editor_can_save(draft);
-        let mut categories = div().flex().items_center().gap(px(4.0)).flex_wrap();
+        let mut categories = div()
+            .flex()
+            .items_center()
+            .gap(px(self.tokens.spacing.one))
+            .flex_wrap();
         for category in &snapshot.categories {
             let category_id = category.id.clone();
             let active = draft.category == category.id;
             categories = categories.child(
                 div()
                     .h(px(28.0))
-                    .px(px(8.0))
+                    .px(px(self.tokens.spacing.two))
                     .flex()
                     .items_center()
                     .rounded(px(self.tokens.radii.md))
@@ -3126,7 +3148,11 @@ impl WorkspaceApp {
             );
         }
 
-        let mut protocols = div().flex().items_center().gap(px(4.0)).flex_wrap();
+        let mut protocols = div()
+            .flex()
+            .items_center()
+            .gap(px(self.tokens.spacing.one))
+            .flex_wrap();
         for (protocol, label_key) in [
             (
                 QuickCommandTargetProtocol::Local,
@@ -3178,7 +3204,11 @@ impl WorkspaceApp {
                 }),
             );
         }
-        let mut match_fields = div().flex().items_center().gap(px(4.0)).flex_wrap();
+        let mut match_fields = div()
+            .flex()
+            .items_center()
+            .gap(px(self.tokens.spacing.one))
+            .flex_wrap();
         for (field, label) in [
             (
                 QuickCommandMatchField::Host,
@@ -3233,12 +3263,12 @@ impl WorkspaceApp {
             .flex_none()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .p(px(padding))
             .when(snapshot.managing, |editor| {
                 editor.child(
                     div()
-                        .mb(px(4.0))
+                        .mb(px(self.tokens.spacing.one))
                         .text_size(px(self.tokens.metrics.ui_text_sm))
                         .font_weight(gpui::FontWeight::SEMIBOLD)
                         .text_color(rgb(theme.text))
@@ -3252,7 +3282,7 @@ impl WorkspaceApp {
             .child(
                 div()
                     .grid()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(self.render_quick_command_text_input(
                         QuickCommandInput::CommandName,
                         draft.name.clone(),
@@ -3382,7 +3412,10 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let theme = self.tokens.ui;
-        let mut rows = div().flex().flex_col().gap(px(6.0));
+        let mut rows = div()
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.one_half));
         for (index, parameter) in draft.parameters.iter().enumerate() {
             let kind = parameter.kind;
             let required = parameter.required;
@@ -3391,14 +3424,14 @@ impl WorkspaceApp {
                     .rounded(px(self.tokens.radii.md))
                     .border_1()
                     .border_color(rgba((theme.border << 8) | 0x99))
-                    .p(px(6.0))
+                    .p(px(self.tokens.spacing.one_half))
                     .flex()
                     .flex_col()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(
                         div()
                             .flex()
-                            .gap(px(6.0))
+                            .gap(px(self.tokens.spacing.one_half))
                             .child(div().flex_1().child(self.render_quick_command_text_input(
                                 QuickCommandInput::ParameterName(index),
                                 parameter.name.clone(),
@@ -3436,7 +3469,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(6.0))
+                            .gap(px(self.tokens.spacing.one_half))
                             .child(self.quick_command_text_button(
                                 self.i18n.t(match kind {
                                     QuickCommandParameterKind::Text => {
@@ -3505,7 +3538,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(
                 div()
                     .flex()
@@ -3544,7 +3577,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .justify_end()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(self.quick_command_text_button(
                 self.i18n.t("terminal.quick_commands.cancel"),
                 true,

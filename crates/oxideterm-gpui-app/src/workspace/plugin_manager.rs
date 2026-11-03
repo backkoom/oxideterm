@@ -627,7 +627,7 @@ impl WorkspaceApp {
         self.native_plugin_card_surface(has_background)
             .flex()
             .items_start()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(Self::render_lucide_icon(
                 LucideIcon::Info,
                 18.0,
@@ -639,7 +639,7 @@ impl WorkspaceApp {
                     .flex_1()
                     .flex()
                     .flex_col()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -698,19 +698,19 @@ impl WorkspaceApp {
                     .flex_wrap()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(12.0))
+                            .gap(px(self.tokens.spacing.three))
                             .text_size(px(self.tokens.metrics.ui_text_xs))
                             .text_color(rgb(theme.text_muted))
                             .child(
                                 div()
                                     .flex()
                                     .items_center()
-                                    .gap(px(6.0))
+                                    .gap(px(self.tokens.spacing.one_half))
                                     .child(Self::render_lucide_icon(
                                         LucideIcon::Puzzle,
                                         16.0,
@@ -727,7 +727,7 @@ impl WorkspaceApp {
                                 div()
                                     .flex()
                                     .items_center()
-                                    .gap(px(6.0))
+                                    .gap(px(self.tokens.spacing.one_half))
                                     .child(Self::render_lucide_icon(
                                         LucideIcon::CheckCircle,
                                         14.0,
@@ -744,7 +744,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(self.render_native_plugin_action_button(
                                 LucideIcon::FolderOpen,
                                 self.i18n.t("plugin.open_plugins_dir"),
@@ -908,11 +908,11 @@ impl WorkspaceApp {
         let active = self.plugin_manager_state(cx).active_tab == tab;
         let content = div()
             .w_full()
-            .py(px(2.0))
+            .py(px(self.tokens.spacing.half))
             .flex()
             .items_center()
             .justify_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(Self::render_lucide_icon(
                 icon,
                 16.0,
@@ -926,7 +926,7 @@ impl WorkspaceApp {
             .when_some(badge, |content, badge| {
                 content.child(
                     div()
-                        .ml(px(4.0))
+                        .ml(px(self.tokens.spacing.one))
                         .rounded(px(self.tokens.radii.sm))
                         .border_1()
                         .border_color(if active {
@@ -939,8 +939,8 @@ impl WorkspaceApp {
                         } else {
                             plugin_manager_theme_panel_bg(theme.bg_panel, has_background)
                         })
-                        .px(px(6.0))
-                        .py(px(2.0))
+                        .px(px(self.tokens.spacing.one_half))
+                        .py(px(self.tokens.spacing.half))
                         .text_size(px(self.tokens.metrics.ui_text_xs))
                         .text_color(rgb(if active {
                             theme.accent
@@ -1031,7 +1031,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .min_h(px(260.0))
             .child(self.render_plugin_tag_filter(NativePluginManagerTab::Installed, cx))
             .when(
@@ -1051,7 +1051,7 @@ impl WorkspaceApp {
                         .flex_col()
                         .items_center()
                         .justify_center()
-                        .gap(px(10.0))
+                        .gap(px(self.tokens.spacing.two_half))
                         .child(Self::render_lucide_icon(
                             LucideIcon::Puzzle,
                             36.0,
@@ -1127,7 +1127,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(self.render_native_plugin_marketplace(has_background, cx))
             .child(self.render_native_plugin_action_button(
                 if expanded {
@@ -1287,7 +1287,7 @@ impl WorkspaceApp {
                         .flex_col()
                         .items_center()
                         .justify_center()
-                        .gap(px(10.0))
+                        .gap(px(self.tokens.spacing.two_half))
                         .text_size(px(self.tokens.metrics.ui_text_sm))
                         .text_color(rgb(color))
                         .child(Self::render_lucide_icon(icon, 24.0, rgb(color)))
@@ -1550,23 +1550,28 @@ impl WorkspaceApp {
         };
         let focused = self.focused_settings_input == Some(input);
         let invalid = focused && parse_plugin_page_size(&self.settings_input_draft).is_none();
-        let mut pages = div().flex().flex_wrap().items_center().gap(px(4.0)).child(
-            self.render_native_plugin_action_button(
-                LucideIcon::ChevronLeft,
-                self.i18n.t("plugin.previous_page"),
-                page == 0,
-                cx.listener(move |this, _, _, cx| {
-                    this.change_plugin_page(tab, page.saturating_sub(1), None, cx)
-                }),
-            )
-            .opacity(if page == 0 { 0.45 } else { 1.0 }),
-        );
+        let mut pages = div()
+            .flex()
+            .flex_wrap()
+            .items_center()
+            .gap(px(self.tokens.spacing.one))
+            .child(
+                self.render_native_plugin_action_button(
+                    LucideIcon::ChevronLeft,
+                    self.i18n.t("plugin.previous_page"),
+                    page == 0,
+                    cx.listener(move |this, _, _, cx| {
+                        this.change_plugin_page(tab, page.saturating_sub(1), None, cx)
+                    }),
+                )
+                .opacity(if page == 0 { 0.45 } else { 1.0 }),
+            );
         let mut previous = None;
         for index in (0..page_count)
             .filter(|index| *index == 0 || *index + 1 == page_count || index.abs_diff(page) <= 1)
         {
             if previous.is_some_and(|previous| index > previous + 1) {
-                pages = pages.child(div().px(px(4.0)).child("…"));
+                pages = pages.child(div().px(px(self.tokens.spacing.one)).child("…"));
             }
             pages = pages.child(self.render_native_plugin_marketplace_filter(
                 (index + 1).to_string(),
@@ -1599,7 +1604,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_wrap()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(self.i18n.t("plugin.jump_to_page"))
                     .child(self.number_input(jump_input, (page + 1).to_string(), 64.0, cx))
                     .child(
@@ -1627,12 +1632,12 @@ impl WorkspaceApp {
 
         div()
             .w_full()
-            .py(px(8.0))
+            .py(px(self.tokens.spacing.two))
             .flex()
             .flex_wrap()
             .items_center()
             .justify_between()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(
@@ -1640,7 +1645,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_wrap()
                     .items_center()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         self.i18n
                             .t("plugin.page_range")
@@ -1654,7 +1659,7 @@ impl WorkspaceApp {
                                 .flex()
                                 .flex_wrap()
                                 .items_center()
-                                .gap(px(4.0))
+                                .gap(px(self.tokens.spacing.one))
                                 .child(self.i18n.t("plugin.per_page"))
                                 .child(self.number_input(
                                     input,
@@ -2096,7 +2101,7 @@ impl WorkspaceApp {
                 theme.bg_panel,
                 PLUGIN_MANAGER_TW_ALPHA_30,
             ))
-            .p(px(16.0))
+            .p(px(self.tokens.spacing.four))
             .text_size(px(PLUGIN_MANAGER_HINT_TEXT_SIZE))
             .line_height(px(18.0))
             .text_color(rgb(theme.text_muted))
@@ -2130,7 +2135,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -2160,7 +2165,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_wrap()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     // The wrapping basis belongs to this horizontal form, not the shared input.
                     .child(
                         self.render_native_plugin_manager_icon_input(
@@ -2210,7 +2215,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .text_size(px(PLUGIN_MANAGER_HINT_TEXT_SIZE))
@@ -2240,7 +2245,7 @@ impl WorkspaceApp {
                         .border_1()
                         .border_color(rgb(theme.warning))
                         .bg(rgb(theme.bg_card))
-                        .p(px(10.0))
+                        .p(px(self.tokens.spacing.two_half))
                         .child(action_slot_row(
                             &self.tokens,
                             ActionSlotRowOptions::new().gap(10.0).trailing_gap(8.0),
@@ -2296,11 +2301,16 @@ impl WorkspaceApp {
             .child(self.render_native_plugin_registry_fetch_row(cx))
             .when(!available_updates.is_empty(), |panel| {
                 panel.child(
-                    div().w_full().flex().flex_col().gap(px(8.0)).children(
-                        available_updates
-                            .iter()
-                            .map(|entry| self.render_native_plugin_update_row(entry, cx)),
-                    ),
+                    div()
+                        .w_full()
+                        .flex()
+                        .flex_col()
+                        .gap(px(self.tokens.spacing.two))
+                        .children(
+                            available_updates
+                                .iter()
+                                .map(|entry| self.render_native_plugin_update_row(entry, cx)),
+                        ),
                 )
             })
             .into_any_element()
@@ -2317,7 +2327,7 @@ impl WorkspaceApp {
         div()
             .w_full()
             .min_w(px(0.0))
-            .pt(px(8.0))
+            .pt(px(self.tokens.spacing.two))
             .border_t_1()
             .border_color(plugin_manager_theme_alpha(
                 theme.border,
@@ -2326,7 +2336,7 @@ impl WorkspaceApp {
             .flex()
             .flex_wrap()
             .items_center()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 self.render_native_plugin_manager_icon_input(
                     LucideIcon::Search,
@@ -2368,11 +2378,11 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgb(theme.border))
             .bg(rgb(theme.bg_card))
-            .px(px(12.0))
-            .py(px(6.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.one_half))
             .flex()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .text_color(rgb(if disabled {
                 theme.text_muted
@@ -2545,11 +2555,11 @@ impl WorkspaceApp {
             } else {
                 theme.accent
             }))
-            .px(px(10.0))
+            .px(px(self.tokens.spacing.two_half))
             .py(px(7.0))
             .flex()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .whitespace_nowrap()
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .text_color(rgb(if disabled { theme.text_muted } else { theme.bg }))
@@ -2582,8 +2592,8 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgb(theme.border))
             .bg(rgb(theme.bg_card))
-            .px(px(10.0))
-            .py(px(6.0))
+            .px(px(self.tokens.spacing.two_half))
+            .py(px(self.tokens.spacing.one_half))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .text_color(rgb(if disabled {
                 theme.text_muted
@@ -2620,7 +2630,7 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgb(theme.border))
             .bg(rgb(theme.bg_card))
-            .p(px(10.0))
+            .p(px(self.tokens.spacing.two_half))
             .child(action_slot_row(
                 &self.tokens,
                 ActionSlotRowOptions::new().gap(10.0),
@@ -2800,7 +2810,7 @@ impl WorkspaceApp {
                 .w_full()
                 .flex()
                 .items_center()
-                .gap(px(8.0))
+                .gap(px(self.tokens.spacing.two))
                 .text_size(px(self.tokens.metrics.ui_text_xs))
                 .line_height(px(18.0))
                 .text_color(rgb(color))
@@ -3035,7 +3045,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -3457,11 +3467,11 @@ impl WorkspaceApp {
                         theme.error,
                         PLUGIN_MANAGER_TW_ALPHA_10,
                     ))
-                    .px(px(12.0))
-                    .py(px(10.0))
+                    .px(px(self.tokens.spacing.three))
+                    .py(px(self.tokens.spacing.two_half))
                     .flex()
                     .items_start()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .text_size(px(self.tokens.metrics.ui_text_xs))
                     .line_height(px(18.0))
                     .text_color(rgb(theme.error))
@@ -3526,7 +3536,7 @@ impl WorkspaceApp {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .line_height(px(18.0))
             .text_color(rgb(theme.text_muted))
@@ -3534,7 +3544,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(self.render_native_plugin_detail_row("ID", manifest.id.clone()))
                     .child(self.render_native_plugin_detail_row(
                         self.i18n.t("plugin.detail_entry"),
@@ -3582,7 +3592,7 @@ impl WorkspaceApp {
             .when(!contribution_labels.is_empty(), |panel| {
                 panel.child(
                     div()
-                        .pt(px(8.0))
+                        .pt(px(self.tokens.spacing.two))
                         .border_t_1()
                         .border_color(plugin_manager_theme_alpha(
                             theme.border,
@@ -3590,7 +3600,7 @@ impl WorkspaceApp {
                         ))
                         .flex()
                         .flex_col()
-                        .gap(px(6.0))
+                        .gap(px(self.tokens.spacing.one_half))
                         .child(
                             div()
                                 .font_weight(gpui::FontWeight::MEDIUM)
@@ -3602,7 +3612,7 @@ impl WorkspaceApp {
             })
             .child(
                 div()
-                    .pt(px(8.0))
+                    .pt(px(self.tokens.spacing.two))
                     .border_t_1()
                     .border_color(plugin_manager_theme_alpha(
                         theme.border,
@@ -3610,7 +3620,7 @@ impl WorkspaceApp {
                     ))
                     .flex()
                     .flex_col()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(
                         div()
                             .font_weight(gpui::FontWeight::MEDIUM)
@@ -3626,7 +3636,7 @@ impl WorkspaceApp {
                                 .min_w(px(0.0))
                                 .flex()
                                 .flex_col()
-                                .gap(px(6.0))
+                                .gap(px(self.tokens.spacing.one_half))
                                 .children(permission_capabilities.into_iter().map(|capability| {
                                     let (label, is_trusted_process) = if capability
                                         == plugin_host::NATIVE_PLUGIN_TRUSTED_PROCESS_CAPABILITY
@@ -3650,10 +3660,10 @@ impl WorkspaceApp {
                     .when(permission_requires_review, |permissions| {
                         permissions.child(
                             div()
-                                .mt(px(2.0))
+                                .mt(px(self.tokens.spacing.half))
                                 .flex()
                                 .items_start()
-                                .gap(px(8.0))
+                                .gap(px(self.tokens.spacing.two))
                                 .text_color(rgb(theme.warning))
                                 .child(Self::render_lucide_icon(
                                     LucideIcon::AlertTriangle,
@@ -3761,7 +3771,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_start()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(
                 div()
                     .w(px(72.0))

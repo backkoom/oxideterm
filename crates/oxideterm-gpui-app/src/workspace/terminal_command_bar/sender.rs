@@ -304,10 +304,10 @@ impl WorkspaceApp {
             .flex_none()
             .h(px(TERMINAL_SENDER_COMPACT_HEIGHT))
             .px(px(TERMINAL_SENDER_COMPACT_HORIZONTAL_PADDING))
-            .py(px(4.0))
+            .py(px(self.tokens.spacing.one))
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .border_t_1()
             .border_color(rgba(
                 ((if focused { theme.accent } else { theme.border }) << 8)
@@ -328,7 +328,7 @@ impl WorkspaceApp {
                     .h(px(TERMINAL_SENDER_COMPACT_EDITOR_HEIGHT))
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .overflow_hidden()
                     .cursor_text()
                     .on_mouse_down(
@@ -505,10 +505,10 @@ impl WorkspaceApp {
                     .flex_none()
                     .h_full()
                     .max_w(px(180.0))
-                    .px(px(12.0))
+                    .px(px(self.tokens.spacing.three))
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .border_b_1()
                     .border_color(if active {
                         rgb(self.tokens.ui.accent)
@@ -548,7 +548,7 @@ impl WorkspaceApp {
             .flex_none()
             .flex()
             .items_center()
-            .gap(px(2.0))
+            .gap(px(self.tokens.spacing.half))
             .child(self.terminal_command_action_button(
                 LucideIcon::Plus,
                 rgb(self.tokens.ui.text_muted),
@@ -591,7 +591,7 @@ impl WorkspaceApp {
             .px(px(TERMINAL_SENDER_PANEL_PADDING))
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .border_b_1()
             .border_color(self.workspace_chrome_divider())
             .when(self.window_background_preferences().is_none(), |strip| {
@@ -636,7 +636,7 @@ impl WorkspaceApp {
             .w_full()
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .flex_wrap()
             .child(self.render_terminal_sender_mode_control(snapshot, cx))
             .child(self.render_terminal_sender_control_divider())
@@ -681,7 +681,7 @@ impl WorkspaceApp {
                     .max_w(px(TERMINAL_SENDER_TARGET_CONTEXT_MAX_WIDTH))
                     .flex()
                     .items_center()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .text_size(px(self.tokens.metrics.ui_text_xs))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(Self::render_lucide_icon(
@@ -701,7 +701,7 @@ impl WorkspaceApp {
             .w_full()
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .flex_wrap()
             .child(
                 div()
@@ -788,7 +788,7 @@ impl WorkspaceApp {
                 div()
                     .min_h(px(40.0))
                     .px(px(TERMINAL_SENDER_PANEL_PADDING))
-                    .py(px(4.0))
+                    .py(px(self.tokens.spacing.one))
                     .flex()
                     .items_center()
                     .child(format_controls),
@@ -797,7 +797,7 @@ impl WorkspaceApp {
                 div()
                     .min_h(px(40.0))
                     .px(px(TERMINAL_SENDER_PANEL_PADDING))
-                    .py(px(4.0))
+                    .py(px(self.tokens.spacing.one))
                     .border_t_1()
                     .border_color(self.workspace_chrome_divider())
                     .flex()
@@ -835,8 +835,8 @@ impl WorkspaceApp {
                     index == active_index,
                 )
                 .rounded_none()
-                .px(px(8.0))
-                .py(px(4.0))
+                .px(px(self.tokens.spacing.two))
+                .py(px(self.tokens.spacing.one))
                 .text_size(px(self.tokens.metrics.ui_text_xs))
                 .on_mouse_down(
                     MouseButton::Left,
@@ -902,8 +902,8 @@ impl WorkspaceApp {
                     index == active_index,
                 )
                 .rounded_none()
-                .px(px(8.0))
-                .py(px(4.0))
+                .px(px(self.tokens.spacing.two))
+                .py(px(self.tokens.spacing.one))
                 .text_size(px(self.tokens.metrics.ui_text_xs))
                 .on_mouse_down(
                     MouseButton::Left,
@@ -979,8 +979,8 @@ impl WorkspaceApp {
             };
             oxideterm_gpui_ui::segmented_control_item(&self.tokens, label, index == active_index)
                 .rounded_none()
-                .px(px(8.0))
-                .py(px(4.0))
+                .px(px(self.tokens.spacing.two))
+                .py(px(self.tokens.spacing.one))
                 .text_size(px(self.tokens.metrics.ui_text_xs))
                 .on_mouse_down(
                     MouseButton::Left,
@@ -1020,7 +1020,11 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let sender_id = snapshot.id;
-        let mut target_row = div().flex_none().flex().items_center().gap(px(4.0));
+        let mut target_row = div()
+            .flex_none()
+            .flex()
+            .items_center()
+            .gap(px(self.tokens.spacing.one));
         for (target, label, _kind) in targets {
             let pane_id = target.pane_id;
             let selected = snapshot.selected_targets.contains(&pane_id);
@@ -1079,7 +1083,11 @@ impl WorkspaceApp {
                 .into_any_element();
         }
 
-        let mut group_row = div().flex_none().flex().items_center().gap(px(4.0));
+        let mut group_row = div()
+            .flex_none()
+            .flex()
+            .items_center()
+            .gap(px(self.tokens.spacing.one));
         for group in groups {
             let group_id = group.id;
             let selected = snapshot.selected_group_id == Some(group_id);
@@ -1118,7 +1126,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(div().overflow_x_scrollbar().child(group_row))
             .child(
                 div()
@@ -1154,7 +1162,7 @@ impl WorkspaceApp {
             .child(
                 div()
                     .h_full()
-                    .px(px(8.0))
+                    .px(px(self.tokens.spacing.two))
                     .flex()
                     .items_center()
                     .text_size(px(11.0))
@@ -1183,7 +1191,7 @@ impl WorkspaceApp {
                 div()
                     .h_full()
                     .min_w(px(56.0))
-                    .px(px(4.0))
+                    .px(px(self.tokens.spacing.one))
                     .flex()
                     .items_center()
                     .justify_center()
@@ -1678,7 +1686,7 @@ impl WorkspaceApp {
 
         let mut content_row = div()
             .h_full()
-            .px(px(8.0))
+            .px(px(self.tokens.spacing.two))
             .flex()
             .items_center()
             .gap(px(5.0))

@@ -55,7 +55,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .text_size(px(self.tokens.metrics.ui_text_sm))
             .text_color(rgb(text_color))
             .child(
@@ -71,7 +71,7 @@ impl WorkspaceApp {
                         .ml_2()
                         .flex()
                         .items_center()
-                        .gap(px(4.0))
+                        .gap(px(self.tokens.spacing.one))
                         .text_size(px(self.tokens.metrics.ui_text_xs))
                         .text_color(rgb(self.tokens.ui.text_muted))
                         .child(Self::render_lucide_icon(
@@ -220,7 +220,7 @@ impl WorkspaceApp {
             .p_3()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -249,7 +249,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .children(new_ports.into_iter().map(|port| {
                 let dismiss_port = port.port;
                 let forward_port = port.clone();
@@ -262,7 +262,7 @@ impl WorkspaceApp {
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .rounded(px(self.tokens.radii.md))
                     .border_1()
                     .border_color(forwards_palette_alpha(TW_BLUE_500, FORWARDS_TW_ALPHA_30))
@@ -273,7 +273,7 @@ impl WorkspaceApp {
                             .min_w(px(0.0))
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .text_color(rgb(self.tokens.ui.text))
                             .child(Self::render_lucide_icon(
                                 LucideIcon::Radio,
@@ -317,7 +317,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(4.0))
+                            .gap(px(self.tokens.spacing.one))
                             .child(
                                 self.render_forward_button(
                                     self.i18n.t("forwards.detection.forward"),
@@ -387,12 +387,12 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(Self::render_lucide_icon(
                         LucideIcon::Radio,
                         16.0,
@@ -436,7 +436,7 @@ impl WorkspaceApp {
                     .child(
                         div()
                             .w(px(128.0))
-                            .pr(px(16.0))
+                            .pr(px(self.tokens.spacing.four))
                             .text_align(gpui::TextAlign::Right)
                             .child(
                                 self.render_forward_ui_text(
@@ -552,7 +552,7 @@ impl WorkspaceApp {
         .child(
             div()
                 .w(px(128.0))
-                .pr(px(16.0))
+                .pr(px(self.tokens.spacing.four))
                 .flex()
                 .justify_end()
                 .child(if already_forwarded {
@@ -561,7 +561,7 @@ impl WorkspaceApp {
                         .px_2()
                         .flex()
                         .items_center()
-                        .gap(px(4.0))
+                        .gap(px(self.tokens.spacing.one))
                         .rounded(px(self.tokens.radii.sm))
                         .border_1()
                         .border_color(forwards_palette_alpha(TW_EMERALD_800, FORWARDS_TW_ALPHA_40))

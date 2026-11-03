@@ -140,7 +140,11 @@ impl WorkspaceApp {
     }
 
     pub(in crate::workspace) fn help_tech_stack_card(&self) -> AnyElement {
-        let mut badges = div().flex().flex_row().flex_wrap().gap(px(self.tokens.spacing.two));
+        let mut badges = div()
+            .flex()
+            .flex_row()
+            .flex_wrap()
+            .gap(px(self.tokens.spacing.two));
         for (label, color) in HELP_TECH_BADGES {
             badges = badges.child(
                 div()
@@ -207,7 +211,10 @@ impl WorkspaceApp {
             "settings_view.help.safety_secrets",
             "settings_view.help.safety_ai",
         ];
-        let mut safety_rows = div().flex().flex_col().gap(px(self.tokens.spacing.two_half));
+        let mut safety_rows = div()
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.two_half));
         for key in safety_items {
             safety_rows = safety_rows.child(self.help_safety_row(key));
         }
@@ -403,22 +410,26 @@ impl WorkspaceApp {
                 | NativeUpdateRenderState::Installing(_)
         );
 
-        let mut area = div().flex().flex_col().gap(px(self.tokens.spacing.three)).child(
-            div()
-                .flex()
-                .items_center()
-                .gap(px(self.tokens.spacing.three))
-                .child(self.help_outline_button_with_disabled(
-                    self.i18n.t("settings_view.help.check_update"),
-                    button_icon,
-                    disabled,
-                    |this, _event, _window, cx| {
-                        this.check_native_update(cx);
-                    },
-                    cx,
-                ))
-                .children(self.help_update_status_inline(&update_state)),
-        );
+        let mut area = div()
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.three))
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(self.tokens.spacing.three))
+                    .child(self.help_outline_button_with_disabled(
+                        self.i18n.t("settings_view.help.check_update"),
+                        button_icon,
+                        disabled,
+                        |this, _event, _window, cx| {
+                            this.check_native_update(cx);
+                        },
+                        cx,
+                    ))
+                    .children(self.help_update_status_inline(&update_state)),
+            );
 
         if let Some(detail) = self.help_update_detail(&update_state, cx) {
             area = area.child(detail);

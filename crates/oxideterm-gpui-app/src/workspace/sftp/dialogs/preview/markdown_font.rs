@@ -36,7 +36,7 @@ impl WorkspaceApp {
         let code_actions = self.markdown_mermaid_actions(cx);
         div()
             .size_full()
-            .p(px(16.0))
+            .p(px(self.tokens.spacing.four))
             .child(
                 oxideterm_gpui_markdown::render::render_document_virtual_with_code_actions(
                     "sftp-preview-markdown-virtual",
@@ -82,9 +82,9 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
-                    .px(px(16.0))
-                    .py(px(12.0))
+                    .gap(px(self.tokens.spacing.two))
+                    .px(px(self.tokens.spacing.four))
+                    .py(px(self.tokens.spacing.three))
                     .border_b_1()
                     .border_color(rgb(theme.border))
                     .bg(rgba((theme.bg_panel << 8) | SFTP_PANEL_80_ALPHA))
@@ -135,7 +135,7 @@ impl WorkspaceApp {
                     }))
                     .child(
                         div()
-                            .ml(px(8.0))
+                            .ml(px(self.tokens.spacing.two))
                             .min_w(px(0.0))
                             .truncate()
                             .text_size(px(SFTP_TEXT_XS))
@@ -150,7 +150,7 @@ impl WorkspaceApp {
                     .selectable_overflow_y_scroll(
                         &self.sftp_view().read(cx).font_preview_scroll,
                     )
-                    .p(px(24.0))
+                    .p(px(self.tokens.spacing.six))
                     .bg(rgb(theme.bg_sunken))
                     .font_family(sample_font.clone())
                     .text_color(rgb(theme.text))
@@ -159,7 +159,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .flex_col()
-                            .gap(px(32.0))
+                            .gap(px(self.tokens.spacing.eight))
                             .child(self.render_sftp_font_sample_section(
                                 self.i18n.t("sftp.preview.font_alphabet"),
                                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstuvwxyz",
@@ -264,7 +264,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .font_family(settings_ui_font_family(

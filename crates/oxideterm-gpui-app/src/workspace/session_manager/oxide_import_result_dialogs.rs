@@ -43,7 +43,7 @@ impl WorkspaceApp {
             .text_color(rgb(tone))
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .text_size(px(18.0))
@@ -153,7 +153,11 @@ impl WorkspaceApp {
             ));
         }
         if !result.quick_commands_errors.is_empty() {
-            let mut quick_errors = div().mt(px(4.0)).flex().flex_col().gap(px(4.0));
+            let mut quick_errors = div()
+                .mt(px(self.tokens.spacing.one))
+                .flex()
+                .flex_col()
+                .gap(px(self.tokens.spacing.one));
             for error in &result.quick_commands_errors {
                 quick_errors = quick_errors.child(
                     div()
@@ -217,19 +221,24 @@ impl WorkspaceApp {
             ));
         }
         if result.renamed > 0 {
-            let mut renamed = div().mt(px(8.0)).flex().flex_col().gap(px(4.0)).child(
-                div()
-                    .text_size(px(self.tokens.metrics.ui_text_sm))
-                    .font_weight(gpui::FontWeight::SEMIBOLD)
-                    .text_color(rgb(OXIDE_YELLOW_500))
-                    .child(self.render_selectable_text_scoped(
-                        "oxide-import-renamed-title",
-                        result.renamed,
-                        format!("⚠️ 因冲突被重命名: {}", result.renamed),
-                        OXIDE_YELLOW_500,
-                        cx,
-                    )),
-            );
+            let mut renamed = div()
+                .mt(px(self.tokens.spacing.two))
+                .flex()
+                .flex_col()
+                .gap(px(self.tokens.spacing.one))
+                .child(
+                    div()
+                        .text_size(px(self.tokens.metrics.ui_text_sm))
+                        .font_weight(gpui::FontWeight::SEMIBOLD)
+                        .text_color(rgb(OXIDE_YELLOW_500))
+                        .child(self.render_selectable_text_scoped(
+                            "oxide-import-renamed-title",
+                            result.renamed,
+                            format!("⚠️ 因冲突被重命名: {}", result.renamed),
+                            OXIDE_YELLOW_500,
+                            cx,
+                        )),
+                );
             for (original, renamed_name) in &result.renames {
                 let line = format!("• \"{original}\" → \"{renamed_name}\"");
                 renamed = renamed.child(
@@ -249,18 +258,23 @@ impl WorkspaceApp {
             card = card.child(renamed);
         }
         if !result.errors.is_empty() {
-            let mut error_block = div().mt(px(8.0)).flex().flex_col().gap(px(4.0)).child(
-                div()
-                    .text_size(px(self.tokens.metrics.ui_text_sm))
-                    .font_weight(gpui::FontWeight::SEMIBOLD)
-                    .child(self.render_selectable_text_scoped(
-                        "oxide-import-error-title",
-                        (),
-                        "错误:",
-                        tone,
-                        cx,
-                    )),
-            );
+            let mut error_block = div()
+                .mt(px(self.tokens.spacing.two))
+                .flex()
+                .flex_col()
+                .gap(px(self.tokens.spacing.one))
+                .child(
+                    div()
+                        .text_size(px(self.tokens.metrics.ui_text_sm))
+                        .font_weight(gpui::FontWeight::SEMIBOLD)
+                        .child(self.render_selectable_text_scoped(
+                            "oxide-import-error-title",
+                            (),
+                            "错误:",
+                            tone,
+                            cx,
+                        )),
+                );
             for error in &result.errors {
                 error_block = error_block.child(
                     div()
@@ -286,7 +300,7 @@ impl WorkspaceApp {
             .when(!has_error, |body| {
                 body.child(
                     div()
-                        .mt(px(16.0))
+                        .mt(px(self.tokens.spacing.four))
                         .text_align(gpui::TextAlign::Center)
                         .text_size(px(self.tokens.metrics.ui_text_sm))
                         .text_color(rgb(self.tokens.ui.text_muted))
@@ -332,8 +346,8 @@ impl WorkspaceApp {
             .flex()
             .items_center()
             .justify_end()
-            .gap(px(8.0))
-            .pt(px(8.0))
+            .gap(px(self.tokens.spacing.two))
+            .pt(px(self.tokens.spacing.two))
             .child(self.render_oxide_footer_click_action(
                 "关闭".to_string(),
                 ButtonVariant::Default,
@@ -385,8 +399,8 @@ impl WorkspaceApp {
                 .flex()
                 .items_center()
                 .justify_end()
-                .gap(px(8.0))
-                .pt(px(8.0))
+                .gap(px(self.tokens.spacing.two))
+                .pt(px(self.tokens.spacing.two))
                 .child(self.render_oxide_footer_click_action(
                     "返回".to_string(),
                     ButtonVariant::Outline,
@@ -430,8 +444,8 @@ impl WorkspaceApp {
                 .flex()
                 .items_center()
                 .justify_end()
-                .gap(px(8.0))
-                .pt(px(8.0))
+                .gap(px(self.tokens.spacing.two))
+                .pt(px(self.tokens.spacing.two))
                 .child(self.render_oxide_footer_click_action(
                     "重新选择文件".to_string(),
                     ButtonVariant::Outline,

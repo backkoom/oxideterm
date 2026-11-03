@@ -866,7 +866,7 @@ impl WorkspaceApp {
             .flex()
             .flex_none()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .text_size(px(10.0))
             .text_color(rgb(theme.warning))
             .child(Self::render_lucide_icon(
@@ -929,7 +929,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .gap(px(2.0))
+            .gap(px(self.tokens.spacing.half))
             .children(TAB_RECONNECT_PHASES.into_iter().map(|phase| {
                 let result = job
                     .phase_history
@@ -985,7 +985,7 @@ impl WorkspaceApp {
                             .items_center()
                             .justify_center()
                             .px(px(WELCOME_PAGE_PADDING))
-                            .pt(px(24.0))
+                            .pt(px(self.tokens.spacing.six))
                             .pb(px(80.0))
                             .child(
                                 div()
@@ -1072,7 +1072,7 @@ impl WorkspaceApp {
             .w_full()
             .flex()
             .items_center()
-            .gap(px(20.0))
+            .gap(px(self.tokens.spacing.five))
             // Reuse the active runtime icon variant selected in Appearance settings.
             .child(
                 gpui::img(icon_path)
@@ -1087,13 +1087,13 @@ impl WorkspaceApp {
                     .flex()
                     .flex_col()
                     .items_start()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(
                         div()
                             .relative()
                             .flex()
                             .items_center()
-                            .py(px(2.0))
+                            .py(px(self.tokens.spacing.half))
                             // GPUI does not expose CSS text-shadow; a static shadowed
                             // backing glow keeps the Tauri brand halo without drawing
                             // a visible capsule behind the wordmark.
@@ -1164,42 +1164,46 @@ impl WorkspaceApp {
             .i18n
             .t("layout.empty.saved_count")
             .replace("{{count}}", &saved_count.to_string());
-        let mut surface = div().flex().flex_col().gap(px(12.0)).child(
-            div()
-                .w_full()
-                .flex()
-                .items_start()
-                .justify_between()
-                .gap(px(16.0))
-                .child(
-                    div()
-                        .min_w_0()
-                        .flex_1()
-                        .flex()
-                        .flex_col()
-                        .gap(px(3.0))
-                        .child(
-                            div()
-                                .text_size(px(self.tokens.metrics.ui_text_base))
-                                .font_weight(gpui::FontWeight::SEMIBOLD)
-                                .text_color(rgb(theme.text))
-                                .child(self.i18n.t("layout.empty.recent_connections")),
-                        )
-                        .child(
-                            div()
-                                .text_size(px(self.tokens.metrics.ui_text_xs))
-                                .text_color(rgb(theme.text_muted))
-                                .child(self.i18n.t("layout.empty.recent_connections_hint")),
-                        ),
-                )
-                .child(
-                    div()
-                        .flex_none()
-                        .text_size(px(self.tokens.metrics.ui_text_xs))
-                        .text_color(rgb(theme.text_muted))
-                        .child(count_label),
-                ),
-        );
+        let mut surface = div()
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.three))
+            .child(
+                div()
+                    .w_full()
+                    .flex()
+                    .items_start()
+                    .justify_between()
+                    .gap(px(self.tokens.spacing.four))
+                    .child(
+                        div()
+                            .min_w_0()
+                            .flex_1()
+                            .flex()
+                            .flex_col()
+                            .gap(px(3.0))
+                            .child(
+                                div()
+                                    .text_size(px(self.tokens.metrics.ui_text_base))
+                                    .font_weight(gpui::FontWeight::SEMIBOLD)
+                                    .text_color(rgb(theme.text))
+                                    .child(self.i18n.t("layout.empty.recent_connections")),
+                            )
+                            .child(
+                                div()
+                                    .text_size(px(self.tokens.metrics.ui_text_xs))
+                                    .text_color(rgb(theme.text_muted))
+                                    .child(self.i18n.t("layout.empty.recent_connections_hint")),
+                            ),
+                    )
+                    .child(
+                        div()
+                            .flex_none()
+                            .text_size(px(self.tokens.metrics.ui_text_xs))
+                            .text_color(rgb(theme.text_muted))
+                            .child(count_label),
+                    ),
+            );
 
         if recent.is_empty() {
             surface = surface.child(self.render_welcome_recent_empty(cx));
@@ -1220,12 +1224,12 @@ impl WorkspaceApp {
         let theme = self.tokens.ui;
         div()
             .w_full()
-            .py(px(12.0))
+            .py(px(self.tokens.spacing.three))
             .flex()
             .flex_col()
             .items_start()
             .justify_center()
-            .gap(px(10.0))
+            .gap(px(self.tokens.spacing.two_half))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -1236,7 +1240,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .text_size(px(self.tokens.metrics.ui_text_sm))
                     .font_weight(gpui::FontWeight::MEDIUM)
                     .text_color(rgb(theme.accent))
@@ -1330,7 +1334,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_base))
@@ -1516,7 +1520,7 @@ impl WorkspaceApp {
 
         let overrides = &self.settings_store.settings().keybindings.overrides;
         div()
-            .pt(px(8.0))
+            .pt(px(self.tokens.spacing.two))
             .w_full()
             .flex()
             .flex_row()
@@ -1549,7 +1553,7 @@ impl WorkspaceApp {
             .flex_none()
             .flex()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .text_color(rgb(label_color))
             .child(

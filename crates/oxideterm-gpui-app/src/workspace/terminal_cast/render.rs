@@ -116,19 +116,19 @@ impl WorkspaceApp {
             .right(px(12.0))
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .rounded_lg()
             .border_1()
             .border_color(rgba(0xef444459))
             .bg(rgba((theme.bg_elevated << 8) | 0xe6))
-            .px(px(10.0))
-            .py(px(6.0))
+            .px(px(self.tokens.spacing.two_half))
+            .py(px(self.tokens.spacing.one_half))
             .shadow_lg()
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .text_size(px(12.0))
                     .font_family(settings_mono_font_family(self.settings_store.settings()))
                     .text_color(rgba(0xfca5a5ff))
@@ -234,8 +234,8 @@ impl WorkspaceApp {
                                 .flex()
                                 .items_center()
                                 .justify_between()
-                                .gap(px(12.0))
-                                .px(px(16.0))
+                                .gap(px(self.tokens.spacing.three))
+                                .px(px(self.tokens.spacing.four))
                                 .border_b_1()
                                 .border_color(rgba((theme.border << 8) | PLAYER_BORDER_ALPHA))
                                 .child(
@@ -244,7 +244,7 @@ impl WorkspaceApp {
                                         .flex_1()
                                         .flex()
                                         .items_center()
-                                        .gap(px(12.0))
+                                        .gap(px(self.tokens.spacing.three))
                                         .child(
                                             div()
                                                 .max_w(px(400.0))
@@ -345,14 +345,14 @@ impl WorkspaceApp {
                                     .border_b_1()
                                     .border_color(rgba((theme.border << 8) | PLAYER_BORDER_ALPHA))
                                     .bg(rgba((theme.bg_panel << 8) | 0x99))
-                                    .px(px(16.0))
-                                    .py(px(8.0))
+                                    .px(px(self.tokens.spacing.four))
+                                    .py(px(self.tokens.spacing.two))
                                     .child(
                                         div()
                                             .max_w(px(512.0))
                                             .flex()
                                             .items_center()
-                                            .gap(px(8.0))
+                                            .gap(px(self.tokens.spacing.two))
                                             .child(Self::render_lucide_icon(
                                                 LucideIcon::Search,
                                                 14.0,
@@ -375,7 +375,7 @@ impl WorkspaceApp {
                                                             rgba((theme.border << 8) | 0x80)
                                                         })
                                                         .bg(rgba((theme.bg_hover << 8) | 0x99))
-                                                        .px(px(8.0))
+                                                        .px(px(self.tokens.spacing.two))
                                                         .text_size(px(13.0))
                                                         .text_color(if search_empty {
                                                             rgb(theme.text_muted)
@@ -453,8 +453,8 @@ impl WorkspaceApp {
                                     .border_b_1()
                                     .border_color(rgba((theme.border << 8) | PLAYER_BORDER_ALPHA))
                                     .bg(rgba((theme.bg_panel << 8) | 0x99))
-                                    .px(px(16.0))
-                                    .py(px(8.0))
+                                    .px(px(self.tokens.spacing.four))
+                                    .py(px(self.tokens.spacing.two))
                                     .when(search_results_empty, |panel| {
                                         panel.child(
                                             div()
@@ -467,18 +467,23 @@ impl WorkspaceApp {
                                         )
                                     })
                                     .when(!search_results_empty, |panel| {
-                                        panel.child(div().flex().flex_col().gap(px(2.0)).children(
-                                            search_results.into_iter().map(|result| {
-                                                let at = result.at;
-                                                let seek_ratio = at / duration.max(1.0);
-                                                let snippet = result.snippet;
-                                                div()
+                                        panel.child(
+                                            div()
+                                                .flex()
+                                                .flex_col()
+                                                .gap(px(self.tokens.spacing.half))
+                                                .children(search_results.into_iter().map(
+                                                    |result| {
+                                                        let at = result.at;
+                                                        let seek_ratio = at / duration.max(1.0);
+                                                        let snippet = result.snippet;
+                                                        div()
                                                     .h(px(22.0))
                                                     .flex()
                                                     .items_center()
-                                                    .gap(px(8.0))
+                                                    .gap(px(self.tokens.spacing.two))
                                                     .rounded_md()
-                                                    .px(px(6.0))
+                                                    .px(px(self.tokens.spacing.one_half))
                                                     .cursor_pointer()
                                                     .hover(move |style| {
                                                         style.bg(rgb(theme.bg_hover))
@@ -521,8 +526,9 @@ impl WorkspaceApp {
                                                             .text_color(rgb(theme.text_muted))
                                                             .child(snippet),
                                                     )
-                                            }),
-                                        ))
+                                                    },
+                                                )),
+                                        )
                                     }),
                             )
                         })
@@ -543,7 +549,7 @@ impl WorkspaceApp {
                                 .flex_none()
                                 .flex()
                                 .flex_col()
-                                .gap(px(10.0))
+                                .gap(px(self.tokens.spacing.two_half))
                                 .p(px(14.0))
                                 .border_t_1()
                                 .border_color(rgba((theme.border << 8) | PLAYER_BORDER_ALPHA))
@@ -598,12 +604,12 @@ impl WorkspaceApp {
                                         .flex()
                                         .items_center()
                                         .justify_between()
-                                        .gap(px(10.0))
+                                        .gap(px(self.tokens.spacing.two_half))
                                         .child(
                                             div()
                                                 .flex()
                                                 .items_center()
-                                                .gap(px(8.0))
+                                                .gap(px(self.tokens.spacing.two))
                                                 .child(self.terminal_cast_player_button(
                                                     if player.playing {
                                                         LucideIcon::Pause
@@ -645,7 +651,7 @@ impl WorkspaceApp {
                                             div()
                                                 .flex()
                                                 .items_center()
-                                                .gap(px(8.0))
+                                                .gap(px(self.tokens.spacing.two))
                                                 .child(self.terminal_cast_text_button(
                                                     "-10s",
                                                     cx.listener(|this, _event, _window, cx| {

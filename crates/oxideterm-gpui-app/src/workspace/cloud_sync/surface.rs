@@ -523,7 +523,7 @@ impl CloudSyncPageRenderer {
          -> AnyElement {
             let content = div()
                 .w_full()
-                .py(px(2.0))
+                .py(px(self.tokens.spacing.half))
                 .flex()
                 .items_center()
                 .justify_center()
@@ -646,7 +646,7 @@ impl CloudSyncPageRenderer {
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -671,14 +671,14 @@ impl CloudSyncPageRenderer {
                     .flex()
                     .flex_wrap()
                     .items_start()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .min_w(px(0.0))
                             .flex_1()
                             .flex()
                             .flex_wrap()
-                            .gap(px(10.0))
+                            .gap(px(self.tokens.spacing.two_half))
                             .child(self.render_cloud_sync_overview_fact(
                                 LucideIcon::Server,
                                 "plugin.cloud_sync.fields.backend",
@@ -718,7 +718,7 @@ impl CloudSyncPageRenderer {
                             .flex_wrap()
                             .items_center()
                             .justify_end()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .when(show_github_oauth, |toolbar| {
                                 toolbar.child(self.render_cloud_sync_toolbar_button(
                                     LucideIcon::KeyRound,
@@ -821,7 +821,7 @@ impl CloudSyncPageRenderer {
             .min_w(px(170.0))
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .text_color(rgb(theme.text_muted))
             .child(Self::render_lucide_icon(icon, 15.0, rgb(theme.accent)))
@@ -830,7 +830,7 @@ impl CloudSyncPageRenderer {
                     .min_w(px(0.0))
                     .flex()
                     .flex_col()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .child(div().text_color(rgb(theme.text_muted)).child(
                         self.render_display_text_with_role(
                             SelectableTextRole::NonSelectable,
@@ -939,8 +939,8 @@ impl CloudSyncPageRenderer {
         let mut list = div()
             .flex()
             .flex_col()
-            .gap(px(4.0))
-            .pl(px(20.0))
+            .gap(px(self.tokens.spacing.one))
+            .pl(px(self.tokens.spacing.five))
             .text_size(px(self.tokens.metrics.ui_text_sm))
             .line_height(px(20.0))
             .text_color(rgb(theme.text_muted));
@@ -949,7 +949,7 @@ impl CloudSyncPageRenderer {
                 div()
                     .flex()
                     .items_start()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(self.render_display_text_with_role(
                         SelectableTextRole::NonSelectable,
                         "cloud-sync-guide-step-index",
@@ -1011,7 +1011,7 @@ impl CloudSyncPageRenderer {
         .min_w(px(0.0))
         .flex()
         .flex_col()
-        .gap(px(16.0))
+        .gap(px(self.tokens.spacing.four))
     }
 
     pub(super) fn render_cloud_sync_toolbar_button(
@@ -1044,7 +1044,7 @@ impl CloudSyncPageRenderer {
                 cloud_sync_theme_alpha(color, CLOUD_SYNC_TW_ALPHA_40)
             })
             .bg(bg)
-            .px(px(12.0))
+            .px(px(self.tokens.spacing.three))
             .py(px(7.0))
             .flex()
             .items_center()
@@ -1174,7 +1174,11 @@ impl CloudSyncPageRenderer {
                 .into_iter()
                 .map(|row| self.render_cloud_sync_meta_line(row.label_key, row.value, cx)),
         );
-        let mut block = div().flex().flex_col().gap(px(8.0)).child(version_block);
+        let mut block = div()
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.two))
+            .child(version_block);
         if let Some(conflict) = cloud_sync_conflict_info(state) {
             let conflict_title = self.render_display_text_with_role(
                 SelectableTextRole::NonSelectable,
@@ -1225,7 +1229,7 @@ impl CloudSyncPageRenderer {
                     .min_w(px(0.0))
                     .flex()
                     .flex_col()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_xs))

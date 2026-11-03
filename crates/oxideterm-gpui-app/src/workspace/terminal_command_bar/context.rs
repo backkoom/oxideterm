@@ -95,7 +95,7 @@ impl WorkspaceApp {
             .h(px(20.0))
             .min_w(px(28.0))
             .flex_none()
-            .px(px(6.0))
+            .px(px(self.tokens.spacing.one_half))
             .flex()
             .items_center()
             .justify_center()
@@ -321,7 +321,9 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         div()
-            .when(index + 1 < total, |item| item.pb(px(2.0)))
+            .when(index + 1 < total, |item| {
+                item.pb(px(self.tokens.spacing.half))
+            })
             .child(self.render_terminal_cwd_entry_row(entry, cx))
             .into_any_element()
     }
@@ -656,11 +658,11 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgba((self.tokens.ui.border << 8) | 0x66))
             .bg(rgba((self.tokens.ui.bg_panel << 8) | 0x4d))
-            .p(px(10.0))
+            .p(px(self.tokens.spacing.two_half))
             .flex()
             .items_center()
             .justify_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(if matches!(icon, LucideIcon::LoaderCircle) {
                 self.render_loading_icon(
@@ -792,7 +794,7 @@ impl WorkspaceApp {
             .flex_none()
             .flex()
             .items_center()
-            .gap(px(2.0))
+            .gap(px(self.tokens.spacing.half))
             .text_color(color)
             .child(Self::render_lucide_icon(icon, 10.0, color))
             .child(count.to_string())
@@ -818,7 +820,7 @@ impl WorkspaceApp {
             trailing.push(
                 div()
                     .flex_none()
-                    .px(px(4.0))
+                    .px(px(self.tokens.spacing.one))
                     .font_family(settings_mono_font_family(self.settings_store.settings()))
                     .child(task_count.to_string())
                     .into_any_element(),
@@ -1021,11 +1023,11 @@ impl WorkspaceApp {
             }
         }
 
-        let mut list = div().flex().flex_col().gap(px(8.0));
+        let mut list = div().flex().flex_col().gap(px(self.tokens.spacing.two));
         for (group, tasks) in groups {
             let mut section = div().flex().flex_col().gap(px(3.0)).child(
                 div()
-                    .px(px(4.0))
+                    .px(px(self.tokens.spacing.one))
                     .flex()
                     .items_center()
                     .gap(px(5.0))
@@ -1141,11 +1143,11 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgba((self.tokens.ui.border << 8) | 0x66))
             .bg(rgba((self.tokens.ui.bg_panel << 8) | 0x4d))
-            .p(px(10.0))
+            .p(px(self.tokens.spacing.two_half))
             .flex()
             .items_center()
             .justify_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(Self::render_lucide_icon(
                 icon,

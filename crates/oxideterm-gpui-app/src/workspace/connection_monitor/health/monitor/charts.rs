@@ -55,7 +55,7 @@ pub(super) fn render_usage(
         .min_w_0()
         .h(px(86.0))
         .px(px(COMPACT_MONITOR_ROW_SIDE_PADDING))
-        .py(px(6.0))
+        .py(px(tokens.spacing.one_half))
         .child(
             div()
                 .size_full()
@@ -63,7 +63,7 @@ pub(super) fn render_usage(
                 .flex()
                 .flex_col()
                 .justify_center()
-                .gap(px(6.0))
+                .gap(px(tokens.spacing.one_half))
                 .px(px(render.tokens.spacing.two))
                 .rounded(px(render.tokens.radii.md))
                 .border_1()
@@ -74,7 +74,7 @@ pub(super) fn render_usage(
                     div()
                         .flex()
                         .items_center()
-                        .gap(px(6.0))
+                        .gap(px(tokens.spacing.one_half))
                         .child(WorkspaceApp::render_lucide_icon(
                             icon,
                             13.0,

@@ -1683,7 +1683,7 @@ impl WorkspaceApp {
                     .child(
                         div()
                             .h(px(COMMAND_PALETTE_INPUT_HEIGHT))
-                            .px(px(12.0))
+                            .px(px(self.tokens.spacing.three))
                             .flex()
                             .items_center()
                             .border_b_1()
@@ -1699,16 +1699,20 @@ impl WorkspaceApp {
                                 LucideIcon::Search,
                                 rgb(self.tokens.ui.text_muted),
                             ))
-                            .child(div().ml(px(8.0)).flex_1().min_w_0().child(
-                                self.render_overlay_query_input(
-                                    WorkspaceImeTarget::CommandPalette,
-                                    palette.raw_query,
-                                    query_placeholder,
-                                    14.0,
-                                    20.0,
-                                    cx,
-                                ),
-                            )),
+                            .child(
+                                div()
+                                    .ml(px(self.tokens.spacing.two))
+                                    .flex_1()
+                                    .min_w_0()
+                                    .child(self.render_overlay_query_input(
+                                        WorkspaceImeTarget::CommandPalette,
+                                        palette.raw_query,
+                                        query_placeholder,
+                                        14.0,
+                                        20.0,
+                                        cx,
+                                    )),
+                            ),
                     )
                     .child(
                         div()
@@ -1743,8 +1747,8 @@ impl WorkspaceApp {
                             div()
                                 .border_t_1()
                                 .border_color(rgb(self.tokens.ui.border))
-                                .px(px(12.0))
-                                .py(px(8.0))
+                                .px(px(self.tokens.spacing.three))
+                                .py(px(self.tokens.spacing.two))
                                 .text_size(px(12.0))
                                 .text_color(rgb(self.tokens.ui.error))
                                 .child(error),
@@ -1754,11 +1758,11 @@ impl WorkspaceApp {
                         div()
                             .border_t_1()
                             .border_color(rgb(self.tokens.ui.border))
-                            .px(px(12.0))
-                            .py(px(6.0))
+                            .px(px(self.tokens.spacing.three))
+                            .py(px(self.tokens.spacing.one_half))
                             .flex()
                             .items_center()
-                            .gap(px(12.0))
+                            .gap(px(self.tokens.spacing.three))
                             .text_size(px(11.0))
                             .line_height(px(16.0))
                             .text_color(rgb(self.tokens.ui.text_muted))
@@ -1812,14 +1816,14 @@ impl WorkspaceApp {
 
     fn render_command_palette_mode_badge(&self, mode: PaletteMode) -> AnyElement {
         div()
-            .ml(px(8.0))
-            .mr(px(2.0))
+            .ml(px(self.tokens.spacing.two))
+            .mr(px(self.tokens.spacing.half))
             .rounded(px(self.tokens.radii.xs))
             .bg(rgba(
                 (self.tokens.ui.accent << 8) | COMMAND_PALETTE_MODE_BADGE_ALPHA,
             ))
-            .px(px(6.0))
-            .py(px(2.0))
+            .px(px(self.tokens.spacing.one_half))
+            .py(px(self.tokens.spacing.half))
             .text_size(px(12.0))
             .font_family(settings_mono_font_family(self.settings_store.settings()))
             .font_weight(gpui::FontWeight::SEMIBOLD)
@@ -1853,7 +1857,7 @@ impl WorkspaceApp {
         div()
             .w_full()
             .h(px(COMMAND_PALETTE_VIRTUAL_ROW_HEIGHT))
-            .px(px(12.0))
+            .px(px(self.tokens.spacing.three))
             .flex()
             .items_center()
             .text_size(px(12.0))
@@ -1890,7 +1894,7 @@ impl WorkspaceApp {
         if let Some(detail) = ranked.item.detail.as_ref() {
             label_row = label_row.child(
                 div()
-                    .ml(px(4.0))
+                    .ml(px(self.tokens.spacing.one))
                     .min_w_0()
                     .truncate()
                     .text_size(px(12.0))
@@ -1910,7 +1914,7 @@ impl WorkspaceApp {
             // CommandShortcut ml-auto at the panel edge instead of after text.
             .w_full()
             .h(px(COMMAND_PALETTE_VIRTUAL_ROW_HEIGHT))
-            .px(px(12.0))
+            .px(px(self.tokens.spacing.three))
             .flex()
             .items_center()
             .gap(px(COMMAND_PALETTE_ITEM_GAP))
@@ -1953,7 +1957,7 @@ impl WorkspaceApp {
                         .ml_auto()
                         .rounded(px(self.tokens.radii.xs))
                         .bg(rgb(self.tokens.ui.bg_panel))
-                        .px(px(6.0))
+                        .px(px(self.tokens.spacing.one_half))
                         .py(px(3.0))
                         .text_size(px(11.0))
                         .text_color(rgb(self.tokens.ui.text_muted))
@@ -1991,7 +1995,7 @@ impl WorkspaceApp {
                 div()
                     .w_full()
                     .h(px(COMMAND_PALETTE_VIRTUAL_ROW_HEIGHT))
-                    .px(px(16.0))
+                    .px(px(self.tokens.spacing.four))
                     .flex()
                     .items_center()
                     .text_size(px(14.0))
@@ -2110,10 +2114,10 @@ impl WorkspaceApp {
                     .child(
                         div()
                             .h(px(44.0))
-                            .px(px(16.0))
+                            .px(px(self.tokens.spacing.four))
                             .flex()
                             .items_center()
-                            .gap(px(12.0))
+                            .gap(px(self.tokens.spacing.three))
                             .border_b_1()
                             .border_color(rgb(self.tokens.ui.border))
                             .child(Self::render_lucide_icon(
@@ -2136,8 +2140,8 @@ impl WorkspaceApp {
                                     .border_1()
                                     .border_color(rgb(self.tokens.ui.border))
                                     .bg(rgb(self.tokens.ui.bg))
-                                    .px(px(6.0))
-                                    .py(px(2.0))
+                                    .px(px(self.tokens.spacing.one_half))
+                                    .py(px(self.tokens.spacing.half))
                                     .font_family(settings_mono_font_family(
                                         self.settings_store.settings(),
                                     ))
@@ -2154,8 +2158,8 @@ impl WorkspaceApp {
                         div()
                             .h(px(rows_height))
                             .max_h(px(SHORTCUTS_MODAL_LIST_MAX_HEIGHT))
-                            .px(px(16.0))
-                            .py(px(4.0))
+                            .px(px(self.tokens.spacing.four))
+                            .py(px(self.tokens.spacing.one))
                             .child(tauri_virtual_uniform_list(
                                 "shortcuts-modal-virtual-list",
                                 row_count,
@@ -2178,8 +2182,8 @@ impl WorkspaceApp {
                     )
                     .child(
                         div()
-                            .px(px(16.0))
-                            .py(px(12.0))
+                            .px(px(self.tokens.spacing.four))
+                            .py(px(self.tokens.spacing.three))
                             .flex()
                             .items_center()
                             .justify_between()
@@ -2398,7 +2402,7 @@ impl WorkspaceApp {
             .flex()
             .items_center()
             .justify_between()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .when(show_separator, |item| {
                 item.border_b_1()
                     .border_color(rgba((self.tokens.ui.border << 8) | 0x33))
@@ -2426,8 +2430,8 @@ impl WorkspaceApp {
                     .border_1()
                     .border_color(rgb(self.tokens.ui.border))
                     .bg(rgb(self.tokens.ui.bg_panel))
-                    .px(px(8.0))
-                    .py(px(2.0))
+                    .px(px(self.tokens.spacing.two))
+                    .py(px(self.tokens.spacing.half))
                     .font_family(settings_mono_font_family(self.settings_store.settings()))
                     .text_size(px(self.tokens.metrics.ui_text_xs))
                     .text_color(rgb(self.tokens.ui.text_muted))
@@ -2452,7 +2456,7 @@ impl WorkspaceApp {
                 .h(px(SHORTCUTS_MODAL_VIRTUAL_ROW_HEIGHT))
                 .flex()
                 .items_center()
-                .gap(px(6.0))
+                .gap(px(self.tokens.spacing.one_half))
                 .text_size(px(self.tokens.metrics.ui_text_xs))
                 .font_weight(gpui::FontWeight::MEDIUM)
                 .text_color(rgb(self.tokens.ui.text_muted))
@@ -2592,8 +2596,8 @@ fn command_palette_connection_preview(
         .overflow_y_scroll()
         .border_t_1()
         .border_color(rgb(tokens.ui.border))
-        .px(px(12.0))
-        .py(px(8.0))
+        .px(px(tokens.spacing.three))
+        .py(px(tokens.spacing.two))
         .text_size(px(12.0))
         .line_height(px(18.0))
         .whitespace_normal()

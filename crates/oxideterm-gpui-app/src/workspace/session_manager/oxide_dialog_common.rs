@@ -50,7 +50,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -92,13 +92,13 @@ impl WorkspaceApp {
             .p(px(padding))
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .when_some(title, |card, (icon, label)| {
                 card.child(
                     div()
                         .flex()
                         .items_center()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .text_size(px(self.tokens.metrics.ui_text_sm))
                         .font_weight(gpui::FontWeight::SEMIBOLD)
                         .text_color(rgb(theme.text))
@@ -129,13 +129,13 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_start()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(self.render_oxide_checkbox(id, String::new(), checked, listener))
             .child(
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -205,7 +205,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .flex_col()
-                            .gap(px(4.0))
+                            .gap(px(self.tokens.spacing.one))
                             .font_weight(gpui::FontWeight::MEDIUM)
                             .child(self.render_display_text_with_role(
                                 SelectableTextRole::PlainDocument,
@@ -274,12 +274,12 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(
                 div()
                     .grid()
                     .grid_cols(3)
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .children((0..3).map(|index| {
                         div()
                             .h(px(6.0))
@@ -327,7 +327,7 @@ impl WorkspaceApp {
             .bg(rgba((color << 8) | OXIDE_TONE_BG_ALPHA))
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .text_color(rgb(color))
             .child(
                 div()
@@ -363,7 +363,7 @@ impl WorkspaceApp {
         import_dialog: bool,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let mut list = div().flex().flex_col().gap(px(8.0));
+        let mut list = div().flex().flex_col().gap(px(self.tokens.spacing.two));
         let sections = if import_dialog {
             self.session_manager
                 .read(cx)
@@ -391,7 +391,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .items_start()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(self.render_oxide_checkbox(
                         format!("oxide-settings-{section}"),
                         String::new(),
@@ -506,8 +506,8 @@ impl WorkspaceApp {
             .flex()
             .items_center()
             .justify_end()
-            .gap(px(8.0))
-            .pt(px(8.0))
+            .gap(px(self.tokens.spacing.two))
+            .pt(px(self.tokens.spacing.two))
             .child(self.render_oxide_footer_click_action(
                 self.render_oxide_cancel_button_label(false),
                 ButtonVariant::Outline,

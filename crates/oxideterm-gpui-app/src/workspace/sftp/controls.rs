@@ -19,8 +19,8 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgba((SFTP_YELLOW << 8) | 0x66))
             .bg(rgba((SFTP_YELLOW << 8) | 0x1a))
-            .px(px(12.0))
-            .py(px(8.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.two))
             .text_size(px(SFTP_TEXT_XS))
             .text_color(rgb(self.tokens.ui.text))
             .child(self.render_selectable_text_scoped(
@@ -34,7 +34,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(self.render_sftp_text_button(
                         self.i18n.t("sftp.scp.download_path"),
                         false,

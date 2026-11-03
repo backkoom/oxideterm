@@ -3479,7 +3479,7 @@ impl WorkspaceApp {
             )
             .child(
                 div()
-                    .px(px(12.0))
+                    .px(px(self.tokens.spacing.three))
                     .py(px(7.0))
                     .text_size(px(11.0))
                     .text_color(rgb(theme.text_muted))

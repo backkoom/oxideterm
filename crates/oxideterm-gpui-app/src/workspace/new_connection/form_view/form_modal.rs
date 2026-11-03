@@ -1482,7 +1482,7 @@ impl WorkspaceApp {
             .replace("{{host}}", &parent_title);
         let connections = self.connection_store.connection_infos();
         let has_connections = !connections.is_empty();
-        let mut list = div().flex().flex_col().gap(px(4.0));
+        let mut list = div().flex().flex_col().gap(px(self.tokens.spacing.one));
         for connection in connections {
             list = list.child(self.render_drill_saved_next_hop_row(
                 parent_node_id.clone(),
@@ -1494,17 +1494,17 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(rgba((theme.border << 8) | 0x80))
             .bg(rgba((theme.bg_card << 8) | 0x66))
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .child(
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -1561,10 +1561,10 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.sm))
-            .px(px(8.0))
-            .py(px(6.0))
+            .px(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.one_half))
             .cursor_pointer()
             .hover(|row| row.bg(rgb(theme.bg_hover)))
             .child(Self::render_lucide_icon(
@@ -1578,7 +1578,7 @@ impl WorkspaceApp {
                     .flex_1()
                     .flex()
                     .flex_col()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .child(
                         div()
                             .truncate()
@@ -1601,8 +1601,8 @@ impl WorkspaceApp {
                         .flex_shrink_0()
                         .rounded(px(self.tokens.radii.sm))
                         .bg(rgba((theme.accent << 8) | 0x1a))
-                        .px(px(6.0))
-                        .py(px(2.0))
+                        .px(px(self.tokens.spacing.one_half))
+                        .py(px(self.tokens.spacing.half))
                         .text_size(px(10.0))
                         .text_color(rgb(theme.accent))
                         .child(proxy_badge),

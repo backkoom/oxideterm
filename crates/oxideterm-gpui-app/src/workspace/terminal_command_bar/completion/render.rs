@@ -24,7 +24,7 @@ impl WorkspaceApp {
         let mut menu = div()
             .absolute()
             .bottom_full()
-            .mb(px(4.0))
+            .mb(px(self.tokens.spacing.one))
             .left(px(12.0))
             .w(px(720.0))
             .max_w(relative(0.96))
@@ -58,8 +58,8 @@ impl WorkspaceApp {
                 index == active_scope,
             )
             .rounded_none()
-            .px(px(8.0))
-            .py(px(4.0))
+            .px(px(self.tokens.spacing.two))
+            .py(px(self.tokens.spacing.one))
             .text_size(px(self.tokens.metrics.ui_text_xs))
             .on_mouse_down(
                 MouseButton::Left,
@@ -176,8 +176,8 @@ impl WorkspaceApp {
                         .border_b_1()
                         .border_color(rgba((theme.border << 8) | 0x80))
                         .bg(rgba((theme.bg << 8) | SUGGESTIONS_HEADER_BG_ALPHA))
-                        .px(px(12.0))
-                        .py(px(4.0))
+                        .px(px(self.tokens.spacing.three))
+                        .py(px(self.tokens.spacing.one))
                         .text_size(px(10.0))
                         .font_weight(gpui::FontWeight::MEDIUM)
                         .text_color(rgb(theme.text_muted))
@@ -194,9 +194,9 @@ impl WorkspaceApp {
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
-                    .px(px(12.0))
-                    .py(px(8.0))
+                    .gap(px(self.tokens.spacing.three))
+                    .px(px(self.tokens.spacing.three))
+                    .py(px(self.tokens.spacing.two))
                     .cursor_pointer()
                     .text_size(px(13.0))
                     .text_color(if active {

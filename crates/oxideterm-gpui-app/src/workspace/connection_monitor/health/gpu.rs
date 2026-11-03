@@ -237,7 +237,7 @@ impl HostToolsEntity {
             .bg(rgba((theme.bg_panel << 8) | MONITOR_TINT_ALPHA))
             .flex()
             .flex_col()
-            .gap(px(2.0))
+            .gap(px(tokens.spacing.half))
             .child(
                 div()
                     .text_size(px(10.0))

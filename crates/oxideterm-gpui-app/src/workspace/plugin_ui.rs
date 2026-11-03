@@ -644,7 +644,7 @@ impl WorkspaceApp {
             .py_2()
             .flex()
             .flex_col()
-            .gap(px(10.0))
+            .gap(px(self.tokens.spacing.two_half))
             .bg(rgb(theme.bg_panel))
             .child(self.render_native_plugin_declarative_schema(
                 &panel.plugin_id,
@@ -665,7 +665,7 @@ impl WorkspaceApp {
             .flex_col()
             .items_center()
             .justify_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .text_center()
             .text_color(rgb(theme.text_muted))
             .child(Self::render_lucide_icon(
@@ -798,7 +798,11 @@ impl WorkspaceApp {
         render_generation: u64,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let mut group = div().w_full().flex().flex_col().gap(px(8.0));
+        let mut group = div()
+            .w_full()
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.two));
         for control in controls {
             group = group.child(self.render_native_plugin_declarative_control(
                 plugin_id,
@@ -2162,7 +2166,7 @@ impl WorkspaceApp {
             .w_full()
             .flex()
             .flex_col()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .when_some(
                 self.render_native_plugin_control_label(control),
                 |view, label| view.child(label),
@@ -2239,7 +2243,7 @@ impl WorkspaceApp {
             .w_full()
             .flex()
             .flex_col()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .when_some(
                 self.render_native_plugin_control_label(control),
                 |view, label| view.child(label),
@@ -2293,7 +2297,7 @@ impl WorkspaceApp {
             .flex()
             .items_center()
             .justify_between()
-            .gap(px(10.0))
+            .gap(px(self.tokens.spacing.two_half))
             .text_size(px(self.tokens.metrics.ui_text_sm))
             .child(
                 div()

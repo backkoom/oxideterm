@@ -23,7 +23,7 @@ impl WorkspaceApp {
             .text_color(rgb(theme.text))
             .child(
                 div()
-                    .p(px(24.0))
+                    .p(px(self.tokens.spacing.six))
                     .border_b_1()
                     .border_color(rgb(theme.border))
                     .bg(rgb(theme.bg_panel))
@@ -302,7 +302,7 @@ impl WorkspaceApp {
                     .top(px(16.0))
                     .right(px(16.0))
                     .px_2()
-                    .py(px(4.0))
+                    .py(px(self.tokens.spacing.one))
                     .rounded(px(self.tokens.radii.md))
                     .border_1()
                     .border_color(rgb(theme.border))
@@ -504,23 +504,26 @@ impl WorkspaceApp {
             .unwrap_or("unknown")
             .to_string();
 
-        let mut actions = div().py(px(4.0)).child(self.render_topology_menu_action(
-            LucideIcon::ExternalLink,
-            theme.accent,
-            self.i18n.t("topology.menu.navigate_session"),
-            false,
-            false,
-            {
-                let node_id = node_id.clone();
-                move |this, _event, _window, _cx| {
-                    if let Some(node_id) = node_id.clone() {
-                        this.active_ssh_node_id = Some(node_id);
-                        this.active_sidebar_section = SidebarSection::Sessions;
-                    }
-                }
-            },
-            cx,
-        ));
+        let mut actions =
+            div()
+                .py(px(self.tokens.spacing.one))
+                .child(self.render_topology_menu_action(
+                    LucideIcon::ExternalLink,
+                    theme.accent,
+                    self.i18n.t("topology.menu.navigate_session"),
+                    false,
+                    false,
+                    {
+                        let node_id = node_id.clone();
+                        move |this, _event, _window, _cx| {
+                            if let Some(node_id) = node_id.clone() {
+                                this.active_ssh_node_id = Some(node_id);
+                                this.active_sidebar_section = SidebarSection::Sessions;
+                            }
+                        }
+                    },
+                    cx,
+                ));
 
         if is_connected {
             actions = actions
@@ -625,7 +628,7 @@ impl WorkspaceApp {
         .child(
             div()
                 .px_3()
-                .py(px(6.0))
+                .py(px(self.tokens.spacing.one_half))
                 .border_t_1()
                 .border_color(rgba((theme.border << 8) | TOPOLOGY_PANEL_BORDER_ALPHA_50))
                 // Footer paint is flush with the popover bottom; keep it

@@ -120,15 +120,15 @@ impl OxideExportConnectionRowRenderer {
         let checkbox_manager = self.session_manager.clone();
         let theme = self.tokens.ui;
         div()
-            .px(px(8.0))
-            .when(index == 0, |item| item.pt(px(8.0)))
-            .pb(px(4.0))
+            .px(px(self.tokens.spacing.two))
+            .when(index == 0, |item| item.pt(px(self.tokens.spacing.two)))
+            .pb(px(self.tokens.spacing.one))
             .child(
                 div()
-                    .p(px(8.0))
+                    .p(px(self.tokens.spacing.two))
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .rounded(px(self.tokens.radii.sm))
                     .hover(move |item| item.bg(rgb(theme.bg_hover)))
                     .cursor_pointer()
@@ -157,12 +157,12 @@ impl OxideExportConnectionRowRenderer {
                             .min_w(px(0.0))
                             .flex()
                             .flex_col()
-                            .gap(px(2.0))
+                            .gap(px(self.tokens.spacing.half))
                             .child(
                                 div()
                                     .flex()
                                     .items_center()
-                                    .gap(px(6.0))
+                                    .gap(px(self.tokens.spacing.one_half))
                                     .truncate()
                                     .text_size(px(self.tokens.metrics.ui_text_sm))
                                     .font_weight(gpui::FontWeight::MEDIUM)
@@ -171,8 +171,8 @@ impl OxideExportConnectionRowRenderer {
                                     .when(is_new_since_last_export, |item| {
                                         item.child(
                                             div()
-                                                .px(px(6.0))
-                                                .py(px(2.0))
+                                                .px(px(self.tokens.spacing.one_half))
+                                                .py(px(self.tokens.spacing.half))
                                                 .rounded_full()
                                                 .bg(rgba(
                                                     (OXIDE_GREEN_500 << 8)
@@ -180,7 +180,7 @@ impl OxideExportConnectionRowRenderer {
                                                 ))
                                                 .flex()
                                                 .items_center()
-                                                .gap(px(2.0))
+                                                .gap(px(self.tokens.spacing.half))
                                                 .text_size(px(10.0))
                                                 .font_weight(gpui::FontWeight::SEMIBOLD)
                                                 .text_color(rgb(OXIDE_GREEN_500))
@@ -230,13 +230,17 @@ struct OxideExportForwardGroupRenderer {
 
 impl OxideExportForwardGroupRenderer {
     fn render(&self, row: OxideExportForwardGroupRow, cx: &mut App) -> AnyElement {
-        let mut group = div().flex().flex_col().gap(px(4.0)).child(
-            div()
-                .text_size(px(self.tokens.metrics.ui_text_xs))
-                .font_weight(gpui::FontWeight::SEMIBOLD)
-                .text_color(rgb(self.tokens.ui.text))
-                .child(row.owner),
-        );
+        let mut group = div()
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.one))
+            .child(
+                div()
+                    .text_size(px(self.tokens.metrics.ui_text_xs))
+                    .font_weight(gpui::FontWeight::SEMIBOLD)
+                    .text_color(rgb(self.tokens.ui.text))
+                    .child(row.owner),
+            );
         for forward in row.forwards.iter() {
             let checked = self
                 .session_manager
@@ -249,11 +253,11 @@ impl OxideExportForwardGroupRenderer {
             group = group.child(
                 div()
                     .px_1()
-                    .py(px(4.0))
+                    .py(px(self.tokens.spacing.one))
                     .rounded(px(self.tokens.radii.sm))
                     .flex()
                     .items_start()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .hover({
                         let hover = self.tokens.ui.bg_hover;
                         move |item| item.bg(rgb(hover))
@@ -282,7 +286,7 @@ impl OxideExportForwardGroupRenderer {
                         div()
                             .flex()
                             .flex_col()
-                            .gap(px(2.0))
+                            .gap(px(self.tokens.spacing.half))
                             .text_size(px(self.tokens.metrics.ui_text_xs))
                             .child(
                                 div()
@@ -297,7 +301,10 @@ impl OxideExportForwardGroupRenderer {
                     ),
             );
         }
-        div().pb(px(12.0)).child(group).into_any_element()
+        div()
+            .pb(px(self.tokens.spacing.three))
+            .child(group)
+            .into_any_element()
     }
 }
 
@@ -386,10 +393,10 @@ impl WorkspaceApp {
                 .border_1()
                 .border_color(rgb(theme.border))
                 .bg(rgb(theme.bg))
-                .p(px(8.0))
+                .p(px(self.tokens.spacing.two))
                 .child(
                     div()
-                        .py(px(16.0))
+                        .py(px(self.tokens.spacing.four))
                         .text_align(gpui::TextAlign::Center)
                         .text_size(px(self.tokens.metrics.ui_text_sm))
                         .text_color(rgb(theme.text_muted))
@@ -477,7 +484,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .flex()
@@ -549,7 +556,7 @@ impl WorkspaceApp {
                     div()
                         .flex()
                         .items_center()
-                        .gap(px(6.0))
+                        .gap(px(self.tokens.spacing.one_half))
                         .text_size(px(self.tokens.metrics.ui_text_xs))
                         .text_color(rgb(OXIDE_GREEN_500))
                         .child(Self::render_lucide_icon(
@@ -668,7 +675,7 @@ impl WorkspaceApp {
                     div()
                         .flex()
                         .flex_col()
-                        .gap(px(4.0))
+                        .gap(px(self.tokens.spacing.one))
                         .child(
                             div()
                                 .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -1078,7 +1085,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .opacity(if enabled { 1.0 } else { 0.6 })
                     .cursor_pointer()
                     .child(self.render_oxide_checkbox(

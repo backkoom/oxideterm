@@ -49,7 +49,7 @@ impl WorkspaceApp {
             .p_4()
             .flex()
             .flex_col()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(
                 div()
                     .flex()
@@ -95,7 +95,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_wrap()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .justify_end()
                     .when(can_save, |actions| {
                         actions.child(self.render_forward_button(
@@ -201,10 +201,10 @@ impl WorkspaceApp {
                         .border_1()
                         .border_color(forwards_theme_border(theme.border, has_background))
                         .bg(forwards_theme_panel_bg(theme.bg_panel, has_background))
-                        .p(px(24.0))
+                        .p(px(self.tokens.spacing.six))
                         .flex()
                         .flex_col()
-                        .gap(px(16.0))
+                        .gap(px(self.tokens.spacing.four))
                         .child(
                             div()
                                 .flex()
@@ -234,7 +234,7 @@ impl WorkspaceApp {
                             div()
                                 .flex()
                                 .items_center()
-                                .gap(px(8.0))
+                                .gap(px(self.tokens.spacing.two))
                                 .text_size(px(self.tokens.metrics.ui_text_xs))
                                 .text_color(rgb(theme.text_muted))
                                 .child(format!("{}:", self.i18n.t("forwards.form.type")))
@@ -260,7 +260,7 @@ impl WorkspaceApp {
                             div()
                                 .flex()
                                 .justify_end()
-                                .gap(px(8.0))
+                                .gap(px(self.tokens.spacing.two))
                                 .child(self.render_forward_button(
                                     self.i18n.t("forwards.form.cancel"),
                                     None,
@@ -397,7 +397,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_wrap()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(self.render_forward_type_choice(
                 ForwardType::Local,
                 "forwards.form.type_local",
@@ -432,7 +432,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .cursor_pointer()
             .text_size(px(self.tokens.metrics.ui_text_sm))
             .text_color(rgb(theme.text))
@@ -477,7 +477,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .px_2()
             .cursor_pointer()
             .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -544,7 +544,7 @@ impl WorkspaceApp {
             .flex()
             .flex_wrap()
             .items_start()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .p_4()
             .rounded(px(self.tokens.radii.xs))
             .border_1()
@@ -616,7 +616,7 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -627,7 +627,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .min_w_0()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .flex_1()

@@ -412,9 +412,16 @@ impl WorkspaceApp {
                         } else {
                             gpui::CursorStyle::Arrow
                         })
-                        .child(div().w(px(6.0)).flex().flex_wrap().gap(px(2.0)).children(
-                            (0..6).map(|_| div().size(px(2.0)).bg(rgb(self.tokens.ui.text_muted))),
-                        ))
+                        .child(
+                            div()
+                                .w(px(6.0))
+                                .flex()
+                                .flex_wrap()
+                                .gap(px(self.tokens.spacing.half))
+                                .children((0..6).map(|_| {
+                                    div().size(px(2.0)).bg(rgb(self.tokens.ui.text_muted))
+                                })),
+                        )
                         .when(checked && !inherited, |grip| {
                             grip.on_drag(drag, |drag, _, _, cx| cx.new(|_| drag.clone()))
                         }),

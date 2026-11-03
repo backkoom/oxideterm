@@ -333,7 +333,7 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .when(!draft, |row| row.flex_wrap())
-            .gap(px(8.0));
+            .gap(px(self.tokens.spacing.two));
         for image in images {
             let thumbnail = {
                 let mut cache = self
@@ -502,8 +502,8 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .flex_col()
-            .gap(px(6.0))
-            .p(px(8.0));
+            .gap(px(self.tokens.spacing.one_half))
+            .p(px(self.tokens.spacing.two));
         if !images.is_empty() {
             column = column.child(
                 div()

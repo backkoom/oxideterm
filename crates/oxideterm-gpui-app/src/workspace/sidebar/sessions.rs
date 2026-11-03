@@ -1612,7 +1612,7 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .px_3()
             .py_2()
             .border_b_1()
@@ -1626,9 +1626,9 @@ impl WorkspaceApp {
                 .flex()
                 .flex_row()
                 .items_center()
-                .gap(px(4.0))
+                .gap(px(self.tokens.spacing.one))
                 .rounded(px(self.tokens.radii.md))
-                .px(px(6.0))
+                .px(px(self.tokens.spacing.one_half))
                 .text_size(px(12.0))
                 .font_weight(if root_active {
                     gpui::FontWeight::MEDIUM
@@ -1685,7 +1685,7 @@ impl WorkspaceApp {
                         .flex()
                         .items_center()
                         .rounded(px(self.tokens.radii.md))
-                        .px(px(6.0))
+                        .px(px(self.tokens.spacing.one_half))
                         .truncate()
                         .text_size(px(12.0))
                         .font_weight(if is_last {
@@ -1756,7 +1756,7 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(if focused_node_id.is_some() {
                 "📍"
             } else {
@@ -1810,7 +1810,7 @@ impl WorkspaceApp {
             .flex_col()
             .items_center()
             .justify_center()
-            .py(px(32.0))
+            .py(px(self.tokens.spacing.eight))
             .px_4()
             .text_center()
             .text_color(rgb(theme.text_muted))
@@ -1920,7 +1920,7 @@ impl WorkspaceApp {
             .p_3()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(border_color)
@@ -1953,7 +1953,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_row()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(self.render_session_status_dot(status))
                     .child(if matches!(status.icon, LucideIcon::LoaderCircle) {
                         self.render_connecting_session_icon(
@@ -1984,7 +1984,7 @@ impl WorkspaceApp {
                             .flex_1()
                             .flex()
                             .flex_col()
-                            .gap(px(2.0))
+                            .gap(px(self.tokens.spacing.half))
                             .child(
                                 div()
                                     .min_w(px(0.0))
@@ -2023,10 +2023,10 @@ impl WorkspaceApp {
                                 .flex()
                                 .flex_row()
                                 .items_center()
-                                .gap(px(4.0))
+                                .gap(px(self.tokens.spacing.one))
                                 .rounded(px(self.tokens.radii.md))
-                                .px(px(6.0))
-                                .py(px(2.0))
+                                .px(px(self.tokens.spacing.one_half))
+                                .py(px(self.tokens.spacing.half))
                                 .bg(rgba(
                                     (SESSION_FOCUS_EMERALD << 8)
                                         | SESSION_FOCUS_TERMINAL_BADGE_BG_ALPHA,
@@ -2053,8 +2053,8 @@ impl WorkspaceApp {
                         row_el.child(
                             div()
                                 .rounded(px(self.tokens.radii.md))
-                                .px(px(8.0))
-                                .py(px(4.0))
+                                .px(px(self.tokens.spacing.two))
+                                .py(px(self.tokens.spacing.one))
                                 .text_size(px(11.0))
                                 .text_color(rgb(SESSION_FOCUS_EMERALD))
                                 .bg(rgba(
@@ -2094,7 +2094,7 @@ impl WorkspaceApp {
                     .border_color(rgba((theme.border << 8) | SESSION_FOCUS_DIVIDER_ALPHA))
                     .flex()
                     .flex_col()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .children(row.node_view.terminal_ids.iter().enumerate().map(
                         |(index, session_id)| {
                             self.render_active_session_focus_terminal(*session_id, index + 1, cx)
@@ -2112,7 +2112,7 @@ impl WorkspaceApp {
                     // additional rows instead of extending beyond the card.
                     .flex_wrap()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .children(self.render_active_session_focus_actions(&row, cx)),
             );
         }
@@ -2235,7 +2235,7 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_center()
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .rounded(px(self.tokens.radii.md))
             .px_2()
             .bg(if active {
@@ -2397,7 +2397,7 @@ impl WorkspaceApp {
             .flex()
             .flex_row()
             .items_center()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .rounded(px(self.tokens.radii.md))
             .px(px(7.0))
             .text_size(px(11.0))
@@ -2767,7 +2767,7 @@ impl WorkspaceApp {
                 ))
                 .child(
                     div()
-                        .ml(px(6.0))
+                        .ml(px(self.tokens.spacing.one_half))
                         .min_w(px(0.0))
                         .flex_1()
                         .truncate()
@@ -2778,7 +2778,7 @@ impl WorkspaceApp {
                 .when_some(group.connection_name.as_ref(), |header, connection_name| {
                     header.child(
                         div()
-                            .ml(px(6.0))
+                            .ml(px(self.tokens.spacing.one_half))
                             .min_w(px(0.0))
                             .truncate()
                             .text_size(px(SESSION_TREE_META_TEXT_SIZE))
@@ -2796,7 +2796,7 @@ impl WorkspaceApp {
                 ))
                 .child(
                     div()
-                        .ml(px(6.0))
+                        .ml(px(self.tokens.spacing.one_half))
                         .min_w(px(0.0))
                         .flex_1()
                         .truncate()
@@ -2944,7 +2944,7 @@ impl WorkspaceApp {
                     .w_full()
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(
                         div()
                             .min_w_0()
@@ -2970,7 +2970,7 @@ impl WorkspaceApp {
                         .min_w_0()
                         .flex()
                         .items_center()
-                        .gap(px(6.0))
+                        .gap(px(self.tokens.spacing.one_half))
                         .child(Self::render_lucide_icon(
                             LucideIcon::ArrowDownRight,
                             SESSION_TREE_CHILD_ICON_SIZE,
@@ -3284,7 +3284,7 @@ impl WorkspaceApp {
                 row.title.clone(),
                 cx,
             )
-            .gap(px(6.0))
+            .gap(px(self.tokens.spacing.one_half))
             .child(self.render_animated_chevron(
                 (
                     SharedString::from(format!("standalone-chevron-{}", session.connection_id)),
@@ -3462,22 +3462,27 @@ impl WorkspaceApp {
         .when(
             !local_group || matches!(status.icon, LucideIcon::LoaderCircle),
             |row| {
-                row.child(div().ml(px(6.0)).mr(px(6.0)).child(
-                    if matches!(status.icon, LucideIcon::LoaderCircle) {
-                        self.render_connecting_session_icon(
-                            (
-                                gpui::SharedString::from(format!("session-connecting-{node_id:?}")),
-                                0usize,
-                            ),
-                            SESSION_TREE_ICON_SIZE,
-                            row_text,
-                            cx,
-                        )
-                    } else {
-                        self.node_session_icon(&node_id)
-                            .render(SESSION_TREE_ICON_SIZE, muted_text)
-                    },
-                ))
+                row.child(
+                    div()
+                        .ml(px(self.tokens.spacing.one_half))
+                        .mr(px(self.tokens.spacing.one_half))
+                        .child(if matches!(status.icon, LucideIcon::LoaderCircle) {
+                            self.render_connecting_session_icon(
+                                (
+                                    gpui::SharedString::from(format!(
+                                        "session-connecting-{node_id:?}"
+                                    )),
+                                    0usize,
+                                ),
+                                SESSION_TREE_ICON_SIZE,
+                                row_text,
+                                cx,
+                            )
+                        } else {
+                            self.node_session_icon(&node_id)
+                                .render(SESSION_TREE_ICON_SIZE, muted_text)
+                        }),
+                )
             },
         )
         .child(
@@ -3522,7 +3527,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_row()
                     .items_center()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .text_size(px(SESSION_TREE_META_TEXT_SIZE))
                     .text_color(muted_text)
                     .when(!local_group, |count| {
@@ -3596,7 +3601,7 @@ impl WorkspaceApp {
         status: SessionStatusStyle,
     ) -> AnyElement {
         div()
-            .ml(px(6.0))
+            .ml(px(self.tokens.spacing.one_half))
             .size(px(12.0))
             .flex_none()
             .flex()
@@ -3697,12 +3702,12 @@ impl WorkspaceApp {
                             .rounded_full()
                             .bg(rgb(theme.accent)),
                     )
-                    .pl(px(6.0))
+                    .pl(px(self.tokens.spacing.one_half))
                 })
                 .child(icon.render(SESSION_TREE_CHILD_ICON_SIZE, text_color))
                 .child(
                     div()
-                        .ml(px(6.0))
+                        .ml(px(self.tokens.spacing.one_half))
                         .min_w(px(0.0))
                         .flex_1()
                         .truncate()
@@ -3780,7 +3785,7 @@ impl WorkspaceApp {
                 .flex()
                 .flex_row()
                 .items_center()
-                .gap(px(6.0))
+                .gap(px(self.tokens.spacing.one_half))
                 .rounded_none()
                 .px_2()
                 .text_size(px(SESSION_TREE_TEXT_SIZE))

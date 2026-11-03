@@ -105,7 +105,7 @@ impl WorkspaceApp {
             .overflow_y_scrollbar()
             .flex()
             .flex_col()
-            .gap(px(4.0));
+            .gap(px(self.tokens.spacing.one));
         for shell in shells {
             let shell_id = shell.id.clone();
             let selected = selected_shell_id.as_deref() == Some(shell.id.as_str());
@@ -127,11 +127,11 @@ impl WorkspaceApp {
                         rgba(theme.bg_hover << 8)
                     })
                     .hover(move |style| style.bg(rgb(theme.bg_hover)))
-                    .px(px(12.0))
-                    .py(px(10.0))
+                    .px(px(self.tokens.spacing.three))
+                    .py(px(self.tokens.spacing.two_half))
                     .flex()
                     .items_center()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .cursor_pointer()
                     .child(Self::render_lucide_icon(
                         LucideIcon::Terminal,
@@ -148,12 +148,12 @@ impl WorkspaceApp {
                             .flex_1()
                             .flex()
                             .flex_col()
-                            .gap(px(2.0))
+                            .gap(px(self.tokens.spacing.half))
                             .child(
                                 div()
                                     .flex()
                                     .items_center()
-                                    .gap(px(8.0))
+                                    .gap(px(self.tokens.spacing.two))
                                     .text_size(px(self.tokens.metrics.ui_text_sm))
                                     .font_weight(gpui::FontWeight::MEDIUM)
                                     .text_color(rgb(theme.text))
@@ -202,7 +202,7 @@ impl WorkspaceApp {
                     .border_color(rgb(theme.border))
                     .bg(rgb(theme.bg_panel))
                     .shadow(oxideterm_gpui_ui::theme_overlay_shadow(&self.tokens))
-                    .p(px(16.0))
+                    .p(px(self.tokens.spacing.four))
                     .flex()
                     .flex_col()
                     .gap(px(14.0))
@@ -226,11 +226,11 @@ impl WorkspaceApp {
                             .w_full()
                             .border_t_1()
                             .border_color(rgb(theme.border))
-                            .pt(px(12.0))
+                            .pt(px(self.tokens.spacing.three))
                             .flex()
                             .items_center()
                             .justify_between()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(self.workspace_toolbar_action_button(
                                 self.i18n.t("settings_view.ai.profile_set_default"),
                                 None,
@@ -263,7 +263,7 @@ impl WorkspaceApp {
                             .child(
                                 div()
                                     .flex()
-                                    .gap(px(8.0))
+                                    .gap(px(self.tokens.spacing.two))
                                     .child(self.workspace_toolbar_action_button(
                                         self.i18n.t("sessionManager.edit_properties.cancel"),
                                         None,

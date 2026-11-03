@@ -368,13 +368,13 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(self.render_forwards_section_title(self.i18n.t("forwards.quick.title")))
             .child(
                 div()
                     .flex()
                     .flex_row()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(self.render_forwards_quick_button(
                         "forwards.quick.jupyter",
                         TW_ORANGE_500,
@@ -496,7 +496,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .flex()
@@ -506,7 +506,7 @@ impl WorkspaceApp {
                     .child(
                         div()
                             .flex()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(self.render_forward_icon_button(
                                 LucideIcon::RefreshCcw,
                                 theme.text_muted,
@@ -575,7 +575,7 @@ impl WorkspaceApp {
                             .flex_col()
                             .items_center()
                             .justify_center()
-                            .gap(px(12.0))
+                            .gap(px(self.tokens.spacing.three))
                             .rounded_b(px(rounded_shell_child_radius(self.tokens.radii.lg)))
                             .text_size(px(self.tokens.metrics.ui_text_sm))
                             .text_color(rgb(theme.text_muted))
@@ -662,7 +662,7 @@ impl WorkspaceApp {
         .child(
             div()
                 .w(px(128.0))
-                .pr(px(16.0))
+                .pr(px(self.tokens.spacing.four))
                 .text_align(gpui::TextAlign::Right)
                 .child(self.render_forward_ui_text(self.i18n.t("forwards.table.actions"))),
         )
@@ -712,10 +712,10 @@ impl WorkspaceApp {
         .child(
             div()
                 .w(px(128.0))
-                .pr(px(10.0))
+                .pr(px(self.tokens.spacing.two_half))
                 .flex()
                 .justify_end()
-                .gap(px(4.0))
+                .gap(px(self.tokens.spacing.one))
                 .when(active, |actions| {
                     actions.child(self.render_forward_icon_button(
                         LucideIcon::Square,
@@ -822,7 +822,7 @@ impl WorkspaceApp {
             div()
                 .flex()
                 .items_center()
-                .gap(px(4.0))
+                .gap(px(self.tokens.spacing.one))
                 .truncate()
                 .font_family(self.forward_mono_font())
                 .text_color(rgb(self.tokens.ui.text))

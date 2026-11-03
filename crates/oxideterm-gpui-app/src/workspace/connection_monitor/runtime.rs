@@ -95,14 +95,14 @@ impl WorkspaceApp {
                     .flex_wrap()
                     .items_start()
                     .justify_between()
-                    .gap(px(16.0))
+                    .gap(px(self.tokens.spacing.four))
                     .child(
                         div()
                             .min_w(px(280.0))
                             .flex_1()
                             .flex()
                             .flex_col()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(
                                 div()
                                     .text_size(px(self.tokens.metrics.ui_text_2xl))
@@ -191,11 +191,11 @@ impl WorkspaceApp {
         let active = self.host_tools.read(cx).active_runtime_section == section;
         let content = div()
             .w_full()
-            .py(px(2.0))
+            .py(px(self.tokens.spacing.half))
             .flex()
             .items_center()
             .justify_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(Self::render_lucide_icon(
                 icon,
                 16.0,

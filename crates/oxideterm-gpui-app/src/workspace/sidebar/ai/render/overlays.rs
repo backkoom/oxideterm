@@ -316,7 +316,7 @@ impl WorkspaceApp {
         };
         conversation_rows.sort_by(|a, b| b.updated_at_ms.cmp(&a.updated_at_ms).then_with(|| b.id.cmp(&a.id)));
         list = list.child(
-            div().flex_none().h(px(36.0)).px(px(12.0)).flex().items_center().justify_between()
+            div().flex_none().h(px(36.0)).px(px(self.tokens.spacing.three)).flex().items_center().justify_between()
                 .child(div().text_size(px(11.0)).text_color(rgb(self.tokens.ui.text_muted)).child(self.i18n.t(if show_archived { "ai.chat.archived_conversations" } else { "ai.chat.conversations" })))
                 .child(div().cursor_pointer().text_size(px(11.0)).text_color(rgb(self.tokens.ui.accent))
                     .child(self.i18n.t(if show_archived { "ai.chat.show_active" } else { "ai.chat.archived_conversations" }))
@@ -329,7 +329,7 @@ impl WorkspaceApp {
         if conversation_rows.is_empty() && !loading && !failed {
             list = list.child(
                 div()
-                    .p(px(16.0))
+                    .p(px(self.tokens.spacing.four))
                     .text_center()
                     .text_size(px(13.0))
                     .text_color(rgb(self.tokens.ui.text_muted))
@@ -434,7 +434,7 @@ impl WorkspaceApp {
                 },
             )
             .h(px(20.0))
-            .px(px(4.0))
+            .px(px(self.tokens.spacing.one))
             .rounded(px(self.tokens.radii.sm))
             .border_color(rgba((self.tokens.ui.accent << 8) | 0x66))
             .bg(rgba((self.tokens.ui.bg << 8) | 0x80))
@@ -551,8 +551,8 @@ impl WorkspaceApp {
             .flex()
             .items_center()
             .justify_between()
-            .px(px(12.0))
-            .py(px(6.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.one_half))
             .border_l_2()
             .border_color(if is_active {
                 rgb(self.tokens.ui.accent)
@@ -578,13 +578,13 @@ impl WorkspaceApp {
                     .flex_1()
                     .flex()
                     .flex_col()
-                    .pr(px(8.0))
-                    .gap(px(2.0))
+                    .pr(px(self.tokens.spacing.two))
+                    .gap(px(self.tokens.spacing.half))
                     .child(
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(6.0))
+                            .gap(px(self.tokens.spacing.one_half))
                             .min_w_0()
                             .when(conversation.cli_origin, |row| {
                                 row.child(
@@ -619,7 +619,7 @@ impl WorkspaceApp {
                     .flex_none()
                     .flex()
                     .items_center()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .child(rename_button)
                     .child(div().id(SharedString::from(format!("ai-conversation-archive-{archive_id}"))).size(px(24.0)).flex().items_center().justify_center()
                         .rounded(px(self.tokens.radii.md)).cursor_pointer()
@@ -674,7 +674,7 @@ impl WorkspaceApp {
     pub(in crate::workspace) fn render_ai_chat_menu(&self, cx: &mut Context<Self>) -> AnyElement {
         material_surface(&self.tokens, div(), MaterialRole::Popover)
             .w(px(AI_CHAT_MENU_WIDTH))
-            .py(px(2.0))
+            .py(px(self.tokens.spacing.half))
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
@@ -712,12 +712,12 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let item = div()
-            .mx(px(2.0))
+            .mx(px(self.tokens.spacing.half))
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.md))
-            .px(px(10.0))
+            .px(px(self.tokens.spacing.two_half))
             .py(px(7.0))
             .text_size(px(12.0))
             .text_color(if destructive {

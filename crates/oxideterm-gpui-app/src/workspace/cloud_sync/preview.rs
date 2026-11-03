@@ -540,7 +540,7 @@ impl CloudSyncPageRenderer {
             self.tokens.ui.text_heading,
             cx,
         );
-        let mut block = div().flex().flex_col().gap(px(8.0));
+        let mut block = div().flex().flex_col().gap(px(self.tokens.spacing.two));
         for row in rows {
             let action = row.action.clone();
             block = block.child(self.render_cloud_sync_check_row(
@@ -807,7 +807,7 @@ impl CloudSyncPageRenderer {
             .border_1()
             .border_color(rgba((theme.border << 8) | 0x55))
             .bg(rgba((theme.bg_panel << 8) | 0x5F))
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .into_any_element()
     }
 
@@ -850,7 +850,7 @@ impl CloudSyncPageRenderer {
                 .min_w(px(0.0))
                 .flex()
                 .flex_wrap()
-                .gap(px(8.0)),
+                .gap(px(self.tokens.spacing.two)),
             |grid, row| {
                 grid.child(
                     div()
@@ -865,7 +865,7 @@ impl CloudSyncPageRenderer {
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -906,22 +906,22 @@ impl CloudSyncPageRenderer {
         div()
             .w_full()
             .min_w(px(0.0))
-            .py(px(8.0))
+            .py(px(self.tokens.spacing.two))
             .when(!flat, |row| {
                 row.rounded(px(self.tokens.radii.sm))
                     .bg(rgba((theme.bg_card << 8) | 0x66))
-                    .px(px(10.0))
+                    .px(px(self.tokens.spacing.two_half))
             })
             .flex()
             .items_center()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .min_w(px(0.0))
                     .flex_1()
                     .flex()
                     .flex_col()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))
@@ -950,7 +950,7 @@ impl CloudSyncPageRenderer {
                     .flex()
                     .flex_wrap()
                     .justify_end()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(self.render_cloud_sync_local_diff_chip(
                         item.local_status,
                         local_status,
@@ -1300,45 +1300,45 @@ impl CloudSyncPageRenderer {
         let theme = self.tokens.ui;
         let status_key = self.cloud_sync_field_diff_status_key(item.status);
         let item_name = self.cloud_sync_field_diff_item_name(item);
-        let fields =
-            item.fields
-                .iter()
-                .fold(div().flex().flex_col().gap(px(2.0)), |fields, field| {
-                    let mut field_text = self.i18n_replace(
-                        "plugin.cloud_sync.field_diff.field_change",
-                        &[
-                            ("field", self.i18n.t(field.label_key)),
-                            (
-                                "before",
-                                self.cloud_sync_field_diff_value(field.before.as_deref()),
-                            ),
-                            (
-                                "after",
-                                self.cloud_sync_field_diff_value(field.after.as_deref()),
-                            ),
-                        ],
+        let fields = item.fields.iter().fold(
+            div().flex().flex_col().gap(px(self.tokens.spacing.half)),
+            |fields, field| {
+                let mut field_text = self.i18n_replace(
+                    "plugin.cloud_sync.field_diff.field_change",
+                    &[
+                        ("field", self.i18n.t(field.label_key)),
+                        (
+                            "before",
+                            self.cloud_sync_field_diff_value(field.before.as_deref()),
+                        ),
+                        (
+                            "after",
+                            self.cloud_sync_field_diff_value(field.after.as_deref()),
+                        ),
+                    ],
+                );
+                if let Some(outcome) = field.merge_outcome {
+                    field_text.push_str(" · ");
+                    field_text.push_str(
+                        &self
+                            .i18n
+                            .t(self.cloud_sync_field_merge_outcome_key(outcome)),
                     );
-                    if let Some(outcome) = field.merge_outcome {
-                        field_text.push_str(" · ");
-                        field_text.push_str(
-                            &self
-                                .i18n
-                                .t(self.cloud_sync_field_merge_outcome_key(outcome)),
-                        );
-                    }
-                    fields.child(
-                        div()
-                            .text_size(px(self.tokens.metrics.ui_text_xs))
-                            .line_height(px(18.0))
-                            .text_color(rgb(theme.text_muted))
-                            .child(field_text),
-                    )
-                });
+                }
+                fields.child(
+                    div()
+                        .text_size(px(self.tokens.metrics.ui_text_xs))
+                        .line_height(px(18.0))
+                        .text_color(rgb(theme.text_muted))
+                        .child(field_text),
+                )
+            },
+        );
         let detail = div()
             .min_w(px(0.0))
             .flex()
             .flex_col()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .child(
                 div()
                     .text_size(px(self.tokens.metrics.ui_text_xs))
@@ -1423,7 +1423,7 @@ impl CloudSyncPageRenderer {
         selection: &CloudSyncPreviewSelection,
         cx: &mut App,
     ) -> AnyElement {
-        let mut block = div().flex().flex_col().gap(px(8.0));
+        let mut block = div().flex().flex_col().gap(px(self.tokens.spacing.two));
         for row in selection.preview_rows(summary) {
             let action = row.action.clone();
             block = block.child(

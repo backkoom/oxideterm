@@ -21,7 +21,7 @@ impl WorkspaceApp {
             .flex()
             .flex_wrap()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .px_3()
             .py_2()
             .border_b_1()
@@ -58,7 +58,7 @@ impl WorkspaceApp {
                     .flex_none()
                     .border_l_1()
                     .border_color(self.workspace_chrome_divider())
-                    .pl(px(8.0))
+                    .pl(px(self.tokens.spacing.two))
                     .child(self.render_session_manager_sort_trigger(
                         has_background,
                         show_secondary_labels,
@@ -70,7 +70,7 @@ impl WorkspaceApp {
                     .flex_none()
                     .border_l_1()
                     .border_color(self.workspace_chrome_divider())
-                    .pl(px(8.0))
+                    .pl(px(self.tokens.spacing.two))
                     .child(self.render_session_manager_view_mode_trigger(
                         has_background,
                         show_secondary_labels,
@@ -86,7 +86,7 @@ impl WorkspaceApp {
                         .flex_none()
                         .flex()
                         .items_center()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .child(
                             div()
                                 .flex_none()

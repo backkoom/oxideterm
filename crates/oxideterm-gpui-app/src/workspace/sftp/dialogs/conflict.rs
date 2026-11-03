@@ -66,14 +66,14 @@ impl WorkspaceApp {
         };
         let show_apply_all = conflict_count > 1;
         div()
-            .p(px(16.0))
+            .p(px(self.tokens.spacing.four))
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
-                    .px(px(12.0))
-                    .py(px(8.0))
+                    .px(px(self.tokens.spacing.three))
+                    .py(px(self.tokens.spacing.two))
                     .rounded(px(self.tokens.radii.md))
                     .border_1()
                     .border_color(rgb(theme.border))
@@ -84,7 +84,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(Self::render_lucide_icon(
                                 LucideIcon::File,
                                 16.0,
@@ -94,7 +94,7 @@ impl WorkspaceApp {
                     )
                     .child(
                         div()
-                            .mt(px(4.0))
+                            .mt(px(self.tokens.spacing.one))
                             .truncate()
                             .text_size(px(SFTP_TEXT_XS))
                             .font_weight(gpui::FontWeight::NORMAL)
@@ -106,7 +106,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_row()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .flex_1()
@@ -144,10 +144,10 @@ impl WorkspaceApp {
             .when(show_apply_all, |body| {
                 body.child(
                     div()
-                        .pt(px(8.0))
+                        .pt(px(self.tokens.spacing.two))
                         .flex()
                         .items_center()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .child(
                             oxideterm_gpui_ui::checkbox(
                                 &self.tokens,
@@ -202,7 +202,7 @@ impl WorkspaceApp {
     ) -> AnyElement {
         let theme = self.tokens.ui;
         div()
-            .p(px(12.0))
+            .p(px(self.tokens.spacing.three))
             .rounded(px(self.tokens.radii.md))
             .border_1()
             .border_color(if newer {
@@ -217,7 +217,7 @@ impl WorkspaceApp {
             })
             .child(
                 div()
-                    .mb(px(8.0))
+                    .mb(px(self.tokens.spacing.two))
                     .flex()
                     .items_center()
                     .text_size(px(SFTP_TEXT_XS))
@@ -227,7 +227,7 @@ impl WorkspaceApp {
                     .when(newer, |label| {
                         label.child(
                             div()
-                                .ml(px(8.0))
+                                .ml(px(self.tokens.spacing.two))
                                 .text_color(rgb(theme.success))
                                 .child(self.i18n.t("sftp.conflict.newer")),
                         )
@@ -236,7 +236,7 @@ impl WorkspaceApp {
             .child(
                 div()
                     .flex()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .text_size(px(SFTP_TEXT_SM))
                     .text_color(rgb(theme.text))
                     .child(Self::render_lucide_icon(
@@ -248,9 +248,9 @@ impl WorkspaceApp {
             )
             .child(
                 div()
-                    .mt(px(6.0))
+                    .mt(px(self.tokens.spacing.one_half))
                     .flex()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .text_size(px(SFTP_TEXT_SM))
                     .text_color(rgb(theme.text))
                     .child(Self::render_lucide_icon(

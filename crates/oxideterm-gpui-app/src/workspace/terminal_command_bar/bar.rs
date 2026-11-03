@@ -116,8 +116,8 @@ impl WorkspaceApp {
             .border_t_1()
             .border_color(self.workspace_divider_color(theme.border, COMMAND_BAR_BORDER_ALPHA))
             .bg(command_bar_background)
-            .px(px(12.0))
-            .py(px(4.0))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.one))
             .shadow_lg()
             .when(self.privilege_credential_picker_is_current(cx), |bar| {
                 bar.child(self.render_privilege_credential_picker(cx))
@@ -144,12 +144,12 @@ impl WorkspaceApp {
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(4.0))
+                            .gap(px(self.tokens.spacing.one))
                             .flex_1()
                             .min_w(px(0.0))
                             .overflow_hidden()
@@ -219,17 +219,17 @@ impl WorkspaceApp {
                             .flex()
                             .flex_none()
                             .items_center()
-                            .gap(px(4.0))
+                            .gap(px(self.tokens.spacing.one))
                             .when(
                                 broadcast_enabled && !broadcast_label.is_empty(),
                                 |actions| {
                                     actions.child(
                                         div()
                                             .h(px(20.0))
-                                            .px(px(6.0))
+                                            .px(px(self.tokens.spacing.one_half))
                                             .flex()
                                             .items_center()
-                                            .gap(px(4.0))
+                                            .gap(px(self.tokens.spacing.one))
                                             .rounded(px(self.tokens.radii.md))
                                             .border_1()
                                             .border_color(rgba((theme.accent << 8) | 0x4d))
@@ -533,10 +533,10 @@ impl WorkspaceApp {
                                 actions.child(
                                     div()
                                         .h(px(20.0))
-                                        .px(px(6.0))
+                                        .px(px(self.tokens.spacing.one_half))
                                         .flex()
                                         .items_center()
-                                        .gap(px(4.0))
+                                        .gap(px(self.tokens.spacing.one))
                                         .rounded(px(self.tokens.radii.md))
                                         .border_1()
                                         .border_color(rgba((theme.error << 8) | 0x4d))
@@ -924,7 +924,7 @@ impl WorkspaceApp {
                 .border_color(rgb(theme.border))
                 .bg(rgba((theme.bg_elevated << 8) | 0xf2))
                 .shadow_lg()
-                .p(px(6.0))
+                .p(px(self.tokens.spacing.one_half))
                 .text_size(px(12.0));
             if let Some(left) = anchor_left {
                 menu.left(px(left))
@@ -939,8 +939,8 @@ impl WorkspaceApp {
                 .flex()
                 .items_center()
                 .justify_between()
-                .px(px(6.0))
-                .py(px(4.0))
+                .px(px(self.tokens.spacing.one_half))
+                .py(px(self.tokens.spacing.one))
                 .text_size(px(11.0))
                 .text_color(rgb(theme.text_muted))
                 .child(self.i18n.t("terminal.broadcast.groups"))
@@ -949,8 +949,8 @@ impl WorkspaceApp {
                         .h(px(24.0))
                         .flex()
                         .items_center()
-                        .gap(px(4.0))
-                        .px(px(6.0))
+                        .gap(px(self.tokens.spacing.one))
+                        .px(px(self.tokens.spacing.one_half))
                         .rounded(px(self.tokens.radii.sm))
                         .cursor_pointer()
                         .hover(|button| button.bg(rgb(theme.bg_hover)))
@@ -977,8 +977,8 @@ impl WorkspaceApp {
         if groups.is_empty() && group_editor.is_none() {
             menu = menu.child(
                 div()
-                    .px(px(8.0))
-                    .pb(px(8.0))
+                    .px(px(self.tokens.spacing.two))
+                    .pb(px(self.tokens.spacing.two))
                     .text_size(px(11.0))
                     .text_color(rgb(theme.text_muted))
                     .child(self.i18n.t("terminal.broadcast.no_groups")),
@@ -990,8 +990,8 @@ impl WorkspaceApp {
                 .h(px(30.0))
                 .flex()
                 .items_center()
-                .gap(px(6.0))
-                .px(px(8.0))
+                .gap(px(self.tokens.spacing.one_half))
+                .px(px(self.tokens.spacing.two))
                 .rounded(px(self.tokens.radii.md))
                 .cursor_pointer()
                 .when(selected_group_id.is_none(), |row| {
@@ -1031,8 +1031,8 @@ impl WorkspaceApp {
                     .h(px(30.0))
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
-                    .px(px(8.0))
+                    .gap(px(self.tokens.spacing.one_half))
+                    .px(px(self.tokens.spacing.two))
                     .rounded(px(self.tokens.radii.md))
                     .cursor_pointer()
                     .when(selected, |row| row.bg(rgba((theme.accent << 8) | 0x1f)))
@@ -1120,12 +1120,12 @@ impl WorkspaceApp {
             let valid = self.terminal_broadcast_group_name_valid(edit_kind, &value);
             menu = menu.child(
                 div()
-                    .mt(px(4.0))
-                    .px(px(6.0))
-                    .pb(px(6.0))
+                    .mt(px(self.tokens.spacing.one))
+                    .px(px(self.tokens.spacing.one_half))
+                    .pb(px(self.tokens.spacing.one_half))
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(
                         self.text_input_with_workspace_ime(
                             target,
@@ -1220,8 +1220,8 @@ impl WorkspaceApp {
             div()
                 .border_t_1()
                 .border_color(rgb(theme.border))
-                .mt(px(4.0))
-                .p(px(6.0))
+                .mt(px(self.tokens.spacing.one))
+                .p(px(self.tokens.spacing.one_half))
                 .flex()
                 .items_center()
                 .justify_between()
@@ -1244,8 +1244,8 @@ impl WorkspaceApp {
         );
         menu = menu.child(
             div()
-                .px(px(6.0))
-                .pb(px(6.0))
+                .px(px(self.tokens.spacing.one_half))
+                .pb(px(self.tokens.spacing.one_half))
                 .text_size(px(11.0))
                 .text_color(rgb(theme.text_muted))
                 .child(self.i18n.t("terminal.broadcast.members_hint")),
@@ -1253,7 +1253,7 @@ impl WorkspaceApp {
         if entries.is_empty() {
             menu = menu.child(
                 div()
-                    .p(px(8.0))
+                    .p(px(self.tokens.spacing.two))
                     .child(self.i18n.t("terminal.broadcast.no_targets")),
             );
         }
@@ -1265,8 +1265,8 @@ impl WorkspaceApp {
             let row = div()
                 .flex()
                 .items_center()
-                .gap(px(6.0))
-                .px(px(8.0))
+                .gap(px(self.tokens.spacing.one_half))
+                .px(px(self.tokens.spacing.two))
                 .py(px(5.0))
                 .child(if checked {
                     Self::render_lucide_icon(LucideIcon::Check, 12.0, rgb(theme.accent))
@@ -1374,10 +1374,10 @@ impl WorkspaceApp {
                 .w_full()
                 .flex_none()
                 .h(px(TERMINAL_SYNC_HEADER_HEIGHT))
-                .px(px(8.0))
+                .px(px(self.tokens.spacing.two))
                 .flex()
                 .items_center()
-                .gap(px(8.0))
+                .gap(px(self.tokens.spacing.two))
                 .bg(self.workspace_chrome_background(theme.bg))
                 .border_b_1()
                 .border_color(self.workspace_chrome_divider())

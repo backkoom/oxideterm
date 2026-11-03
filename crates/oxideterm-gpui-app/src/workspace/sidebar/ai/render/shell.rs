@@ -444,9 +444,9 @@ impl WorkspaceApp {
                 .flex_none()
                 .flex()
                 .items_center()
-                .gap(px(8.0))
-                .px(px(12.0))
-                .py(px(8.0))
+                .gap(px(self.tokens.spacing.two))
+                .px(px(self.tokens.spacing.three))
+                .py(px(self.tokens.spacing.two))
                 .border_b_1()
                 .border_color(if running {
                     rgba((self.tokens.ui.accent << 8) | 0x33)
@@ -491,9 +491,9 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_center()
-            .gap(px(8.0))
-            .px(px(12.0))
-            .py(px(6.0))
+            .gap(px(self.tokens.spacing.two))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.one_half))
             .border_b_1()
             .border_color(rgba((warning_color << 8) | 0x33))
             .bg(rgba((warning_color << 8) | 0x1a))
@@ -530,7 +530,7 @@ impl WorkspaceApp {
         if !failed && !loading { return None; }
         let mut text = self.i18n.t(if failed { "ai.history.unsaved" } else { "ai.history.loading" });
         if loading { if let Some((done,total)) = ai.history.progress { text = format!("{text} ({done}/{total})"); } }
-        Some(div().w_full().flex_none().p(px(12.0)).gap(px(8.0)).flex().flex_col()
+        Some(div().w_full().flex_none().p(px(self.tokens.spacing.three)).gap(px(self.tokens.spacing.two)).flex().flex_col()
             .text_size(px(12.0)).text_color(rgb(self.tokens.ui.text_muted)).child(text)
             .when(failed,|row| row.child(div().id("ai-history-retry").cursor_pointer().text_color(rgb(self.tokens.ui.accent))
                 .child(self.i18n.t("common.actions.retry"))
@@ -552,9 +552,9 @@ impl WorkspaceApp {
             .flex_col()
             .items_center()
             .justify_center()
-            .p(px(24.0))
+            .p(px(self.tokens.spacing.six))
             .text_align(gpui::TextAlign::Center)
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .bg(self.context_sidebar_content_background(self.tokens.ui.bg))
             .child(
                 div()
@@ -576,7 +576,7 @@ impl WorkspaceApp {
                     .min_w_0()
                     .flex()
                     .flex_col()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .max_w(px(260.0))
                     .child(
                         div()
@@ -614,8 +614,8 @@ impl WorkspaceApp {
             .when(error.can_retry, |container| {
                 container.child(
                     div()
-                        .px(px(16.0))
-                        .py(px(6.0))
+                        .px(px(self.tokens.spacing.four))
+                        .py(px(self.tokens.spacing.one_half))
                         .rounded(px(self.tokens.radii.md))
                         .bg(rgb(self.tokens.ui.accent))
                         .text_color(rgb(self.tokens.ui.bg))
@@ -652,13 +652,13 @@ impl WorkspaceApp {
             .h_full()
             .flex()
             .flex_col()
-            .p(px(24.0))
-            .pt(px(48.0))
+            .p(px(self.tokens.spacing.six))
+            .pt(px(self.tokens.spacing.twelve))
             .child(
                 div()
                     .w_full()
                     .min_w_0()
-                    .mb(px(24.0))
+                    .mb(px(self.tokens.spacing.six))
                     .text_size(px(13.0))
                     .font_weight(gpui::FontWeight::BOLD)
                     .text_color(rgb(self.tokens.ui.text))
@@ -678,7 +678,7 @@ impl WorkspaceApp {
                     .min_w_0()
                     .flex()
                     .flex_col()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .child(self.render_ai_quick_prompt(
                         LucideIcon::HelpCircle,
                         self.i18n.t("ai.quick_prompts.explain_command"),
@@ -719,9 +719,9 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .items_center()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .rounded(px(self.tokens.radii.md))
-            .px(px(10.0))
+            .px(px(self.tokens.spacing.two_half))
             .py(px(7.0))
             .text_size(px(12.0))
             .text_color(rgb(self.tokens.ui.text_muted))
@@ -813,9 +813,9 @@ window.focus(&this.focus_handle, cx);
             .flex_none()
             .flex()
             .items_center()
-            .gap(px(8.0))
-            .px(px(12.0))
-            .py(px(8.0))
+            .gap(px(self.tokens.spacing.two))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.two))
             .border_t_1()
             .border_color(rgba((warning_color << 8) | 0x33))
             .bg(rgba((warning_color << 8) | 0x1a))
@@ -843,7 +843,7 @@ window.focus(&this.focus_handle, cx);
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .when(provider_managed_context, |actions| {
                         actions
                             .child(self.render_ai_context_warning_button(

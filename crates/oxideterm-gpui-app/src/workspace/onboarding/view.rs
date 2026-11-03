@@ -94,7 +94,7 @@ impl WorkspaceApp {
                             .flex_1()
                             .min_h(px(0.0))
                             .px(px(if wide { 40.0 } else { 20.0 }))
-                            .py(px(24.0))
+                            .py(px(self.tokens.spacing.six))
                             .overflow_y_scroll()
                             .track_scroll(&self.onboarding.scroll_handle)
                             .vertical_scrollbar(&self.onboarding.scroll_handle)
@@ -124,8 +124,8 @@ impl WorkspaceApp {
                     .when(self.onboarding.save_failed, |panel| {
                         panel.child(
                             div()
-                                .px(px(24.0))
-                                .py(px(8.0))
+                                .px(px(self.tokens.spacing.six))
+                                .py(px(self.tokens.spacing.two))
                                 .text_size(px(self.tokens.metrics.ui_text_sm))
                                 .text_color(rgb(theme.error))
                                 .child(self.i18n.t("onboarding.save_failed")),
@@ -207,12 +207,12 @@ impl WorkspaceApp {
         );
         div()
             .flex_none()
-            .px(px(24.0))
-            .py(px(16.0))
+            .px(px(self.tokens.spacing.six))
+            .py(px(self.tokens.spacing.four))
             .flex()
             .flex_col()
             .items_center()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div().flex().items_center().justify_center().child(
                     div()
@@ -243,8 +243,8 @@ impl WorkspaceApp {
             .flex_row()
             .items_center()
             .justify_between()
-            .px(px(32.0))
-            .py(px(16.0))
+            .px(px(self.tokens.spacing.eight))
+            .py(px(self.tokens.spacing.four))
             .border_t_1()
             .border_color(rgb(theme.border))
             .bg(rgba((theme.bg_card << 8) | ONBOARDING_CARD_ALPHA))
@@ -270,7 +270,7 @@ impl WorkspaceApp {
                     .flex()
                     .flex_row()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .when(can_go_next && self.onboarding.disclaimer_accepted, |row| {
                         row.child(self.onboarding_button(
                             self.i18n.t("onboarding.skip"),
@@ -338,7 +338,7 @@ impl WorkspaceApp {
                 }))
             })
         })
-        .gap(px(6.0))
+        .gap(px(self.tokens.spacing.one_half))
         .opacity(if disabled {
             ONBOARDING_DISABLED_OPACITY
         } else {

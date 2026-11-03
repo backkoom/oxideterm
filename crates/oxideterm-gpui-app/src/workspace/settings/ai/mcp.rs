@@ -40,19 +40,23 @@ impl WorkspaceApp {
         }
 
         let list = if configs.is_empty() {
-            div().flex().flex_col().gap(px(self.tokens.spacing.three)).child(
-                div()
-                    .border_1()
-                    .border_color(rgba(
-                        (self.tokens.ui.border << 8) | AI_MCP_PANEL_BORDER_ALPHA,
-                    ))
-                    .rounded(px(self.tokens.radii.lg))
-                    .py(px(self.tokens.spacing.eight))
-                    .text_align(gpui::TextAlign::Center)
-                    .text_size(px(self.tokens.metrics.ui_text_sm))
-                    .text_color(rgb(self.tokens.ui.text_muted))
-                    .child(self.i18n.t("settings_view.mcp.no_servers")),
-            )
+            div()
+                .flex()
+                .flex_col()
+                .gap(px(self.tokens.spacing.three))
+                .child(
+                    div()
+                        .border_1()
+                        .border_color(rgba(
+                            (self.tokens.ui.border << 8) | AI_MCP_PANEL_BORDER_ALPHA,
+                        ))
+                        .rounded(px(self.tokens.radii.lg))
+                        .py(px(self.tokens.spacing.eight))
+                        .text_align(gpui::TextAlign::Center)
+                        .text_size(px(self.tokens.metrics.ui_text_sm))
+                        .text_color(rgb(self.tokens.ui.text_muted))
+                        .child(self.i18n.t("settings_view.mcp.no_servers")),
+                )
         } else {
             self.sync_ai_mcp_server_list_state(&configs, &snapshots, cx);
             let state = self

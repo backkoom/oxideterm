@@ -42,8 +42,8 @@ impl KnowledgeDocumentEditor {
                     .flex()
                     .flex_row()
                     .items_center()
-                    .gap(px(4.0))
-                    .px(px(16.0))
+                    .gap(px(self.tokens.spacing.one))
+                    .px(px(self.tokens.spacing.four))
                     .child(self.render_format_button(
                         "knowledge-format-undo",
                         KnowledgeFormatGlyph::Icon(LucideIcon::RotateCcw),

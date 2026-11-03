@@ -17,12 +17,12 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .flex_col()
-            .gap(px(24.0))
+            .gap(px(self.tokens.spacing.six))
             .child(
                 div()
                     .flex()
                     .items_center()
-                    .gap(px(20.0))
+                    .gap(px(self.tokens.spacing.five))
                     .child(
                         gpui::svg()
                             .path("icons/oxide-mark.svg")
@@ -36,7 +36,7 @@ impl WorkspaceApp {
                             .min_w(px(0.0))
                             .flex()
                             .flex_col()
-                            .gap(px(6.0))
+                            .gap(px(self.tokens.spacing.one_half))
                             .child(
                                 div()
                                     .text_size(px(38.0))
@@ -58,12 +58,30 @@ impl WorkspaceApp {
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(self.i18n.t("onboarding.project_intro")),
             )
-            .child(div().grid().grid_cols(2).gap(px(12.0)).children([
-                self.onboarding_feature_tile(LucideIcon::Zap, "highlight_performance", cx),
-                self.onboarding_feature_tile(LucideIcon::Lock, "highlight_security_arch", cx),
-                self.onboarding_feature_tile(LucideIcon::Cpu, "highlight_crossplatform", cx),
-                self.onboarding_feature_tile(LucideIcon::Puzzle, "highlight_extensible", cx),
-            ]))
+            .child(
+                div()
+                    .grid()
+                    .grid_cols(2)
+                    .gap(px(self.tokens.spacing.three))
+                    .children([
+                        self.onboarding_feature_tile(LucideIcon::Zap, "highlight_performance", cx),
+                        self.onboarding_feature_tile(
+                            LucideIcon::Lock,
+                            "highlight_security_arch",
+                            cx,
+                        ),
+                        self.onboarding_feature_tile(
+                            LucideIcon::Cpu,
+                            "highlight_crossplatform",
+                            cx,
+                        ),
+                        self.onboarding_feature_tile(
+                            LucideIcon::Puzzle,
+                            "highlight_extensible",
+                            cx,
+                        ),
+                    ]),
+            )
             .child(self.language_select_row(self.settings_store.settings().general.language, cx))
             .into_any_element()
     }
@@ -73,12 +91,12 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         div()
-            .p(px(24.0))
+            .p(px(self.tokens.spacing.six))
             .rounded(px(self.tokens.radii.lg))
             .bg(rgb(self.tokens.ui.bg_card))
             .flex()
             .flex_col()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(self.onboarding_step_heading(
                 LucideIcon::FileText,
                 "onboarding.disclaimer_title",
@@ -88,7 +106,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(self.onboarding_info_card(
                         Some((LucideIcon::AlertTriangle, self.tokens.ui.warning)),
                         "onboarding.disclaimer_no_warranty",
@@ -121,7 +139,7 @@ impl WorkspaceApp {
                 div()
                     .border_t_1()
                     .border_color(rgb(self.tokens.ui.border))
-                    .pt(px(16.0))
+                    .pt(px(self.tokens.spacing.four))
                     .cursor(CursorStyle::PointingHand)
                     .child(checkbox::checkbox(
                         &self.tokens,
@@ -153,7 +171,7 @@ impl WorkspaceApp {
                 .min_w_0()
                 .flex()
                 .flex_col()
-                .gap(px(20.0))
+                .gap(px(self.tokens.spacing.five))
                 .child(self.onboarding_step_heading(
                     LucideIcon::Monitor,
                     "onboarding.appearance_title",
@@ -168,7 +186,7 @@ impl WorkspaceApp {
                 .min_w_0()
                 .flex()
                 .flex_col()
-                .gap(px(24.0))
+                .gap(px(self.tokens.spacing.six))
                 .child(self.appearance_theme_preview(settings, cx))
                 .child(
                     div()
@@ -190,7 +208,7 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let settings = self.settings_store.settings();
-        let mut grid = div().grid().grid_cols(2).gap(px(8.0));
+        let mut grid = div().grid().grid_cols(2).gap(px(self.tokens.spacing.two));
         for (family, label, bundled) in ONBOARDING_FONT_OPTIONS {
             let selected = settings.terminal.font_family == family;
             let label = if family == FontFamily::Custom {
@@ -213,8 +231,8 @@ impl WorkspaceApp {
                     } else {
                         rgb(self.tokens.ui.bg_card)
                     })
-                    .px(px(12.0))
-                    .py(px(10.0))
+                    .px(px(self.tokens.spacing.three))
+                    .py(px(self.tokens.spacing.two_half))
                     .flex()
                     .justify_between()
                     .items_center()
@@ -257,7 +275,7 @@ impl WorkspaceApp {
             div()
                 .flex()
                 .flex_col()
-                .gap(px(12.0))
+                .gap(px(self.tokens.spacing.three))
                 .child(grid)
                 .child(oxideterm_gpui_ui::motion::auto_height(
                     &self.tokens,
@@ -287,7 +305,7 @@ impl WorkspaceApp {
                             div()
                                 .flex()
                                 .items_center()
-                                .gap(px(8.0))
+                                .gap(px(self.tokens.spacing.two))
                                 .child(self.onboarding_font_size_button("-", -1, cx))
                                 .child(
                                     div()
@@ -436,7 +454,7 @@ impl WorkspaceApp {
             (LucideIcon::Network, "workflow_forwarding"),
             (LucideIcon::FileCode, "workflow_ide"),
         ];
-        let mut list = div().flex().flex_col().gap(px(20.0));
+        let mut list = div().flex().flex_col().gap(px(self.tokens.spacing.five));
         for (index, (icon, key)) in workflows.into_iter().enumerate() {
             list = list.child(self.onboarding_timeline_item(index + 1, icon, key));
         }
@@ -444,7 +462,7 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .flex_col()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(self.onboarding_step_heading(
                 LucideIcon::Network,
                 "onboarding.workflow_title",
@@ -489,7 +507,7 @@ impl WorkspaceApp {
             div()
                 .grid()
                 .grid_cols(if wide { 2 } else { 1 })
-                .gap(px(16.0))
+                .gap(px(self.tokens.spacing.four))
                 .children(items.iter().map(|&(icon, key, badge, highlight)| {
                     self.onboarding_feature_card(icon, key, badge, highlight)
                 }))
@@ -498,7 +516,7 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .flex_col()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(self.onboarding_step_heading(
                 LucideIcon::Shield,
                 "onboarding.features",
@@ -542,7 +560,7 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .flex_col()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(self.onboarding_step_heading(
                 LucideIcon::Sparkles,
                 "onboarding.ai_tools_title",
@@ -576,7 +594,7 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .flex_col()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(self.onboarding_toggle_card(
                 "onboarding.ai_tools_enable",
                 "onboarding.ai_tools_enable_hint",
@@ -644,7 +662,7 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .flex_col()
-            .gap(px(16.0))
+            .gap(px(self.tokens.spacing.four))
             .child(self.onboarding_step_heading(
                 LucideIcon::Terminal,
                 "onboarding.cli_step_title",
@@ -669,19 +687,19 @@ impl WorkspaceApp {
                     .flex()
                     .items_center()
                     .justify_between()
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(
                         div()
                             .flex_1()
                             .min_w(px(0.0))
                             .flex()
                             .flex_col()
-                            .gap(px(4.0))
+                            .gap(px(self.tokens.spacing.one))
                             .child(
                                 div()
                                     .flex()
                                     .items_center()
-                                    .gap(px(8.0))
+                                    .gap(px(self.tokens.spacing.two))
                                     .child(Self::render_lucide_icon(
                                         if installed {
                                             LucideIcon::CheckCircle
@@ -748,7 +766,7 @@ impl WorkspaceApp {
             .min_w_0()
             .flex()
             .flex_col()
-            .gap(px(20.0))
+            .gap(px(self.tokens.spacing.five))
             .child(self.onboarding_step_heading(
                 LucideIcon::Sparkles,
                 "onboarding.quick_start",
@@ -759,7 +777,7 @@ impl WorkspaceApp {
                     .grid()
                     // Four primary actions stay readable across all shipped locales in two columns.
                     .grid_cols(if wide { 2 } else { 1 })
-                    .gap(px(12.0))
+                    .gap(px(self.tokens.spacing.three))
                     .child(self.onboarding_action_card(
                         LucideIcon::Terminal,
                         "onboarding.open_terminal",
@@ -838,15 +856,19 @@ impl WorkspaceApp {
         let mut grid = div()
             .grid()
             .grid_cols(if wide { 3 } else { 1 })
-            .gap(px(20.0));
+            .gap(px(self.tokens.spacing.five));
         for (title, rows) in groups {
-            let mut column = div().flex().flex_col().gap(px(8.0)).child(
-                div()
-                    .text_size(px(10.0))
-                    .font_weight(gpui::FontWeight::SEMIBOLD)
-                    .text_color(rgb(self.tokens.ui.text_muted))
-                    .child(self.i18n.t(&format!("onboarding.{title}")).to_uppercase()),
-            );
+            let mut column = div()
+                .flex()
+                .flex_col()
+                .gap(px(self.tokens.spacing.two))
+                .child(
+                    div()
+                        .text_size(px(10.0))
+                        .font_weight(gpui::FontWeight::SEMIBOLD)
+                        .text_color(rgb(self.tokens.ui.text_muted))
+                        .child(self.i18n.t(&format!("onboarding.{title}")).to_uppercase()),
+                );
             for (desc, key) in rows {
                 let key_text = if key.len() == 1 {
                     format!("{mod_key}{key}")
@@ -873,15 +895,15 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_start()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 div()
                     .rounded(px(self.tokens.radii.xs))
                     .border_1()
                     .border_color(rgb(self.tokens.ui.border))
                     .bg(rgb(self.tokens.ui.bg))
-                    .px(px(6.0))
-                    .py(px(2.0))
+                    .px(px(self.tokens.spacing.one_half))
+                    .py(px(self.tokens.spacing.half))
                     .font_family(SharedString::from(
                         FontFamily::Jetbrains.terminal_family_name(""),
                     ))
@@ -980,11 +1002,11 @@ impl WorkspaceApp {
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
             .bg(rgb(self.tokens.ui.bg_card))
-            .px(px(16.0))
-            .py(px(16.0))
+            .px(px(self.tokens.spacing.four))
+            .py(px(self.tokens.spacing.four))
             .flex()
             .items_center()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .when(!disabled, |card| {
                 card.hover(|style| style.bg(rgb(self.tokens.ui.bg_hover)))
             })
@@ -1021,7 +1043,7 @@ impl WorkspaceApp {
                     .min_w_0()
                     .flex()
                     .flex_col()
-                    .gap(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
                     .child(
                         div()
                             .text_size(px(self.tokens.metrics.ui_text_sm))

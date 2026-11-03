@@ -669,7 +669,11 @@ impl WorkspaceApp {
                 },
                 cx,
             ))
-            .child(div().mt(px(self.tokens.spacing.three)).child(self.ai_provider_add_controls(cx)))
+            .child(
+                div()
+                    .mt(px(self.tokens.spacing.three))
+                    .child(self.ai_provider_add_controls(cx)),
+            )
             .when_some(provider_list, |section, provider_list| {
                 section.child(provider_list)
             })

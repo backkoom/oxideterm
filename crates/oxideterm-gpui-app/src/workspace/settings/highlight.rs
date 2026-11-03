@@ -920,7 +920,12 @@ impl WorkspaceApp {
                     ),
             );
 
-        let mut colors = div().w_full().flex().flex_row().flex_wrap().gap(px(self.tokens.spacing.three));
+        let mut colors = div()
+            .w_full()
+            .flex()
+            .flex_row()
+            .flex_wrap()
+            .gap(px(self.tokens.spacing.three));
         for (index, &class) in SEMANTIC_CLASSES.iter().enumerate() {
             colors = colors.child(
                 self.highlight_input_block(

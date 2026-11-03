@@ -512,11 +512,11 @@ impl WorkspaceApp {
                 .child(
                     div()
                         .w_full()
-                        .py(px(48.0))
+                        .py(px(self.tokens.spacing.twelve))
                         .flex()
                         .items_center()
                         .justify_center()
-                        .gap(px(8.0))
+                        .gap(px(self.tokens.spacing.two))
                         .text_size(px(SFTP_TEXT_XS))
                         .text_color(rgb(theme.text_muted))
                         .child(self.render_loading_icon(
@@ -557,6 +557,8 @@ impl WorkspaceApp {
         };
         let row_count = visible_indices.len();
 
+        // Hoisted: the virtual-list closure must own what it reads.
+        let row_spacing = self.tokens.spacing;
         list.child(tauri_virtual_uniform_list(
             ("sftp-file-list-virtual", pane as u64),
             row_count,
@@ -602,8 +604,8 @@ impl WorkspaceApp {
                             .flex()
                             .flex_row()
                             .items_center()
-                            .px(px(8.0))
-                            .py(px(4.0))
+                            .px(px(row_spacing.two))
+                            .py(px(row_spacing.one))
                             .border_b_1()
                             .border_color(rgba(theme.border << 8))
                             .text_size(px(SFTP_TEXT_XS))
@@ -626,7 +628,7 @@ impl WorkspaceApp {
                                     .flex()
                                     .flex_row()
                                     .items_center()
-                                    .gap(px(8.0))
+                                    .gap(px(row_spacing.two))
                                     .child({
                                         let icon = if file.file_type == SftpFileType::Directory {
                                             oxideterm_gpui_ui::file_icons::folder_icon(
@@ -734,23 +736,16 @@ impl WorkspaceApp {
         list.child(
             div()
                 .w_full()
-                .py(px(48.0))
+                .py(px(self.tokens.spacing.twelve))
                 .flex()
                 .flex_col()
                 .items_center()
                 .justify_center()
                 .text_size(px(SFTP_TEXT_XS))
                 .text_color(rgb(theme.text_muted))
-                .child(
-                    div()
-                        .mb(px(8.0))
-                        .opacity(0.4)
-                        .child(Self::render_lucide_icon(
-                            LucideIcon::FolderOpen,
-                            32.0,
-                            rgb(theme.text_muted),
-                        )),
-                )
+                .child(div().mb(px(self.tokens.spacing.two)).opacity(0.4).child(
+                    Self::render_lucide_icon(LucideIcon::FolderOpen, 32.0, rgb(theme.text_muted)),
+                ))
                 .child(self.render_selectable_display_text(
                     "sftp-file-list-empty",
                     pane as u64,
@@ -776,6 +771,8 @@ impl WorkspaceApp {
         let scroll_handle = self.sftp_view().read(cx).remote_file_scroll.clone();
         let rows = std::sync::Arc::new(rows);
         let row_count = rows.len();
+        // Hoisted: the virtual-list closure must own what it reads.
+        let row_spacing = self.tokens.spacing;
         list.child(tauri_virtual_uniform_list(
             ("sftp-file-list-virtual", SftpPane::Remote as u64),
             row_count,
@@ -846,8 +843,8 @@ impl WorkspaceApp {
                             .flex()
                             .flex_row()
                             .items_center()
-                            .px(px(8.0))
-                            .py(px(4.0))
+                            .px(px(row_spacing.two))
+                            .py(px(row_spacing.one))
                             .border_b_1()
                             .border_color(rgba(theme.border << 8))
                             .text_size(px(SFTP_TEXT_XS))
@@ -872,7 +869,7 @@ impl WorkspaceApp {
                                     .flex()
                                     .flex_row()
                                     .items_center()
-                                    .gap(px(8.0))
+                                    .gap(px(row_spacing.two))
                                     .child({
                                         let icon = if is_directory {
                                             oxideterm_gpui_ui::file_icons::folder_icon(

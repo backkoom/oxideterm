@@ -76,7 +76,7 @@ impl WorkspaceApp {
         let mut header = div()
             .flex()
             .items_center()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .text_size(px(12.0))
             .text_color(rgb(self.tokens.ui.accent));
         for (enabled, direction, key) in [
@@ -104,7 +104,7 @@ impl WorkspaceApp {
                 );
             }
         }
-        let mut body = div().flex().flex_col().gap(px(8.0)).child(header);
+        let mut body = div().flex().flex_col().gap(px(self.tokens.spacing.two)).child(header);
         if loading {
             body = body.child(self.i18n.t("ai.history.loading"));
         }
@@ -628,10 +628,10 @@ impl WorkspaceApp {
             let delete_id = message.id.clone();
             body = body.child(
                 div()
-                    .mt(px(6.0))
+                    .mt(px(self.tokens.spacing.one_half))
                     .flex()
                     .items_center()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .child(
                         ai_message_action(
                             &self.tokens,
@@ -705,10 +705,10 @@ impl WorkspaceApp {
             let edit_id = message.id.clone();
             body = body.child(
                 div()
-                    .mt(px(6.0))
+                    .mt(px(self.tokens.spacing.one_half))
                     .flex()
                     .items_center()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .child(
                         ai_message_action(
                             &self.tokens,
@@ -2377,9 +2377,9 @@ impl WorkspaceApp {
             .flex_none()
             .items_center()
             .justify_between()
-            .gap(px(8.0))
-            .px(px(12.0))
-            .py(px(6.0))
+            .gap(px(self.tokens.spacing.two))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.one_half))
             .border_b_1()
             .border_color(rgba((self.tokens.ui.border << 8) | 0x4d))
             .bg(self.context_sidebar_content_background(self.tokens.ui.bg))
@@ -2389,7 +2389,7 @@ impl WorkspaceApp {
                     .min_w_0()
                     .flex()
                     .items_center()
-                    .gap(px(8.0))
+                    .gap(px(self.tokens.spacing.two))
                     .child(
                         div()
                             .flex_none()
@@ -2460,7 +2460,7 @@ impl WorkspaceApp {
                     .flex_none()
                     .flex()
                     .items_center()
-                    .gap(px(2.0))
+                    .gap(px(self.tokens.spacing.half))
                     .child(self.render_ai_sidebar_header_button(
                         LucideIcon::Plus,
                         self.i18n.t("ai.chat.new_chat_tooltip"),
@@ -2610,7 +2610,7 @@ impl WorkspaceApp {
         let is_plan = matches!(&request, oxideterm_ai::CursorRequest::Plan(_));
         let accept_id = id.to_owned();
         let reject_id = id.to_owned();
-        let actions = div().flex().flex_wrap().gap(px(8.0))
+        let actions = div().flex().flex_wrap().gap(px(self.tokens.spacing.two))
             .child(self.workspace_toolbar_action_button(
                 self.i18n.t(if is_plan {"ai.tool_use.approve"} else {"ai.questions.answer"}),
                 None,

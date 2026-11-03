@@ -31,7 +31,7 @@ impl WorkspaceApp {
             return None;
         }
 
-        let mut rows = div().w_full().flex().flex_col().gap(px(2.0));
+        let mut rows = div().w_full().flex().flex_col().gap(px(self.tokens.spacing.half));
         for (task_index, task) in active_tasks.into_iter().enumerate() {
             let cancel_conversation_id = conversation_id.clone();
             let cancel_task_id = task.id.clone();
@@ -47,8 +47,8 @@ impl WorkspaceApp {
                     .h(px(24.0))
                     .flex()
                     .items_center()
-                    .gap(px(6.0))
-                    .px(px(6.0))
+                    .gap(px(self.tokens.spacing.one_half))
+                    .px(px(self.tokens.spacing.one_half))
                     .rounded(px(5.0))
                     .bg(rgba((self.tokens.ui.border << 8) | 0x0d))
                     .child(Self::render_lucide_icon(
@@ -111,9 +111,9 @@ impl WorkspaceApp {
                 .flex_none()
                 .flex()
                 .flex_col()
-                .gap(px(4.0))
-                .px(px(10.0))
-                .py(px(6.0))
+                .gap(px(self.tokens.spacing.one))
+                .px(px(self.tokens.spacing.two_half))
+                .py(px(self.tokens.spacing.one_half))
                 .border_b_1()
                 .border_color(rgba((self.tokens.ui.border << 8) | 0x33))
                 .bg(self.context_sidebar_content_background(self.tokens.ui.bg))

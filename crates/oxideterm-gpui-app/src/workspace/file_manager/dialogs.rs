@@ -408,9 +408,9 @@ impl WorkspaceApp {
             .w_full()
             .flex()
             .items_center()
-            .gap(px(8.0))
-            .px(px(12.0))
-            .py(px(6.0))
+            .gap(px(self.tokens.spacing.two))
+            .px(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.one_half))
             .rounded(px(self.tokens.radii.xs))
             .text_size(px(FILE_MANAGER_TEXT_XS))
             .text_color(rgb(color))
@@ -557,7 +557,7 @@ impl WorkspaceApp {
                     .child(
                         div()
                             .h(px(48.0))
-                            .px(px(16.0))
+                            .px(px(self.tokens.spacing.four))
                             .flex()
                             .items_center()
                             .border_b_1()
@@ -730,11 +730,11 @@ impl WorkspaceApp {
                     .shadow_lg()
                     .child(
                         div()
-                            .px(px(16.0))
-                            .py(px(12.0))
+                            .px(px(self.tokens.spacing.four))
+                            .py(px(self.tokens.spacing.three))
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .border_b_1()
                             .border_color(file_manager_border(theme.border, has_background))
                             .child(icon.render(FILE_MANAGER_ICON_MD, &self.tokens))
@@ -780,8 +780,8 @@ impl WorkspaceApp {
                     ))
                     .child(
                         div()
-                            .px(px(16.0))
-                            .py(px(10.0))
+                            .px(px(self.tokens.spacing.four))
+                            .py(px(self.tokens.spacing.two_half))
                             .border_t_1()
                             .border_color(file_manager_border(theme.border, has_background))
                             .bg(file_manager_panel_bg(theme.bg_panel, has_background, 0xff))
@@ -842,10 +842,10 @@ impl WorkspaceApp {
             _ => self.i18n.t("fileManager.newName"),
         };
         div()
-            .p(px(16.0))
+            .p(px(self.tokens.spacing.four))
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 self.text_input_with_workspace_ime(
                     target,
@@ -892,10 +892,10 @@ impl WorkspaceApp {
             )
         };
         div()
-            .p(px(16.0))
+            .p(px(self.tokens.spacing.four))
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .child(
                 div()
                     .text_size(px(FILE_MANAGER_TEXT_XS))
@@ -939,7 +939,7 @@ impl WorkspaceApp {
                 div()
                     .flex()
                     .flex_col()
-                    .gap(px(4.0))
+                    .gap(px(self.tokens.spacing.one))
                     .text_size(px(FILE_MANAGER_TEXT_XS))
                     .child(div().text_color(rgb(self.tokens.ui.text_muted)).child(
                         self.render_display_text_with_role(
@@ -953,8 +953,8 @@ impl WorkspaceApp {
                     ))
                     .child(
                         div()
-                            .px(px(8.0))
-                            .py(px(6.0))
+                            .px(px(self.tokens.spacing.two))
+                            .py(px(self.tokens.spacing.one_half))
                             .rounded(px(self.tokens.radii.sm))
                             .bg(file_manager_bg(self.tokens.ui.bg_sunken, has_background))
                             .font_family(settings_mono_font_family(self.settings_store.settings()))
@@ -979,10 +979,10 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         div()
-            .p(px(16.0))
+            .p(px(self.tokens.spacing.four))
             .flex()
             .flex_col()
-            .gap(px(12.0))
+            .gap(px(self.tokens.spacing.three))
             .text_size(px(FILE_MANAGER_TEXT_SM))
             .child(
                 self.i18n
@@ -1003,7 +1003,7 @@ impl WorkspaceApp {
         div()
             .flex()
             .justify_end()
-            .gap(px(8.0))
+            .gap(px(self.tokens.spacing.two))
             .child(
                 // Tauri LocalFileManager uses DialogFooter + shadcn Button
                 // for create/rename/delete prompts. Keep native prompt
@@ -1051,12 +1051,16 @@ impl WorkspaceApp {
         has_background: bool,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let mut list = div().p(px(12.0)).flex().flex_col().gap(px(8.0));
+        let mut list = div()
+            .p(px(self.tokens.spacing.three))
+            .flex()
+            .flex_col()
+            .gap(px(self.tokens.spacing.two));
         let drives = self.file_manager.read(cx).drives.clone();
         for drive in &drives {
             list = list.child(
                 div()
-                    .p(px(10.0))
+                    .p(px(self.tokens.spacing.two_half))
                     .rounded(px(self.tokens.radii.sm))
                     .border_1()
                     .border_color(file_manager_border(self.tokens.ui.border, has_background))
@@ -1070,7 +1074,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .items_center()
-                            .gap(px(8.0))
+                            .gap(px(self.tokens.spacing.two))
                             .child(Self::render_lucide_icon(
                                 LucideIcon::HardDrive,
                                 16.0,
@@ -1092,7 +1096,7 @@ impl WorkspaceApp {
                     )
                     .child(
                         div()
-                            .mt(px(4.0))
+                            .mt(px(self.tokens.spacing.one))
                             .text_size(px(FILE_MANAGER_TEXT_XS))
                             .text_color(rgb(self.tokens.ui.text_muted))
                             .child(self.render_display_text_with_role(
@@ -1113,7 +1117,7 @@ impl WorkspaceApp {
                     .when(drive.read_only, |row| {
                         row.child(
                             div()
-                                .mt(px(4.0))
+                                .mt(px(self.tokens.spacing.one))
                                 .text_size(px(FILE_MANAGER_TEXT_XS))
                                 .text_color(rgb(FILE_MANAGER_ORANGE))
                                 .child(self.render_display_text_with_role(
@@ -1160,11 +1164,11 @@ impl WorkspaceApp {
                 .unwrap_or_else(|| self.i18n.t(&details.kind_label))
         };
         let mut body = div()
-            .px(px(16.0))
-            .py(px(12.0))
+            .px(px(self.tokens.spacing.four))
+            .py(px(self.tokens.spacing.three))
             .flex()
             .flex_col()
-            .gap(px(2.0));
+            .gap(px(self.tokens.spacing.half));
 
         body = body
             .child(self.render_file_manager_property_row_text(
@@ -1330,8 +1334,8 @@ impl WorkspaceApp {
         div()
             .flex()
             .items_start()
-            .gap(px(12.0))
-            .py(px(6.0))
+            .gap(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.one_half))
             .text_size(px(FILE_MANAGER_TEXT_XS))
             .child(
                 div()
@@ -1355,7 +1359,7 @@ impl WorkspaceApp {
     fn render_file_manager_property_separator(&self, has_background: bool) -> AnyElement {
         div()
             .h(px(1.0))
-            .my(px(6.0))
+            .my(px(self.tokens.spacing.one_half))
             .bg(file_manager_border(self.tokens.ui.border, has_background))
             .into_any_element()
     }
@@ -1364,7 +1368,7 @@ impl WorkspaceApp {
         let mut value = div()
             .flex()
             .items_baseline()
-            .gap(px(4.0))
+            .gap(px(self.tokens.spacing.one))
             .flex_wrap()
             .text_color(rgb(self.tokens.ui.text))
             .child(self.render_selectable_text_scoped(
@@ -1425,7 +1429,7 @@ impl WorkspaceApp {
         }
         row.child(
             div()
-                .ml(px(6.0))
+                .ml(px(self.tokens.spacing.one_half))
                 .text_color(rgb(self.tokens.ui.text_muted))
                 .child(self.render_display_text_with_role(
                     SelectableTextRole::PlainDocument,
@@ -1447,7 +1451,7 @@ impl WorkspaceApp {
             div()
                 .flex()
                 .items_center()
-                .gap(px(6.0))
+                .gap(px(self.tokens.spacing.one_half))
                 .text_color(rgb(FILE_MANAGER_BLUE))
                 .cursor_pointer()
                 .opacity(if loading { 0.5 } else { 1.0 })

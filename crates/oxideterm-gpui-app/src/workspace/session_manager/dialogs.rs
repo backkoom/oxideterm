@@ -271,7 +271,7 @@ impl WorkspaceApp {
                 .flex()
                 .flex_col()
                 .gap(px(14.0))
-                .p(px(16.0))
+                .p(px(self.tokens.spacing.four))
                 .rounded(px(self.tokens.radii.lg))
                 .border_1()
                 .border_color(rgb(theme.border))
@@ -280,14 +280,14 @@ impl WorkspaceApp {
                         .flex()
                         .items_start()
                         .justify_between()
-                        .gap(px(16.0))
+                        .gap(px(self.tokens.spacing.four))
                         .child(
                             div()
                                 .min_w(px(0.0))
                                 .flex_1()
                                 .flex()
                                 .flex_col()
-                                .gap(px(4.0))
+                                .gap(px(self.tokens.spacing.one))
                                 .child(
                                     div()
                                         .text_size(px(18.0))
@@ -336,7 +336,7 @@ impl WorkspaceApp {
                         div()
                             .flex()
                             .flex_col()
-                            .gap(px(10.0))
+                            .gap(px(self.tokens.spacing.two_half))
                             .p_3()
                             .rounded(px(self.tokens.radii.md))
                             .bg(rgb(theme.bg_secondary))
@@ -398,7 +398,7 @@ impl WorkspaceApp {
                                 div()
                                     .flex()
                                     .justify_end()
-                                    .gap(px(8.0))
+                                    .gap(px(self.tokens.spacing.two))
                                     .child(self.session_manager_basic_footer_action(
                                         self.i18n.t("sessionManager.edit_properties.cancel"),
                                         ButtonVariant::Secondary,
