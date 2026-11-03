@@ -372,6 +372,13 @@ split-debuginfo = "unpacked"
 [profile.dev.package.oxideterm-gpui-app]
 opt-level = 1
 
+# Argon2 is memory-hard: unoptimized it runs the portable unlock roughly 16x
+# slower (about 7.7s instead of 0.5s on a 14-core desktop), which is the whole
+# cost of opening the portable keystore. Keep this one crate optimized in
+# development builds so debugging never hides the real unlock latency.
+[profile.dev.package.argon2]
+opt-level = 3
+
 [profile.dev.package.gpui-pre]
 opt-level = 2
 
