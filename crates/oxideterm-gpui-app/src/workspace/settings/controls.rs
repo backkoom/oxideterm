@@ -107,8 +107,8 @@ impl WorkspaceApp {
             self.settings_workspace.read(cx).route_snapshot().active_tab
         };
 
-        let popup = match (active_tab, open_select) {
-            (_, SettingsSelect::PluginMarketplaceSort) => {
+        let popup = match open_select {
+            SettingsSelect::PluginMarketplaceSort => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for sort in [
                     oxideterm_settings::PluginMarketplaceSort::Name,
@@ -133,7 +133,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (_, SettingsSelect::Language) => {
+            SettingsSelect::Language => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for language in language_options() {
                     let label = self.language_label(language);
@@ -150,131 +150,12 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Help, SettingsSelect::UpdateChannel) => {
-                let mut popup = select_overlay_popup(&self.tokens, width);
-                for channel in [UpdateChannel::Stable, UpdateChannel::Beta] {
-                    let label = update_channel_label(channel, &self.i18n);
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            label,
-                            channel == settings.general.update_channel,
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_settings_select();
-                            this.edit_settings(
-                                |settings| settings.general.update_channel = channel,
-                                cx,
-                            );
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-                Some(popup)
-            }
-            (SettingsTab::Network, SettingsSelect::UpdateProxyMode) => {
-                let mut popup = select_overlay_popup(&self.tokens, width);
-                let current = settings.general.update_proxy.mode;
-                for mode in [
-                    UpdateProxyMode::Direct,
-                    UpdateProxyMode::Application,
-                    UpdateProxyMode::System,
-                    UpdateProxyMode::Custom,
-                ] {
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            update_proxy_mode_label(mode, &self.i18n),
-                            mode == current,
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_settings_select();
-                            this.edit_settings(
-                                |settings| settings.general.update_proxy.mode = mode,
-                                cx,
-                            );
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-                Some(popup)
-            }
-            (SettingsTab::Network, SettingsSelect::UpdateProxyProtocol) => {
-                let mut popup = select_overlay_popup(&self.tokens, width);
-                let current = settings.general.update_proxy.protocol;
-                for protocol in [
-                    UpdateProxyProtocol::Http,
-                    UpdateProxyProtocol::Https,
-                    UpdateProxyProtocol::Socks5,
-                ] {
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            update_proxy_protocol_label(protocol, &self.i18n),
-                            protocol == current,
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_settings_select();
-                            this.edit_settings(
-                                |settings| settings.general.update_proxy.protocol = protocol,
-                                cx,
-                            );
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-                Some(popup)
-            }
-            (SettingsTab::Network, SettingsSelect::NetworkApplicationProxyMode) => {
-                let mut popup = select_overlay_popup(&self.tokens, width);
-                let current = settings.network.application_proxy_mode;
-                for mode in [
-                    SettingsApplicationProxyMode::System,
-                    SettingsApplicationProxyMode::Direct,
-                    SettingsApplicationProxyMode::Shared,
-                ] {
-                    // A missing shared profile is shown but cannot become an
-                    // active route, keeping the runtime policy fail-closed.
-                    let shared_proxy_missing = mode == SettingsApplicationProxyMode::Shared
-                        && settings.network.upstream_proxy.is_none();
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            network_application_proxy_mode_label(mode, &self.i18n),
-                            mode == current,
-                        ),
-                        shared_proxy_missing,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            if shared_proxy_missing {
-                                return;
-                            }
-                            this.close_settings_select();
-                            this.edit_settings(
-                                |settings| settings.network.application_proxy_mode = mode,
-                                cx,
-                            );
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-                Some(popup)
-            }
-            (
-                _,
-                select @ (SettingsSelect::AppearanceTheme
-                | SettingsSelect::AppearanceTerminalTheme
-                | SettingsSelect::AppearanceThemeLight
-                | SettingsSelect::AppearanceThemeDark
-                | SettingsSelect::AppearanceTerminalThemeLight
-                | SettingsSelect::AppearanceTerminalThemeDark),
-            ) => {
+            select @ (SettingsSelect::AppearanceTheme
+            | SettingsSelect::AppearanceTerminalTheme
+            | SettingsSelect::AppearanceThemeLight
+            | SettingsSelect::AppearanceThemeDark
+            | SettingsSelect::AppearanceTerminalThemeLight
+            | SettingsSelect::AppearanceTerminalThemeDark) => {
                 let target = select.theme_target().expect("theme selector");
                 let mut popup = select_panel_overlay_popup_with_max_height(
                     &self.tokens,
@@ -366,7 +247,83 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Appearance, SettingsSelect::CustomThemeDuplicate) => {
+            _ => match active_tab {
+                SettingsTab::Appearance => {
+                    self.settings_select_popup_appearance(open_select, width, settings, cx)
+                }
+                SettingsTab::Terminal => {
+                    self.settings_select_popup_terminal(open_select, width, settings, cx)
+                }
+                SettingsTab::Connections => {
+                    self.settings_select_popup_connections(open_select, width, settings, cx)
+                }
+                SettingsTab::Sftp => {
+                    self.settings_select_popup_sftp(open_select, width, settings, cx)
+                }
+                SettingsTab::Network => {
+                    self.settings_select_popup_network(open_select, width, settings, cx)
+                }
+                SettingsTab::Ai => self.settings_select_popup_ai(open_select, width, settings, cx),
+                SettingsTab::Knowledge => {
+                    self.settings_select_popup_knowledge(open_select, width, settings, cx)
+                }
+                SettingsTab::Privilege => {
+                    self.settings_select_popup_privilege(open_select, width, settings, cx)
+                }
+                SettingsTab::Ide => {
+                    self.settings_select_popup_ide(open_select, width, settings, cx)
+                }
+                SettingsTab::Help => {
+                    self.settings_select_popup_help(open_select, width, settings, cx)
+                }
+                _ => None,
+            },
+        }?;
+        let popup = overlay_content_boundary(popup).into_any_element();
+
+        Some(
+            popover_backdrop()
+                .on_mouse_down(
+                    MouseButton::Left,
+                    cx.listener(|this, _event, window, cx| {
+                        this.dismiss_transient_workspace_overlays_from_outside_pointer(window, cx);
+                        cx.stop_propagation();
+                    }),
+                )
+                .on_mouse_down(
+                    MouseButton::Right,
+                    cx.listener(|this, _event, window, cx| {
+                        this.dismiss_transient_workspace_overlays_from_outside_pointer(window, cx);
+                        cx.stop_propagation();
+                    }),
+                )
+                .child(
+                    deferred(
+                        anchored()
+                            .anchor(Corner::TopLeft)
+                            .position(anchor.bounds.bottom_left())
+                            .offset(point(
+                                px(0.0),
+                                px(self.tokens.metrics.settings_select_popup_gap),
+                            ))
+                            .position_mode(AnchoredPositionMode::Window)
+                            .child(popup),
+                    )
+                    .with_priority(oxideterm_gpui_ui::modal::TAURI_POPOVER_LAYER_PRIORITY),
+                )
+                .into_any_element(),
+        )
+    }
+
+    fn settings_select_popup_appearance(
+        &self,
+        open_select: SettingsSelect,
+        width: f32,
+        settings: &PersistedSettings,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::Stateful<Div>> {
+        match open_select {
+            SettingsSelect::CustomThemeDuplicate => {
                 let mut popup = select_panel_overlay_popup_with_max_height(
                     &self.tokens,
                     width,
@@ -396,7 +353,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Appearance, SettingsSelect::AppearanceDensity) => {
+            SettingsSelect::AppearanceDensity => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for &density in density_options() {
                     popup = popup.child(select_option_action(
@@ -419,7 +376,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Appearance, SettingsSelect::AppearanceAnimation) => {
+            SettingsSelect::AppearanceAnimation => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for &speed in animation_options() {
                     popup = popup.child(select_option_action(
@@ -444,7 +401,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Appearance, SettingsSelect::AppearanceRenderProfile) => {
+            SettingsSelect::AppearanceRenderProfile => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for &profile in render_profile_options() {
                     popup = popup.child(select_option_action(
@@ -467,7 +424,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Appearance, SettingsSelect::AppearanceFrostedGlass) => {
+            SettingsSelect::AppearanceFrostedGlass => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 // The selector lists platform window materials only. Legacy
                 // WebView CSS/native values are normalized to the system entry.
@@ -500,7 +457,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Appearance, SettingsSelect::AppearanceBackgroundFit) => {
+            SettingsSelect::AppearanceBackgroundFit => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for &fit in background_fit_options() {
                     popup = popup.child(select_option_action(
@@ -520,92 +477,19 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Ide, SettingsSelect::IdeFontFamily) => {
-                let mut popup = select_overlay_popup(&self.tokens, width);
-                for family in
-                    std::iter::once(None).chain(font_family_options().iter().copied().map(Some))
-                {
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            family.map(font_family_label).unwrap_or_else(|| {
-                                self.i18n.t("settings_view.ide.follow_terminal")
-                            }),
-                            family == settings.ide.font_family,
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_settings_select();
-                            this.edit_settings(|settings| settings.ide.font_family = family, cx);
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-                Some(popup)
-            }
-            (SettingsTab::Ide, SettingsSelect::IdeCjkFontFamily) => {
-                let mut popup = select_overlay_popup(&self.tokens, width);
-                let current_family = settings.ide.cjk_font_family.as_deref().map(str::trim);
-                let custom = self.settings_workspace.read(cx).ide_cjk_font_custom
-                    || current_family.is_some_and(cjk_font_is_custom);
-                for family in std::iter::once(None)
-                    .chain(terminal_cjk_font_options().iter().copied().map(Some))
-                {
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            family
-                                .map(|family| terminal_cjk_font_label(family, &self.i18n))
-                                .unwrap_or_else(|| {
-                                    self.i18n.t("settings_view.ide.follow_terminal")
-                                }),
-                            !custom && family == current_family,
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_settings_select();
-                            this.settings_workspace.update(cx, |state, _| {
-                                state.ide_cjk_font_custom = false;
-                            });
-                            this.edit_settings(
-                                |settings| {
-                                    settings.ide.cjk_font_family = family.map(str::to_string)
-                                },
-                                cx,
-                            );
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-                popup = popup.child(select_option_action(
-                    select_option(
-                        &self.tokens,
-                        self.i18n.t("settings_view.terminal.cjk_font_custom"),
-                        custom,
-                    ),
-                    false,
-                    false,
-                    cx.listener(|this, _, window, cx| {
-                        this.settings_workspace.update(cx, |state, _| {
-                            state.ide_cjk_font_custom = true;
-                        });
-                        let value = this
-                            .settings_store
-                            .settings()
-                            .ide
-                            .cjk_font_family
-                            .clone()
-                            .unwrap_or_default();
-                        this.focus_settings_input(SettingsInput::IdeCjkFontFamily, value, cx);
-                        window.focus(&this.focus_handle, cx);
-                        cx.stop_propagation();
-                    }),
-                ));
-                Some(popup)
-            }
-            (SettingsTab::Terminal, SettingsSelect::TerminalFontFamily) => {
+            _ => None,
+        }
+    }
+
+    fn settings_select_popup_terminal(
+        &self,
+        open_select: SettingsSelect,
+        width: f32,
+        settings: &PersistedSettings,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::Stateful<Div>> {
+        match open_select {
+            SettingsSelect::TerminalFontFamily => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for &family in font_family_options() {
                     popup = popup.child(select_option_action(
@@ -628,7 +512,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::TerminalCjkFontFamily) => {
+            SettingsSelect::TerminalCjkFontFamily => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 let current_family = settings.terminal.cjk_font_family.trim();
                 let custom = self.settings_workspace.read(cx).terminal_cjk_font_custom
@@ -680,7 +564,7 @@ impl WorkspaceApp {
                 ));
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::TerminalEncoding) => {
+            SettingsSelect::TerminalEncoding => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for &encoding in terminal_encoding_options() {
                     popup = popup.child(select_option_action(
@@ -703,7 +587,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::TerminalSessionLogFileMode) => {
+            SettingsSelect::TerminalSessionLogFileMode => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for &mode in terminal_session_log_file_mode_options() {
                     popup = popup.child(select_option_action(
@@ -726,7 +610,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::TerminalBackspaceSequence) => {
+            SettingsSelect::TerminalBackspaceSequence => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for &sequence in terminal_backspace_sequence_options() {
                     popup = popup.child(select_option_action(
@@ -749,7 +633,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::TerminalDeleteSequence) => {
+            SettingsSelect::TerminalDeleteSequence => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for &sequence in terminal_delete_sequence_options() {
                     popup = popup.child(select_option_action(
@@ -772,7 +656,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::TerminalCursorStyle) => {
+            SettingsSelect::TerminalCursorStyle => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for &style in cursor_style_options() {
                     popup = popup.child(select_option_action(
@@ -795,31 +679,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Ai, SettingsSelect::IdeAgentMode) => {
-                let mut popup = select_overlay_popup(&self.tokens, width);
-                for mode in [
-                    IdeAgentMode::Ask,
-                    IdeAgentMode::Enabled,
-                    IdeAgentMode::Disabled,
-                ] {
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            ide_agent_label(mode, &self.i18n),
-                            mode == settings.ide.agent_mode,
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_settings_select();
-                            this.edit_settings(|settings| settings.ide.agent_mode = mode, cx);
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-                Some(popup)
-            }
-            (SettingsTab::Terminal, SettingsSelect::XmodemBlockSize) => {
+            SettingsSelect::XmodemBlockSize => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for size in [
                     oxideterm_settings::XmodemBlockSize::Bytes128,
@@ -845,7 +705,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::RemoteShellIntegrationMode) => {
+            SettingsSelect::RemoteShellIntegrationMode => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for mode in [
                     RemoteShellIntegrationMode::Ask,
@@ -873,7 +733,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::TerminalTriggerMatchMode) => {
+            SettingsSelect::TerminalTriggerMatchMode => {
                 let draft = self.terminal_trigger_draft()?;
                 let current = draft.matcher.mode;
                 let mut popup = select_overlay_popup(&self.tokens, width);
@@ -901,10 +761,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (
-                SettingsTab::Terminal,
-                SettingsSelect::TerminalTriggerAction | SettingsSelect::TerminalTriggerClickAction,
-            ) => {
+            SettingsSelect::TerminalTriggerAction | SettingsSelect::TerminalTriggerClickAction => {
                 let draft = self.terminal_trigger_draft()?;
                 let nested = open_select == SettingsSelect::TerminalTriggerClickAction;
                 let action = if nested {
@@ -1002,7 +859,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::TerminalTriggerProcessMode) => {
+            SettingsSelect::TerminalTriggerProcessMode => {
                 let action = self.terminal_trigger_draft_action()?;
                 let current_shell = matches!(
                     action,
@@ -1034,7 +891,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::TerminalTriggerQuickCommand) => {
+            SettingsSelect::TerminalTriggerQuickCommand => {
                 let current = match self.terminal_trigger_draft_action()? {
                     TerminalTriggerAction::RunQuickCommand { quick_command_id } => {
                         quick_command_id.clone()
@@ -1072,7 +929,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::TerminalTriggerTiming) => {
+            SettingsSelect::TerminalTriggerTiming => {
                 let draft = self.terminal_trigger_draft()?;
                 let current = draft.timing.dispatch;
                 let mut popup = select_overlay_popup(&self.tokens, width);
@@ -1105,7 +962,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::TerminalTriggerScope) => {
+            SettingsSelect::TerminalTriggerScope => {
                 let draft = self.terminal_trigger_draft()?;
                 let current = match &draft.scope {
                     TerminalTriggerScope::AllTerminals => 0,
@@ -1145,7 +1002,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::TerminalSemanticScheme) => {
+            SettingsSelect::TerminalSemanticScheme => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for &scheme in terminal_semantic_scheme_options() {
                     popup = popup.child(select_option_action(
@@ -1200,7 +1057,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::HighlightRuleSet) => {
+            SettingsSelect::HighlightRuleSet => {
                 let mut popup =
                     select_overlay_popup(&self.tokens, width).child(select_option_action(
                         select_option(
@@ -1246,7 +1103,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::SemanticSchemeRuleClass(index)) => {
+            SettingsSelect::SemanticSchemeRuleClass(index) => {
                 let selected = settings
                     .terminal
                     .active_custom_semantic_scheme()
@@ -1280,7 +1137,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::SemanticSchemeRuleContext(index)) => {
+            SettingsSelect::SemanticSchemeRuleContext(index) => {
                 let selected = settings
                     .terminal
                     .active_custom_semantic_scheme()
@@ -1318,7 +1175,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::HighlightPreset) => {
+            SettingsSelect::HighlightPreset => {
                 let mut popup = select_overlay_popup(&self.tokens, width.max(288.0));
                 for (group_index, group) in
                     highlight_preset_groups(&self.i18n).into_iter().enumerate()
@@ -1342,7 +1199,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::HighlightRenderMode(index)) => {
+            SettingsSelect::HighlightRenderMode(index) => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 let selected = settings
                     .terminal
@@ -1368,7 +1225,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::HighlightMatchScope(index)) => {
+            SettingsSelect::HighlightMatchScope(index) => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 let selected = settings
                     .terminal
@@ -1394,7 +1251,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::LocalShell) => {
+            SettingsSelect::LocalShell => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 let selected = settings.local_terminal.default_shell_id.as_deref();
                 for shell in self.effective_local_shells_for_settings(settings) {
@@ -1423,7 +1280,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Terminal, SettingsSelect::LocalShellSemanticScheme(index)) => {
+            SettingsSelect::LocalShellSemanticScheme(index) => {
                 let shell = self
                     .effective_local_shells_for_settings(settings)
                     .into_iter()
@@ -1529,116 +1386,19 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Privilege, SettingsSelect::LocalPrivilegePromptType) => {
-                let mut popup = select_overlay_popup(&self.tokens, width);
-                let current = self.settings_workspace.read(cx).privilege_prompt_type();
-                for prompt_type in [
-                    PrivilegePromptType::Sudo,
-                    PrivilegePromptType::Su,
-                    PrivilegePromptType::Custom,
-                ] {
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            self.settings_privilege_prompt_type_label(prompt_type),
-                            current == prompt_type,
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_settings_select();
-                            this.settings_workspace.update(cx, |settings, cx| {
-                                settings.set_privilege_prompt_type(prompt_type, cx);
-                            });
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-                Some(popup)
-            }
-            (SettingsTab::Privilege, SettingsSelect::LocalPrivilegeResponseMode) => {
-                let mut popup = select_overlay_popup(&self.tokens, width);
-                let current = self.settings_workspace.read(cx).privilege_response_mode();
-                for response_mode in [
-                    PrivilegeResponseMode::PasswordOnly,
-                    PrivilegeResponseMode::PasswordThenTotp,
-                    PrivilegeResponseMode::PasswordWithTotp,
-                ] {
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            self.settings_privilege_response_mode_label(response_mode),
-                            current == response_mode,
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_settings_select();
-                            this.settings_workspace.update(cx, |settings, cx| {
-                                settings.set_privilege_response_mode(response_mode, cx);
-                            });
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-                Some(popup)
-            }
-            (SettingsTab::Privilege, SettingsSelect::LocalPrivilegeTotpCredential) => {
-                let mut popup = select_overlay_popup(&self.tokens, width);
-                let selected = self
-                    .settings_workspace
-                    .read(cx)
-                    .privilege_snapshot()
-                    .totp_credential_id;
-                popup = popup.child(select_option_action(
-                    select_option(
-                        &self.tokens,
-                        self.i18n
-                            .t("sessionManager.privilege_credentials.totp_none"),
-                        selected.is_none(),
-                    ),
-                    false,
-                    false,
-                    cx.listener(|this, _event, _window, cx| {
-                        this.close_settings_select();
-                        this.settings_workspace.update(cx, |settings, cx| {
-                            settings.set_privilege_totp_credential(None, cx);
-                        });
-                        cx.stop_propagation();
-                    }),
-                ));
-                for credential in self.connection_store.totp_credentials() {
-                    let credential_id = credential.id.clone();
-                    let label = if credential.enabled {
-                        credential.name.clone()
-                    } else {
-                        format!(
-                            "{} ({})",
-                            credential.name,
-                            self.i18n.t("settings_view.privilege_credentials.disabled")
-                        )
-                    };
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            label,
-                            selected.as_deref() == Some(credential_id.as_str()),
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_settings_select();
-                            let credential_id = credential_id.clone();
-                            this.settings_workspace.update(cx, |settings, cx| {
-                                settings.set_privilege_totp_credential(Some(credential_id), cx);
-                            });
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-                Some(popup)
-            }
-            (SettingsTab::Connections, SettingsSelect::ConnectionIdleTimeout) => {
+            _ => None,
+        }
+    }
+
+    fn settings_select_popup_connections(
+        &self,
+        open_select: SettingsSelect,
+        width: f32,
+        settings: &PersistedSettings,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::Stateful<Div>> {
+        match open_select {
+            SettingsSelect::ConnectionIdleTimeout => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for (seconds, label) in connection_idle_timeout_options(&self.i18n) {
                     popup = popup.child(select_option_action(
@@ -1661,7 +1421,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Connections, SettingsSelect::ConnectionImportSource) => {
+            SettingsSelect::ConnectionImportSource => {
                 let selected_source = self.settings_workspace.read(cx).connection_import_source();
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for source in connection_import_source_options().iter().copied() {
@@ -1682,7 +1442,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Connections, SettingsSelect::ConnectionImportDuplicateStrategy) => {
+            SettingsSelect::ConnectionImportDuplicateStrategy => {
                 let selected_strategy = self
                     .settings_workspace
                     .read(cx)
@@ -1711,7 +1471,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Connections, SettingsSelect::ReconnectMaxAttempts) => {
+            SettingsSelect::ReconnectMaxAttempts => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for attempts in reconnect_max_attempt_options() {
                     popup = popup.child(select_option_action(
@@ -1734,7 +1494,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Connections, SettingsSelect::ReconnectBaseDelay) => {
+            SettingsSelect::ReconnectBaseDelay => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for (delay_ms, label) in reconnect_base_delay_options() {
                     popup = popup.child(select_option_action(
@@ -1757,7 +1517,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Connections, SettingsSelect::ReconnectMaxDelay) => {
+            SettingsSelect::ReconnectMaxDelay => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 for (delay_ms, label) in reconnect_max_delay_options() {
                     popup = popup.child(select_option_action(
@@ -1780,7 +1540,256 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Network, SettingsSelect::NetworkProxyProtocol) => {
+            _ => None,
+        }
+    }
+
+    fn settings_select_popup_sftp(
+        &self,
+        open_select: SettingsSelect,
+        width: f32,
+        settings: &PersistedSettings,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::Stateful<Div>> {
+        match open_select {
+            SettingsSelect::SftpPresentation => {
+                let mut popup = select_overlay_popup(&self.tokens, width);
+                for preference in [
+                    oxideterm_settings::SftpPresentationPreference::Ask,
+                    oxideterm_settings::SftpPresentationPreference::Tab,
+                    oxideterm_settings::SftpPresentationPreference::Sidebar,
+                ] {
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            sftp_page::sftp_presentation_label(preference, &self.i18n),
+                            preference == settings.sftp.presentation,
+                        ),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_settings_select();
+                            this.edit_settings(
+                                |settings| settings.sftp.presentation = preference,
+                                cx,
+                            );
+                            if preference != oxideterm_settings::SftpPresentationPreference::Sidebar
+                                && let Some(node_id) = this.embedded_sftp_node_id.clone()
+                            {
+                                this.close_embedded_sftp_for_node(&node_id, cx);
+                            }
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+                Some(popup)
+            }
+            SettingsSelect::SftpProtocol => {
+                let mut popup = select_overlay_popup(&self.tokens, width);
+                for protocol in [
+                    oxideterm_settings::FileTransferProtocolPreference::Auto,
+                    oxideterm_settings::FileTransferProtocolPreference::Sftp,
+                    oxideterm_settings::FileTransferProtocolPreference::Scp,
+                ] {
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            file_transfer_protocol_label(protocol, &self.i18n),
+                            protocol == settings.sftp.transfer_protocol,
+                        ),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_settings_select();
+                            this.edit_settings(
+                                |settings| settings.sftp.transfer_protocol = protocol,
+                                cx,
+                            );
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+                Some(popup)
+            }
+            SettingsSelect::SftpConcurrent => {
+                let mut popup = select_overlay_popup(&self.tokens, width);
+                for &count in sftp_concurrent_options() {
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            sftp_transfer_count_label(&self.i18n, count),
+                            count == settings.sftp.max_concurrent_transfers,
+                        ),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_settings_select();
+                            this.edit_settings(
+                                |settings| settings.sftp.max_concurrent_transfers = count,
+                                cx,
+                            );
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+                Some(popup)
+            }
+            SettingsSelect::SftpDirectoryParallelism => {
+                let mut popup = select_overlay_popup(&self.tokens, width);
+                for &count in sftp_directory_parallelism_options() {
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            sftp_transfer_count_label(&self.i18n, count),
+                            count == settings.sftp.directory_parallelism,
+                        ),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_settings_select();
+                            this.edit_settings(
+                                |settings| settings.sftp.directory_parallelism = count,
+                                cx,
+                            );
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+                Some(popup)
+            }
+            SettingsSelect::SftpConflict => {
+                let mut popup = select_overlay_popup(&self.tokens, width);
+                for action in [
+                    oxideterm_settings::ConflictAction::Ask,
+                    oxideterm_settings::ConflictAction::Overwrite,
+                    oxideterm_settings::ConflictAction::Skip,
+                    oxideterm_settings::ConflictAction::Rename,
+                ] {
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            conflict_label(action, &self.i18n),
+                            action == settings.sftp.conflict_action,
+                        ),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_settings_select();
+                            this.edit_settings(
+                                |settings| settings.sftp.conflict_action = action,
+                                cx,
+                            );
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+                Some(popup)
+            }
+            _ => None,
+        }
+    }
+
+    fn settings_select_popup_network(
+        &self,
+        open_select: SettingsSelect,
+        width: f32,
+        settings: &PersistedSettings,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::Stateful<Div>> {
+        match open_select {
+            SettingsSelect::UpdateProxyMode => {
+                let mut popup = select_overlay_popup(&self.tokens, width);
+                let current = settings.general.update_proxy.mode;
+                for mode in [
+                    UpdateProxyMode::Direct,
+                    UpdateProxyMode::Application,
+                    UpdateProxyMode::System,
+                    UpdateProxyMode::Custom,
+                ] {
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            update_proxy_mode_label(mode, &self.i18n),
+                            mode == current,
+                        ),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_settings_select();
+                            this.edit_settings(
+                                |settings| settings.general.update_proxy.mode = mode,
+                                cx,
+                            );
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+                Some(popup)
+            }
+            SettingsSelect::UpdateProxyProtocol => {
+                let mut popup = select_overlay_popup(&self.tokens, width);
+                let current = settings.general.update_proxy.protocol;
+                for protocol in [
+                    UpdateProxyProtocol::Http,
+                    UpdateProxyProtocol::Https,
+                    UpdateProxyProtocol::Socks5,
+                ] {
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            update_proxy_protocol_label(protocol, &self.i18n),
+                            protocol == current,
+                        ),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_settings_select();
+                            this.edit_settings(
+                                |settings| settings.general.update_proxy.protocol = protocol,
+                                cx,
+                            );
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+                Some(popup)
+            }
+            SettingsSelect::NetworkApplicationProxyMode => {
+                let mut popup = select_overlay_popup(&self.tokens, width);
+                let current = settings.network.application_proxy_mode;
+                for mode in [
+                    SettingsApplicationProxyMode::System,
+                    SettingsApplicationProxyMode::Direct,
+                    SettingsApplicationProxyMode::Shared,
+                ] {
+                    // A missing shared profile is shown but cannot become an
+                    // active route, keeping the runtime policy fail-closed.
+                    let shared_proxy_missing = mode == SettingsApplicationProxyMode::Shared
+                        && settings.network.upstream_proxy.is_none();
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            network_application_proxy_mode_label(mode, &self.i18n),
+                            mode == current,
+                        ),
+                        shared_proxy_missing,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            if shared_proxy_missing {
+                                return;
+                            }
+                            this.close_settings_select();
+                            this.edit_settings(
+                                |settings| settings.network.application_proxy_mode = mode,
+                                cx,
+                            );
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+                Some(popup)
+            }
+            SettingsSelect::NetworkProxyProtocol => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 let current = settings
                     .network
@@ -1816,7 +1825,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Network, SettingsSelect::NetworkProxyAuth) => {
+            SettingsSelect::NetworkProxyAuth => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
                 let current = settings
                     .network
@@ -1896,7 +1905,43 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Ai, SettingsSelect::AiProviderTemplate) => {
+            _ => None,
+        }
+    }
+
+    fn settings_select_popup_ai(
+        &self,
+        open_select: SettingsSelect,
+        width: f32,
+        settings: &PersistedSettings,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::Stateful<Div>> {
+        match open_select {
+            SettingsSelect::IdeAgentMode => {
+                let mut popup = select_overlay_popup(&self.tokens, width);
+                for mode in [
+                    IdeAgentMode::Ask,
+                    IdeAgentMode::Enabled,
+                    IdeAgentMode::Disabled,
+                ] {
+                    popup = popup.child(select_option_action(
+                        select_option(
+                            &self.tokens,
+                            ide_agent_label(mode, &self.i18n),
+                            mode == settings.ide.agent_mode,
+                        ),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_settings_select();
+                            this.edit_settings(|settings| settings.ide.agent_mode = mode, cx);
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+                Some(popup)
+            }
+            SettingsSelect::AiProviderTemplate => {
                 let mut popup = select_overlay_popup(&self.tokens, width.max(AI_PROVIDER_SELECT_W));
                 for template in AI_PROVIDER_TEMPLATES {
                     let provider_type = template.provider_type;
@@ -1919,7 +1964,119 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Knowledge, SettingsSelect::AiEmbeddingProvider) => {
+            SettingsSelect::AiWebSearchProvider => {
+                let current = settings.ai.web_search.provider_id.clone();
+                let mut popup = select_panel_overlay_popup_with_max_height(
+                    &self.tokens,
+                    width.max(AI_PROVIDER_SELECT_W),
+                    320.0,
+                );
+                let options =
+                    std::iter::once((None, self.i18n.t("settings_view.ai.web_provider_none")))
+                        .chain(
+                            ai_provider_views(settings)
+                                .into_iter()
+                                .filter(oxideterm_ai::web::official_deepseek_provider)
+                                .map(|provider| (Some(provider.id), provider.name)),
+                        );
+                for (provider_id, label) in options {
+                    let selected = current == provider_id;
+                    popup = popup.child(select_option_action(
+                        select_option(&self.tokens, label, selected),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            let provider_id = provider_id.clone();
+                            this.close_settings_select();
+                            this.edit_settings(
+                                move |settings| settings.ai.web_search.provider_id = provider_id,
+                                cx,
+                            );
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+                Some(popup)
+            }
+            SettingsSelect::AiMcpTransport => {
+                let current = self
+                    .ai_entity
+                    .read(cx)
+                    .mcp_transport()
+                    .unwrap_or(oxideterm_ai::McpTransport::Stdio);
+                let mut popup = select_overlay_popup(&self.tokens, width.max(220.0));
+                for (transport, label) in [
+                    (oxideterm_ai::McpTransport::Stdio, "stdio"),
+                    (
+                        oxideterm_ai::McpTransport::StreamableHttp,
+                        "Streamable HTTP (auto fallback)",
+                    ),
+                    (oxideterm_ai::McpTransport::LegacySse, "Legacy SSE"),
+                ] {
+                    popup = popup.child(select_option_action(
+                        select_option(&self.tokens, label, transport == current),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_settings_select();
+                            this.ai_entity.update(cx, |ai, cx| {
+                                ai.set_mcp_transport(transport, cx);
+                            });
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+                Some(popup)
+            }
+            SettingsSelect::AiMcpAuthMode => {
+                let current = self
+                    .ai_entity
+                    .read(cx)
+                    .mcp_auth_mode()
+                    .unwrap_or(oxideterm_ai::McpAuthHeaderMode::Bearer);
+                let mut popup = select_overlay_popup(&self.tokens, width.max(220.0));
+                for (mode, label) in [
+                    (
+                        oxideterm_ai::McpAuthHeaderMode::Bearer,
+                        self.i18n.t("settings_view.mcp.auth_header_mode_bearer"),
+                    ),
+                    (
+                        oxideterm_ai::McpAuthHeaderMode::Raw,
+                        self.i18n.t("settings_view.mcp.auth_header_mode_raw"),
+                    ),
+                    (
+                        oxideterm_ai::McpAuthHeaderMode::None,
+                        self.i18n.t("settings_view.mcp.auth_header_mode_none"),
+                    ),
+                ] {
+                    popup = popup.child(select_option_action(
+                        select_option(&self.tokens, label, mode == current),
+                        false,
+                        false,
+                        cx.listener(move |this, _event, _window, cx| {
+                            this.close_settings_select();
+                            this.ai_entity.update(cx, |ai, cx| {
+                                ai.set_mcp_auth_mode(mode, cx);
+                            });
+                            cx.stop_propagation();
+                        }),
+                    ));
+                }
+                Some(popup)
+            }
+            _ => None,
+        }
+    }
+
+    fn settings_select_popup_knowledge(
+        &self,
+        open_select: SettingsSelect,
+        width: f32,
+        settings: &PersistedSettings,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::Stateful<Div>> {
+        match open_select {
+            SettingsSelect::AiEmbeddingProvider => {
                 let current = settings
                     .ai
                     .embedding_config
@@ -1996,7 +2153,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Knowledge, SettingsSelect::KnowledgeCollectionScope) => {
+            SettingsSelect::KnowledgeCollectionScope => {
                 let selected_connection_id = self
                     .ai_entity
                     .read(cx)
@@ -2052,7 +2209,7 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Knowledge, SettingsSelect::KnowledgeDocumentFormat) => {
+            SettingsSelect::KnowledgeDocumentFormat => {
                 let mut popup = select_overlay_popup(&self.tokens, width.max(220.0));
                 for format in ["markdown", "plaintext"] {
                     let label = match format {
@@ -2078,63 +2235,38 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Ai, SettingsSelect::AiWebSearchProvider) => {
-                let current = settings.ai.web_search.provider_id.clone();
-                let mut popup = select_panel_overlay_popup_with_max_height(
-                    &self.tokens,
-                    width.max(AI_PROVIDER_SELECT_W),
-                    320.0,
-                );
-                let options =
-                    std::iter::once((None, self.i18n.t("settings_view.ai.web_provider_none")))
-                        .chain(
-                            ai_provider_views(settings)
-                                .into_iter()
-                                .filter(oxideterm_ai::web::official_deepseek_provider)
-                                .map(|provider| (Some(provider.id), provider.name)),
-                        );
-                for (provider_id, label) in options {
-                    let selected = current == provider_id;
-                    popup = popup.child(select_option_action(
-                        select_option(&self.tokens, label, selected),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            let provider_id = provider_id.clone();
-                            this.close_settings_select();
-                            this.edit_settings(
-                                move |settings| settings.ai.web_search.provider_id = provider_id,
-                                cx,
-                            );
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-                Some(popup)
-            }
-            (SettingsTab::Ai, SettingsSelect::AiMcpTransport) => {
-                let current = self
-                    .ai_entity
-                    .read(cx)
-                    .mcp_transport()
-                    .unwrap_or(oxideterm_ai::McpTransport::Stdio);
-                let mut popup = select_overlay_popup(&self.tokens, width.max(220.0));
-                for (transport, label) in [
-                    (oxideterm_ai::McpTransport::Stdio, "stdio"),
-                    (
-                        oxideterm_ai::McpTransport::StreamableHttp,
-                        "Streamable HTTP (auto fallback)",
-                    ),
-                    (oxideterm_ai::McpTransport::LegacySse, "Legacy SSE"),
+            _ => None,
+        }
+    }
+
+    fn settings_select_popup_privilege(
+        &self,
+        open_select: SettingsSelect,
+        width: f32,
+        _settings: &PersistedSettings,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::Stateful<Div>> {
+        match open_select {
+            SettingsSelect::LocalPrivilegePromptType => {
+                let mut popup = select_overlay_popup(&self.tokens, width);
+                let current = self.settings_workspace.read(cx).privilege_prompt_type();
+                for prompt_type in [
+                    PrivilegePromptType::Sudo,
+                    PrivilegePromptType::Su,
+                    PrivilegePromptType::Custom,
                 ] {
                     popup = popup.child(select_option_action(
-                        select_option(&self.tokens, label, transport == current),
+                        select_option(
+                            &self.tokens,
+                            self.settings_privilege_prompt_type_label(prompt_type),
+                            current == prompt_type,
+                        ),
                         false,
                         false,
                         cx.listener(move |this, _event, _window, cx| {
                             this.close_settings_select();
-                            this.ai_entity.update(cx, |ai, cx| {
-                                ai.set_mcp_transport(transport, cx);
+                            this.settings_workspace.update(cx, |settings, cx| {
+                                settings.set_privilege_prompt_type(prompt_type, cx);
                             });
                             cx.stop_propagation();
                         }),
@@ -2142,35 +2274,26 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Ai, SettingsSelect::AiMcpAuthMode) => {
-                let current = self
-                    .ai_entity
-                    .read(cx)
-                    .mcp_auth_mode()
-                    .unwrap_or(oxideterm_ai::McpAuthHeaderMode::Bearer);
-                let mut popup = select_overlay_popup(&self.tokens, width.max(220.0));
-                for (mode, label) in [
-                    (
-                        oxideterm_ai::McpAuthHeaderMode::Bearer,
-                        self.i18n.t("settings_view.mcp.auth_header_mode_bearer"),
-                    ),
-                    (
-                        oxideterm_ai::McpAuthHeaderMode::Raw,
-                        self.i18n.t("settings_view.mcp.auth_header_mode_raw"),
-                    ),
-                    (
-                        oxideterm_ai::McpAuthHeaderMode::None,
-                        self.i18n.t("settings_view.mcp.auth_header_mode_none"),
-                    ),
+            SettingsSelect::LocalPrivilegeResponseMode => {
+                let mut popup = select_overlay_popup(&self.tokens, width);
+                let current = self.settings_workspace.read(cx).privilege_response_mode();
+                for response_mode in [
+                    PrivilegeResponseMode::PasswordOnly,
+                    PrivilegeResponseMode::PasswordThenTotp,
+                    PrivilegeResponseMode::PasswordWithTotp,
                 ] {
                     popup = popup.child(select_option_action(
-                        select_option(&self.tokens, label, mode == current),
+                        select_option(
+                            &self.tokens,
+                            self.settings_privilege_response_mode_label(response_mode),
+                            current == response_mode,
+                        ),
                         false,
                         false,
                         cx.listener(move |this, _event, _window, cx| {
                             this.close_settings_select();
-                            this.ai_entity.update(cx, |ai, cx| {
-                                ai.set_mcp_auth_mode(mode, cx);
+                            this.settings_workspace.update(cx, |settings, cx| {
+                                settings.set_privilege_response_mode(response_mode, cx);
                             });
                             cx.stop_propagation();
                         }),
@@ -2178,131 +2301,186 @@ impl WorkspaceApp {
                 }
                 Some(popup)
             }
-            (SettingsTab::Sftp, SettingsSelect::SftpPresentation) => {
+            SettingsSelect::LocalPrivilegeTotpCredential => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
-                for preference in [
-                    oxideterm_settings::SftpPresentationPreference::Ask,
-                    oxideterm_settings::SftpPresentationPreference::Tab,
-                    oxideterm_settings::SftpPresentationPreference::Sidebar,
-                ] {
+                let selected = self
+                    .settings_workspace
+                    .read(cx)
+                    .privilege_snapshot()
+                    .totp_credential_id;
+                popup = popup.child(select_option_action(
+                    select_option(
+                        &self.tokens,
+                        self.i18n
+                            .t("sessionManager.privilege_credentials.totp_none"),
+                        selected.is_none(),
+                    ),
+                    false,
+                    false,
+                    cx.listener(|this, _event, _window, cx| {
+                        this.close_settings_select();
+                        this.settings_workspace.update(cx, |settings, cx| {
+                            settings.set_privilege_totp_credential(None, cx);
+                        });
+                        cx.stop_propagation();
+                    }),
+                ));
+                for credential in self.connection_store.totp_credentials() {
+                    let credential_id = credential.id.clone();
+                    let label = if credential.enabled {
+                        credential.name.clone()
+                    } else {
+                        format!(
+                            "{} ({})",
+                            credential.name,
+                            self.i18n.t("settings_view.privilege_credentials.disabled")
+                        )
+                    };
                     popup = popup.child(select_option_action(
                         select_option(
                             &self.tokens,
-                            sftp_page::sftp_presentation_label(preference, &self.i18n),
-                            preference == settings.sftp.presentation,
+                            label,
+                            selected.as_deref() == Some(credential_id.as_str()),
                         ),
                         false,
                         false,
                         cx.listener(move |this, _event, _window, cx| {
                             this.close_settings_select();
-                            this.edit_settings(
-                                |settings| settings.sftp.presentation = preference,
-                                cx,
-                            );
-                            if preference != oxideterm_settings::SftpPresentationPreference::Sidebar
-                                && let Some(node_id) = this.embedded_sftp_node_id.clone()
-                            {
-                                this.close_embedded_sftp_for_node(&node_id, cx);
-                            }
+                            let credential_id = credential_id.clone();
+                            this.settings_workspace.update(cx, |settings, cx| {
+                                settings.set_privilege_totp_credential(Some(credential_id), cx);
+                            });
                             cx.stop_propagation();
                         }),
                     ));
                 }
                 Some(popup)
             }
-            (SettingsTab::Sftp, SettingsSelect::SftpProtocol) => {
+            _ => None,
+        }
+    }
+
+    fn settings_select_popup_ide(
+        &self,
+        open_select: SettingsSelect,
+        width: f32,
+        settings: &PersistedSettings,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::Stateful<Div>> {
+        match open_select {
+            SettingsSelect::IdeFontFamily => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
-                for protocol in [
-                    oxideterm_settings::FileTransferProtocolPreference::Auto,
-                    oxideterm_settings::FileTransferProtocolPreference::Sftp,
-                    oxideterm_settings::FileTransferProtocolPreference::Scp,
-                ] {
+                for family in
+                    std::iter::once(None).chain(font_family_options().iter().copied().map(Some))
+                {
                     popup = popup.child(select_option_action(
                         select_option(
                             &self.tokens,
-                            file_transfer_protocol_label(protocol, &self.i18n),
-                            protocol == settings.sftp.transfer_protocol,
+                            family.map(font_family_label).unwrap_or_else(|| {
+                                self.i18n.t("settings_view.ide.follow_terminal")
+                            }),
+                            family == settings.ide.font_family,
                         ),
                         false,
                         false,
                         cx.listener(move |this, _event, _window, cx| {
                             this.close_settings_select();
-                            this.edit_settings(
-                                |settings| settings.sftp.transfer_protocol = protocol,
-                                cx,
-                            );
+                            this.edit_settings(|settings| settings.ide.font_family = family, cx);
                             cx.stop_propagation();
                         }),
                     ));
                 }
                 Some(popup)
             }
-            (SettingsTab::Sftp, SettingsSelect::SftpConcurrent) => {
+            SettingsSelect::IdeCjkFontFamily => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
-                for &count in sftp_concurrent_options() {
+                let current_family = settings.ide.cjk_font_family.as_deref().map(str::trim);
+                let custom = self.settings_workspace.read(cx).ide_cjk_font_custom
+                    || current_family.is_some_and(cjk_font_is_custom);
+                for family in std::iter::once(None)
+                    .chain(terminal_cjk_font_options().iter().copied().map(Some))
+                {
                     popup = popup.child(select_option_action(
                         select_option(
                             &self.tokens,
-                            sftp_transfer_count_label(&self.i18n, count),
-                            count == settings.sftp.max_concurrent_transfers,
+                            family
+                                .map(|family| terminal_cjk_font_label(family, &self.i18n))
+                                .unwrap_or_else(|| {
+                                    self.i18n.t("settings_view.ide.follow_terminal")
+                                }),
+                            !custom && family == current_family,
                         ),
                         false,
                         false,
                         cx.listener(move |this, _event, _window, cx| {
                             this.close_settings_select();
+                            this.settings_workspace.update(cx, |state, _| {
+                                state.ide_cjk_font_custom = false;
+                            });
                             this.edit_settings(
-                                |settings| settings.sftp.max_concurrent_transfers = count,
+                                |settings| {
+                                    settings.ide.cjk_font_family = family.map(str::to_string)
+                                },
                                 cx,
                             );
                             cx.stop_propagation();
                         }),
                     ));
                 }
+                popup = popup.child(select_option_action(
+                    select_option(
+                        &self.tokens,
+                        self.i18n.t("settings_view.terminal.cjk_font_custom"),
+                        custom,
+                    ),
+                    false,
+                    false,
+                    cx.listener(|this, _, window, cx| {
+                        this.settings_workspace.update(cx, |state, _| {
+                            state.ide_cjk_font_custom = true;
+                        });
+                        let value = this
+                            .settings_store
+                            .settings()
+                            .ide
+                            .cjk_font_family
+                            .clone()
+                            .unwrap_or_default();
+                        this.focus_settings_input(SettingsInput::IdeCjkFontFamily, value, cx);
+                        window.focus(&this.focus_handle, cx);
+                        cx.stop_propagation();
+                    }),
+                ));
                 Some(popup)
             }
-            (SettingsTab::Sftp, SettingsSelect::SftpDirectoryParallelism) => {
+            _ => None,
+        }
+    }
+
+    fn settings_select_popup_help(
+        &self,
+        open_select: SettingsSelect,
+        width: f32,
+        settings: &PersistedSettings,
+        cx: &mut Context<Self>,
+    ) -> Option<gpui::Stateful<Div>> {
+        match open_select {
+            SettingsSelect::UpdateChannel => {
                 let mut popup = select_overlay_popup(&self.tokens, width);
-                for &count in sftp_directory_parallelism_options() {
+                for channel in [UpdateChannel::Stable, UpdateChannel::Beta] {
+                    let label = update_channel_label(channel, &self.i18n);
                     popup = popup.child(select_option_action(
                         select_option(
                             &self.tokens,
-                            sftp_transfer_count_label(&self.i18n, count),
-                            count == settings.sftp.directory_parallelism,
+                            label,
+                            channel == settings.general.update_channel,
                         ),
                         false,
                         false,
                         cx.listener(move |this, _event, _window, cx| {
                             this.close_settings_select();
                             this.edit_settings(
-                                |settings| settings.sftp.directory_parallelism = count,
-                                cx,
-                            );
-                            cx.stop_propagation();
-                        }),
-                    ));
-                }
-                Some(popup)
-            }
-            (SettingsTab::Sftp, SettingsSelect::SftpConflict) => {
-                let mut popup = select_overlay_popup(&self.tokens, width);
-                for action in [
-                    oxideterm_settings::ConflictAction::Ask,
-                    oxideterm_settings::ConflictAction::Overwrite,
-                    oxideterm_settings::ConflictAction::Skip,
-                    oxideterm_settings::ConflictAction::Rename,
-                ] {
-                    popup = popup.child(select_option_action(
-                        select_option(
-                            &self.tokens,
-                            conflict_label(action, &self.i18n),
-                            action == settings.sftp.conflict_action,
-                        ),
-                        false,
-                        false,
-                        cx.listener(move |this, _event, _window, cx| {
-                            this.close_settings_select();
-                            this.edit_settings(
-                                |settings| settings.sftp.conflict_action = action,
+                                |settings| settings.general.update_channel = channel,
                                 cx,
                             );
                             cx.stop_propagation();
@@ -2312,41 +2490,7 @@ impl WorkspaceApp {
                 Some(popup)
             }
             _ => None,
-        }?;
-        let popup = overlay_content_boundary(popup).into_any_element();
-
-        Some(
-            popover_backdrop()
-                .on_mouse_down(
-                    MouseButton::Left,
-                    cx.listener(|this, _event, window, cx| {
-                        this.dismiss_transient_workspace_overlays_from_outside_pointer(window, cx);
-                        cx.stop_propagation();
-                    }),
-                )
-                .on_mouse_down(
-                    MouseButton::Right,
-                    cx.listener(|this, _event, window, cx| {
-                        this.dismiss_transient_workspace_overlays_from_outside_pointer(window, cx);
-                        cx.stop_propagation();
-                    }),
-                )
-                .child(
-                    deferred(
-                        anchored()
-                            .anchor(Corner::TopLeft)
-                            .position(anchor.bounds.bottom_left())
-                            .offset(point(
-                                px(0.0),
-                                px(self.tokens.metrics.settings_select_popup_gap),
-                            ))
-                            .position_mode(AnchoredPositionMode::Window)
-                            .child(popup),
-                    )
-                    .with_priority(oxideterm_gpui_ui::modal::TAURI_POPOVER_LAYER_PRIORITY),
-                )
-                .into_any_element(),
-        )
+        }
     }
 
     pub(in crate::workspace) fn open_settings_select_from_pointer(
