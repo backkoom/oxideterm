@@ -1009,7 +1009,7 @@ impl WorkspaceApp {
         let host = self.tab_host.read(cx);
         let pane = host.panes().get(&pane_id)?.read(cx);
         super::super::terminal_cwd::terminal_cwd_snapshot_from_pane(
-            CurrentDirectoryScope::ssh_node(node.0.clone()),
+            CurrentDirectoryScope::ssh_node(node.0),
             pane,
         )
         .map(|snapshot| snapshot.path().to_string())

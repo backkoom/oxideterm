@@ -510,7 +510,9 @@ impl WorkspaceApp {
         };
         let row_bookmark = bookmark.clone();
         let edit_bookmark = bookmark.clone();
-        let delete_id = bookmark.id.clone();
+        // `bookmark` is owned here and its remaining fields are already cloned
+        // into the two row closures above, so the id can be moved out.
+        let delete_id = bookmark.id;
         let edit_surface = surface;
         let delete_surface = surface;
 

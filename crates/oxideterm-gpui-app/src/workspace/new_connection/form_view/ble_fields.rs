@@ -208,11 +208,11 @@ impl WorkspaceApp {
                         format!("ble-scan-name-{}", device.address).into(),
                     ))
                     .when(!name_fits, |cell| {
-                        let tokens = self.tokens.clone();
+                        let tokens = self.tokens;
                         let tooltip_label = label.clone();
                         cell.tooltip(move |_window, cx| {
                             oxideterm_gpui_ui::tooltip::tooltip_view(
-                                tokens.clone(),
+                                tokens,
                                 tooltip_label.clone(),
                                 None,
                                 cx,
@@ -414,11 +414,11 @@ impl WorkspaceApp {
                                 )
                                 .id(name_id)
                                 .when(!name_fits, |cell| {
-                                    let tokens = self.tokens.clone();
+                                    let tokens = self.tokens;
                                     let service_uuid_full = service_uuid_full.clone();
                                     cell.tooltip(move |_window, cx| {
                                         oxideterm_gpui_ui::tooltip::tooltip_view(
-                                            tokens.clone(),
+                                            tokens,
                                             service_uuid_full.clone(),
                                             None,
                                             cx,
@@ -451,11 +451,11 @@ impl WorkspaceApp {
                                 )
                                 .id(props_id)
                                 .when(!props_fit, |cell| {
-                                    let tokens = self.tokens.clone();
+                                    let tokens = self.tokens;
                                     let characteristics_for_tooltip = characteristics.clone();
                                     cell.tooltip(move |_window, cx| {
                                         oxideterm_gpui_ui::tooltip::tooltip_view(
-                                            tokens.clone(),
+                                            tokens,
                                             characteristics_for_tooltip.clone(),
                                             None,
                                             cx,

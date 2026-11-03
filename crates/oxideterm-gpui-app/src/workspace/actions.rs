@@ -3316,7 +3316,7 @@ impl WorkspaceApp {
             return div().into_any_element();
         };
         let input_height = search_input_height(
-            editor.read(cx).buffer().line_count() as usize,
+            editor.read(cx).buffer().line_count(),
             editor.read(cx).line_height(),
         );
         let has_query = !search.query.is_empty();

@@ -2755,7 +2755,7 @@ impl WorkspaceApp {
                 node_id.clone(),
                 expanded,
                 default_expanded,
-                chevron_label.clone(),
+                chevron_label,
                 cx,
             ));
         let header = if group.user_level {
@@ -2805,7 +2805,7 @@ impl WorkspaceApp {
                         .child(group.label.clone()),
                 )
         };
-        let toggle_id = node_id.clone();
+        let toggle_id = node_id;
         let expanded_target = !expanded;
         let header = header
             .on_click(cx.listener(move |this, _, _, cx| {
@@ -2955,7 +2955,7 @@ impl WorkspaceApp {
                     .child(
                         div()
                             .flex_none()
-                            .debug_selector(move || port_selector.clone())
+                            .debug_selector(move || port_selector)
                             .child(format!(":{}", member.port)),
                     )
                     .child(self.render_session_status_dot(
@@ -2981,7 +2981,7 @@ impl WorkspaceApp {
                                 .min_w_0()
                                 .flex_1()
                                 .truncate()
-                                .debug_selector(move || route_selector.clone())
+                                .debug_selector(move || route_selector)
                                 .child(route),
                         ),
                 )
