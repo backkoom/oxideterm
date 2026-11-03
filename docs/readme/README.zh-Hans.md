@@ -9,25 +9,34 @@
 SSH · Mosh · Telnet · 串口 · RDP/VNC · SFTP · 端口转发 · 内置编辑器，集成在同一个 GPU 渲染的应用中。
 无需账号，无需订阅，不采集遥测，不使用 Electron。
 
-[![最新版本](https://img.shields.io/github/v/release/AnalyseDeCircuit/oxideterm?label=release)](https://github.com/AnalyseDeCircuit/oxideterm/releases/latest)
+[![最新版本](https://img.shields.io/github/v/release/backkoom/oxideterm?label=release)](https://github.com/backkoom/oxideterm/releases/latest)
 [![平台](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#install)
 [![许可证](https://img.shields.io/badge/license-GPL--3.0-blue)](../../LICENSE)
-[![Stars](https://img.shields.io/github/stars/AnalyseDeCircuit/oxideterm?style=social)](https://github.com/AnalyseDeCircuit/oxideterm/stargazers)
+[![Stars](https://img.shields.io/github/stars/backkoom/oxideterm?style=social)](https://github.com/backkoom/oxideterm/stargazers)
 
-[**下载**](https://github.com/AnalyseDeCircuit/oxideterm/releases/latest) ·
+[**下载**](https://github.com/backkoom/oxideterm/releases/latest) ·
 [**文档**](https://oxideterm.app) ·
 [**更新日志**](../../.github/release-notes/stable-changelog.md) ·
-[**报告问题**](https://github.com/AnalyseDeCircuit/oxideterm/issues)
+[**报告问题**](https://github.com/backkoom/oxideterm/issues)
 
 [English](../../README.md) | [简体中文](README.zh-Hans.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Italiano](README.it.md) | [Português](README.pt-BR.md) | [Tiếng Việt](README.vi.md)
 
 </div>
 
+> **本项目是 [OxideTerm](https://github.com/AnalyseDeCircuit/oxideterm)（作者
+> [AnalyseDeCircuit](https://github.com/AnalyseDeCircuit)）的修改版分支。**
+> 由 [backkoom](https://github.com/backkoom) 自 2026-11-02 起维护。目前的改动：界面间距 token 化与设置页布局重构、
+> 便携模式解锁性能、Windows 上 WSL 启动弹窗修复，以及正在进行的外观调整。
+> 许可证为 **GPL-3.0-only**，与上游一致 —— 见 [LICENSE](../../LICENSE)。
+> 本仓库的 Issue 与 Release 均指本分支，与上游项目无关。
+
+
+
 ---
 
 ## 快速上手
 
-1. **安装 OxideTerm。** 从[最新发布页面](https://github.com/AnalyseDeCircuit/oxideterm/releases/latest)下载安装包；各平台的说明见下方[安装](#install)一节。
+1. **安装 OxideTerm。** 从[最新发布页面](https://github.com/backkoom/oxideterm/releases/latest)下载安装包；各平台的说明见下方[安装](#install)一节。
 2. **添加服务器。** 打开会话管理器，新建 SSH 连接，或从 `~/.ssh/config` 导入主机。
 3. **连接服务器。** 打开终端。主机密钥会与 `~/.ssh/known_hosts` 中的记录核对。
 4. **使用工作区中的其他功能。** 在同一节点上打开 SFTP、端口转发或内置编辑器。默认情况下，它们共享一个 SSH 连接。
@@ -155,7 +164,7 @@ OxideTerm 支持三种插件方式：
 安装前，请了解以下情况：
 
 - 仅支持桌面平台（macOS、Windows、Linux），没有移动应用。
-- 项目迭代较快，发布频繁。请参阅[更新日志](../../.github/release-notes/stable-changelog.md)和[未解决的问题](https://github.com/AnalyseDeCircuit/oxideterm/issues)。
+- 项目迭代较快，发布频繁。请参阅[更新日志](../../.github/release-notes/stable-changelog.md)和[未解决的问题](https://github.com/backkoom/oxideterm/issues)。
 - 审计与会话录制需主动启用，且只反映 OxideTerm 自身能够观察到的活动。
 - 进程插件不受操作系统沙箱隔离。
 - 如果渲染器在你的机器上无法正常运行，可尝试兼容模式：`OXIDETERM_RENDER_PROFILE=compatibility`。
@@ -279,7 +288,7 @@ SFTP 会话带有连接世代标识：重连后，符合条件的会话会重新
 
 ## 安装
 
-[**下载最新版本**](https://github.com/AnalyseDeCircuit/oxideterm/releases/latest)
+[**下载最新版本**](https://github.com/backkoom/oxideterm/releases/latest)
 
 | 操作系统 | x64 | ARM64 |
 |---|---|---|
@@ -314,7 +323,7 @@ sudo dpkg -i OxideTerm_*_linux_*.deb && sudo apt-get install -f
 sudo dnf install ./OxideTerm_*_linux_*.rpm
 
 # Nix; updates are managed by Nix
-nix run github:AnalyseDeCircuit/oxideterm
+nix run github:backkoom/oxideterm
 ```
 
 想自己构建？请查看[开发者信息](#for-developers)中的**从源码运行**。
@@ -338,8 +347,8 @@ cargo run -p oxideterm-cli -- report --bundle ./oxideterm-report.zip
 感谢每一位帮助 OxideTerm 变得更好的贡献者。
 
 <p align="center">
-  <a href="https://github.com/AnalyseDeCircuit/oxideterm/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=AnalyseDeCircuit/oxideterm" alt="OxideTerm 贡献者">
+  <a href="https://github.com/backkoom/oxideterm/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=backkoom/oxideterm" alt="OxideTerm 贡献者">
   </a>
 </p>
 

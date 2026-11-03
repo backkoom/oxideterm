@@ -9,25 +9,34 @@
 SSH · Mosh · Telnet · Serial · RDP/VNC · SFTP · port forwarding · built-in editor, all in one GPU-rendered app.
 No account. No subscription. No telemetry. No Electron.
 
-[![Latest release](https://img.shields.io/github/v/release/AnalyseDeCircuit/oxideterm?label=release)](https://github.com/AnalyseDeCircuit/oxideterm/releases/latest)
+[![Latest release](https://img.shields.io/github/v/release/backkoom/oxideterm?label=release)](https://github.com/backkoom/oxideterm/releases/latest)
 [![Platforms](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#install)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/AnalyseDeCircuit/oxideterm?style=social)](https://github.com/AnalyseDeCircuit/oxideterm/stargazers)
+[![Stars](https://img.shields.io/github/stars/backkoom/oxideterm?style=social)](https://github.com/backkoom/oxideterm/stargazers)
 
-[**Download**](https://github.com/AnalyseDeCircuit/oxideterm/releases/latest) ·
+[**Download**](https://github.com/backkoom/oxideterm/releases/latest) ·
 [**Documentation**](https://oxideterm.app) ·
 [**Changelog**](.github/release-notes/stable-changelog.md) ·
-[**Report an issue**](https://github.com/AnalyseDeCircuit/oxideterm/issues)
+[**Report an issue**](https://github.com/backkoom/oxideterm/issues)
 
 [English](README.md) | [简体中文](docs/readme/README.zh-Hans.md) | [繁體中文](docs/readme/README.zh-Hant.md) | [日本語](docs/readme/README.ja.md) | [한국어](docs/readme/README.ko.md) | [Français](docs/readme/README.fr.md) | [Deutsch](docs/readme/README.de.md) | [Español](docs/readme/README.es.md) | [Italiano](docs/readme/README.it.md) | [Português](docs/readme/README.pt-BR.md) | [Tiếng Việt](docs/readme/README.vi.md)
 
 </div>
 
+> **This is a modified fork of [OxideTerm](https://github.com/AnalyseDeCircuit/oxideterm) by
+> [AnalyseDeCircuit](https://github.com/AnalyseDeCircuit).**
+> Maintained by [backkoom](https://github.com/backkoom) since 2026-11-02. Changes so far: UI spacing
+> tokens and settings layout refactor, portable-mode unlock performance, Windows WSL launch prompt fix,
+> and an ongoing visual pass. Licensed under **GPL-3.0-only**, same as upstream — see [LICENSE](LICENSE).
+> Issues and releases here refer to this fork, not to the upstream project.
+
+
+
 ---
 
 ## Quick start
 
-1. **Install OxideTerm.** Grab a package from the [latest release](https://github.com/AnalyseDeCircuit/oxideterm/releases/latest); platform notes are in [Install](#install) below.
+1. **Install OxideTerm.** Grab a package from the [latest release](https://github.com/backkoom/oxideterm/releases/latest); platform notes are in [Install](#install) below.
 2. **Add a server.** Open the Session Manager and create an SSH connection, or import hosts from your `~/.ssh/config`.
 3. **Connect.** Open a terminal. Host keys are checked against `~/.ssh/known_hosts`.
 4. **Use the rest of the workspace.** Open SFTP, port forwarding, or the built-in editor on the same node. By default they share one SSH connection.
@@ -153,7 +162,7 @@ Legacy Tauri (1.x) ESM plugins may be listed but are not executed by the native 
 We would rather you know before installing:
 
 - Desktop only (macOS, Windows, Linux). There is no mobile app.
-- The project moves quickly, with frequent releases. See the [changelog](.github/release-notes/stable-changelog.md) and [open issues](https://github.com/AnalyseDeCircuit/oxideterm/issues).
+- The project moves quickly, with frequent releases. See the [changelog](.github/release-notes/stable-changelog.md) and [open issues](https://github.com/backkoom/oxideterm/issues).
 - Auditing and session recording are opt-in, and only reflect what OxideTerm itself can observe.
 - Process plugins are not sandboxed by the OS.
 - If the renderer fails on your machine, try the compatibility profile: `OXIDETERM_RENDER_PROFILE=compatibility`.
@@ -273,7 +282,7 @@ SFTP sessions carry a connection generation: after a reconnect, an eligible sess
 
 ## Install
 
-[**Download the latest release**](https://github.com/AnalyseDeCircuit/oxideterm/releases/latest)
+[**Download the latest release**](https://github.com/backkoom/oxideterm/releases/latest)
 
 | OS | x64 | ARM64 |
 |---|---|---|
@@ -308,7 +317,7 @@ sudo dpkg -i OxideTerm_*_linux_*.deb && sudo apt-get install -f
 sudo dnf install ./OxideTerm_*_linux_*.rpm
 
 # Nix; updates are managed by Nix
-nix run github:AnalyseDeCircuit/oxideterm
+nix run github:backkoom/oxideterm
 ```
 
 Prefer to build it yourself? See **Run from source** under [For developers](#for-developers).
@@ -332,8 +341,8 @@ Reproducible bugs and regressions are prioritized. Feature requests are reviewed
 Thanks to everyone who helps make OxideTerm better.
 
 <p align="center">
-  <a href="https://github.com/AnalyseDeCircuit/oxideterm/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=AnalyseDeCircuit/oxideterm" alt="OxideTerm contributors">
+  <a href="https://github.com/backkoom/oxideterm/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=backkoom/oxideterm" alt="OxideTerm contributors">
   </a>
 </p>
 
