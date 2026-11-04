@@ -6,7 +6,24 @@ use semver::{Version, VersionReq};
 
 pub(crate) fn host_version_matches(requirement: Option<&str>, host: &Version) -> bool {
     requirement.is_none_or(|requirement| {
-        VersionReq::parse(requirement).is_ok_and(|range| range.matches(host))
+        VersionReq::parse(requirement).is_ok_and(|range| {
+            if range.matches(host) {
+                return true;
+            }
+            // semver 的 VersionReq 默认不匹配带预发布段的版本。本分支的版本号是
+            // 2.3.0-bk.x 这类预发布形式，`>=2.1` 会整片失效，把插件全部判成
+            // 「宿主版本过低」。去掉预发布段按基础版本再比一次，语义上才是对的：
+            // 插件的兼容性要求针对的是 2.3.0 这个版本，不是我们的分支后缀。
+            //
+            // 但要求里自己写了预发布时（例如 `>2.3.0-bk.0.0.1`），作者明确是在
+            // 针对预发布版本做判断，必须保持严格匹配，不能走这个兜底。
+            if range.comparators.iter().any(|c| !c.pre.is_empty()) {
+                return false;
+            }
+            let mut release = host.clone();
+            release.pre = semver::Prerelease::EMPTY;
+            range.matches(&release)
+        })
     })
 }
 
