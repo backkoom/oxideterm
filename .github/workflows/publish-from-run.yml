@@ -1,0 +1,118 @@
+name: Publish from run
+
+# 把某次已完成的 Native Package 运行里的产物直接发布到 Release，
+# 不重新编译。用于构建成功但发布环节失败（例如令牌权限）的情况。
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: '持有 OxideTerm-* 产物的运行 ID（在运行页 URL 里）'
+        required: true
+        type: string
+      release_tag:
+        description: '要发布的标签，例如 v2.3.0-bk.0.0.1'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  publish:
+    name: Publish artifacts from run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve version from tag
+        id: meta
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          set -euo pipefail
+          if [[ ! "${RELEASE_TAG}" =~ ^(v|native-v|gpui-v)[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+            echo "Unsupported release tag: ${RELEASE_TAG}" >&2
+            exit 1
+          fi
+          version="${RELEASE_TAG#native-v}"
+          version="${version#gpui-v}"
+          version="${version#v}"
+          prerelease=false
+          if [[ "${version}" == *-* ]]; then
+            prerelease=true
+          fi
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+          echo "prerelease=${prerelease}" >> "${GITHUB_OUTPUT}"
+
+      - name: Checkout the tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag }}
+          fetch-depth: 0
+
+      - name: Download artifacts from source run
+        uses: actions/download-artifact@v4
+        with:
+          pattern: OxideTerm-*
+          path: dist-release
+          merge-multiple: true
+          run-id: ${{ inputs.run_id }}
+          # 下载同一仓库的产物用默认令牌即可，它带 actions: read。
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Show downloaded files
+        shell: bash
+        run: ls -la dist-release
+
+      - name: Compose release notes
+        id: notes
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          RELEASE_VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/compose_release_notes.py \
+            --version "${RELEASE_VERSION}" \
+            --tag "${RELEASE_TAG}" \
+            --base .github/release-notes/stable.md \
+            --changelog .github/release-notes/stable-changelog.md \
+            --output release-notes.md
+          echo "body_path=release-notes.md" >> "${GITHUB_OUTPUT}"
+
+      - name: Generate checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t assets < <(find dist-release -maxdepth 1 -type f \( \
+            -name '*.app.zip' -o -name '*.dmg' -o -name '*.tar.gz' -o \
+            -name '*.zip' -o -name '*.exe' -o -name '*.AppImage' -o \
+            -name '*.deb' -o -name '*.rpm' \) | sort -u)
+          if [[ "${#assets[@]}" -eq 0 ]]; then
+            echo "No release assets found." >&2
+            exit 1
+          fi
+          (cd dist-release && sha256sum $(basename -a "${assets[@]}") > sha256sums.txt)
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          # 必须用个人令牌：fork 的 GITHUB_TOKEN 创建 Release 会返回 403。
+          token: ${{ secrets.RELEASE_TOKEN }}
+          files: |
+            dist-release/*.app.zip
+            dist-release/*.dmg
+            dist-release/*.tar.gz
+            dist-release/*.zip
+            dist-release/*.exe
+            dist-release/*.AppImage
+            dist-release/*.deb
+            dist-release/*.rpm
+            dist-release/sha256sums.txt
+          tag_name: ${{ inputs.release_tag }}
+          name: OxideTerm Native ${{ steps.meta.outputs.version }}
+          prerelease: ${{ steps.meta.outputs.prerelease == 'true' }}
+          make_latest: false
+          body_path: ${{ steps.notes.outputs.body_path }}
+          overwrite_files: true
+          fail_on_unmatched_files: false

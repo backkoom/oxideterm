@@ -589,6 +589,9 @@ jobs:
       - name: Upload release assets
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
+          # Fork 的 GITHUB_TOKEN 创建 Release 会被拒（403 Resource not accessible
+          # by integration）。优先用仓库里配置的个人令牌，没有则回落到默认令牌。
+          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
           files: |
             dist-release/*.app.zip
             dist-release/*.dmg
