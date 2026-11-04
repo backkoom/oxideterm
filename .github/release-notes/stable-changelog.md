@@ -3,6 +3,27 @@
 Stable releases are listed newest first. The release workflow uses each versioned
 section as the detailed changelog attached to the corresponding GitHub Release.
 
+## 2.3.0-bk.0.0.2
+
+修正上一版暴露的一个隐患：应用内「检查更新」指向的是上游仓库，而本分支版本号带 `-bk.` 后缀，按 semver 上游的 `2.3.0` 比 `2.3.0-bk.0.0.1` 更大，于是启动就提示「发现新版本」。一旦点了下载更新，装上去的是上游构建，本分支的改动会全部丢失。
+
+### 🐛 修复
+
+#### 更新检查不再指向上游
+
+清单地址由 `AnalyseDeCircuit/oxideterm` 改为本仓库。本分支暂不发布 updater 清单（产物未做 minisign 签名，上游更新器也会拒绝未签名包），因此清单地址会返回 404——现在按「已是最新」处理，不再弹检查失败。
+
+**这意味着本分支不提供自动更新。** 升级方式是从 Releases 页面下载新的 portable 包解压覆盖。
+
+#### Release 正文的下载链接
+
+发布脚本里把仓库地址写死成上游，导致上一版正文里的下载按钮指向不存在的上游标签，点开是 404。已改为本仓库。
+
+### 🔧 其它
+
+- 设置页行距测试改为断言 token 而非写死的 24px，避免以后调整设计变量时误报。
+- 变更日志里关于「会被标记为 Pre-release」的说明已移除。
+
 ## 2.3.0-bk.0.0.1
 
 基于上游 OxideTerm 2.3.0 的第一个自用版本。这一版修掉两个实际困扰：便携模式解锁要等七八秒、Windows 首次启动弹 WSL 更新控制台；同时把全应用的间距收进同一套 token，并拆掉了三个巨型函数。

@@ -461,7 +461,11 @@ jobs:
           set -euo pipefail
 
           prerelease=false
-          if [[ "${RELEASE_TAG}" == native-v* || "${RELEASE_TAG}" == gpui-v* || "${RELEASE_VERSION}" == *-* ]]; then
+          # 上游把带 - 的版本一律当预发布。本分支的 -bk. 版本是正式发布的自用
+          # 构建，需要出现在仓库侧边栏，所以单独放行；其余带 - 的仍按预发布。
+          if [[ "${RELEASE_TAG}" == native-v* || "${RELEASE_TAG}" == gpui-v* ]]; then
+            prerelease=true
+          elif [[ "${RELEASE_VERSION}" == *-* && "${RELEASE_VERSION}" != *-bk.* ]]; then
             prerelease=true
           fi
 

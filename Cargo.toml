@@ -113,7 +113,7 @@ edition = "2024"
 license = "GPL-3.0-only"
 publish = false
 # 2.3.0 = 对齐的上游版本；bk = 维护者缩写；0.0.1 = 本分支自己的修订号。
-version = "2.3.0-bk.0.0.1"
+version = "2.3.0-bk.0.0.2"
 
 [workspace.dependencies]
 accesskit = { version = "0.24.0", features = ["enumn"] }
