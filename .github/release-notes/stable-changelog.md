@@ -3,6 +3,47 @@
 Stable releases are listed newest first. The release workflow uses each versioned
 section as the detailed changelog attached to the corresponding GitHub Release.
 
+## 2.3.0-bk.0.0.1
+
+基于上游 OxideTerm 2.3.0 的第一个自用版本。这一版修掉两个实际困扰：便携模式解锁要等七八秒、Windows 首次启动弹 WSL 更新控制台；同时把全应用的间距收进同一套 token，并拆掉了三个巨型函数。
+
+这是本分支的首个版本，版本号带 `-bk.` 后缀，因此 GitHub 会标记为 **Pre-release**，这是预期行为。
+
+### 🐛 修复
+
+#### ⚡ 便携模式解锁：7.7 秒 → 0.5 秒
+
+不是加解密慢，是 Argon2（256 MiB 内存、4 轮的内存密集算法）在未优化的 debug 构建里运行，慢了约 16 倍。只给 `argon2` 这一个 crate 开启优化，**KDF 参数与派生结果不变，已有密钥库照常解锁**。
+
+| 构建 | 单次解锁 |
+|---|---:|
+| 改前 debug | 约 7.7 秒 |
+| 改后 debug | 约 0.49 秒 |
+| release | 约 0.48 秒 |
+
+#### 🪟 首次启动不再弹出 WSL 更新控制台
+
+`System32\wsl.exe` 每台 Windows 都有，原代码只要文件存在就去执行 `wsl --list --quiet`，而 `CREATE_NO_WINDOW` 管不住 WSL 自己再拉起的孙进程。改为先查注册表 `HKCU\Software\Microsoft\Windows\CurrentVersion\Lxss`，没装发行版就直接返回。
+
+### 🔧 内部改进
+
+- **间距全部 token 化**：全应用 1530 处裸像素间距换成具名阶梯。默认外观不变，但修掉一个真问题——原来同一页里一部分间距跟着「紧凑/宽松」密度缩放、另一部分是写死的像素，切密度时一半动一半不动。
+- **拆掉三个巨型函数**：`render_settings_select_overlay` 2270 → 236 行、`render_new_connection_select_overlay` 1164 → 125 行、`settings_select_popup_terminal` 908 → 40 行。纯搬移，分支体未改，行为不变。
+- **清理 13 处既有 Clippy 告警**，现在 clippy 为 0 错误 0 告警。
+
+### 🎨 外观（第一批）
+
+- 圆角 `sm/md/lg` 由 4/6/10 调整为 6/8/12。注意这是全局的，按钮、输入框、弹窗、卡片都会跟着变圆。
+- 设置页留白放宽一档：页面留白 40→48、行距 24→28、卡片内边距 20→24。
+
+外观调整刚开始，目前只动了圆角和留白。
+
+### ⚠️ 已知问题
+
+- 还有 3 个超长函数未拆（主窗口 1343 行、新建连接表单 1324 行、AI 投递 1047 行）。前两个是元素树，需先设计布局上下文；第三个有 19 处 `continue` 需要逐处核对语义。
+- 分区标题仍是「全大写 + MEDIUM」，与后续要参考的 Warp 风格（不大写 + SEMIBOLD）尚不一致。
+- 产物**未做代码签名**：Windows 会弹 SmartScreen「未知发布者」，macOS 需右键打开或执行 `xattr -cr`。
+
 ## 2.3.0
 
 ### 中文

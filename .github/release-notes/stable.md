@@ -39,5 +39,5 @@ sudo dnf install ./OxideTerm_*_linux_*.rpm
 ## 🔗 Links
 
 - Documentation: https://oxideterm.app
-- GitHub Issues: https://github.com/AnalyseDeCircuit/oxideterm/issues
-- Changelog: https://github.com/AnalyseDeCircuit/oxideterm/blob/main/.github/release-notes/stable-changelog.md
+- GitHub Issues: https://github.com/backkoom/oxideterm/issues
+- Changelog: https://github.com/backkoom/oxideterm/blob/main/.github/release-notes/stable-changelog.md
