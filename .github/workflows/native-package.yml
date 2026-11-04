@@ -435,6 +435,9 @@ jobs:
       tag: ${{ steps.release_meta.outputs.tag }}
       version: ${{ steps.release_meta.outputs.version }}
       prerelease: ${{ steps.release_meta.outputs.prerelease }}
+      # 'false' when no minisign key is configured. The release still publishes;
+      # only the updater manifest is skipped.
+      signed: ${{ steps.signing.outputs.enabled }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -502,7 +505,22 @@ jobs:
           echo "generate_release_notes=false" >> "${GITHUB_OUTPUT}"
           echo "body_path=release-notes.md" >> "${GITHUB_OUTPUT}"
 
+      - name: Detect signing key
+        id: signing
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${TAURI_SIGNING_PRIVATE_KEY}" ]]; then
+            echo "enabled=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "enabled=false" >> "${GITHUB_OUTPUT}"
+            echo "::warning::TAURI_SIGNING_PRIVATE_KEY is not configured. Publishing unsigned assets and skipping the updater manifest."
+          fi
+
       - name: Sign release assets
+        if: steps.signing.outputs.enabled == 'true'
         shell: bash
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -600,7 +618,9 @@ jobs:
     name: Generate updater manifest
     needs: release
     runs-on: ubuntu-latest
-    if: inputs.upload_release
+    # Updaters reject unsigned assets, so the manifest is only meaningful when
+    # the signing key was present.
+    if: inputs.upload_release && needs.release.outputs.signed == 'true'
     permissions:
       contents: write
     steps:
