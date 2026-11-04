@@ -151,6 +151,12 @@ impl NativeUpdateClient {
             .await
             .map_err(NativeUpdateError::ManifestFetch)?;
         if !response.status().is_success() {
+            // 本分支目前不发布 updater 清单（产物未做 minisign 签名，上游 updater
+            // 也会拒绝），所以清单地址 404 属于正常状态，按「已是最新」处理，
+            // 不要当成检查失败弹错误。
+            if response.status().as_u16() == 404 {
+                return Ok(NativeUpdateStatus::UpToDate);
+            }
             return Err(NativeUpdateError::ManifestStatus {
                 status: response.status(),
                 url: endpoint.url.to_string(),

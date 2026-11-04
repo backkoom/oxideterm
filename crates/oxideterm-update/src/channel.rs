@@ -3,10 +3,12 @@
 
 use oxideterm_settings::UpdateChannel;
 
+// 本分支的更新清单指向自己的仓库。若仍指向上游，检查逻辑会把上游的正式版
+// 判成「更新的版本」并提示替换，一装就把分支改动全抹掉。
 pub const STABLE_UPDATE_ENDPOINT: &str =
-    "https://github.com/AnalyseDeCircuit/oxideterm/releases/latest/download/latest.json";
+    "https://github.com/backkoom/oxideterm/releases/latest/download/latest.json";
 pub const BETA_UPDATE_ENDPOINT: &str =
-    "https://github.com/AnalyseDeCircuit/oxideterm/releases/download/updater-beta/latest.json";
+    "https://github.com/backkoom/oxideterm/releases/download/updater-beta/latest.json";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct UpdateEndpoint {
