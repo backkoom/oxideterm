@@ -1379,7 +1379,13 @@ mod row_tests {
                         label.bottom()
                     };
                     assert_eq!(control.left(), label.left());
-                    assert_eq!((control.top().0 - copy_bottom.0) / scale, 24.0);
+                    // 比 token 而不是写死像素：行距属于设计变量，调整它不应该
+                    // 让布局测试失败。这里要守的是「控件排在说明文字下方且间距
+                    // 取自 settings_row_gap」这条约定。
+                    assert_eq!(
+                        (control.top().0 - copy_bottom.0) / scale,
+                        tokens.metrics.settings_row_gap
+                    );
                 } else {
                     assert_eq!(control.right().0 / scale, width);
                     assert!(control.left() >= label.right());
