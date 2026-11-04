@@ -611,8 +611,9 @@ jobs:
           generate_release_notes: ${{ steps.release_notes.outputs.generate_release_notes }}
           # Re-running a release for the same tag (for example after a partial
           # upload failure) must overwrite in place instead of failing on an
-          # existing release.
-          update_release: true
+          # existing release. `update_release` is not a valid input for the
+          # pinned action version; `overwrite_files` is the supported one.
+          overwrite_files: true
 
   publish-updater:
     name: Generate updater manifest
