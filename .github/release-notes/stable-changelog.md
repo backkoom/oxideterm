@@ -7,7 +7,7 @@ section as the detailed changelog attached to the corresponding GitHub Release.
 
 基于上游 OxideTerm 2.3.0 的第一个自用版本。这一版修掉两个实际困扰：便携模式解锁要等七八秒、Windows 首次启动弹 WSL 更新控制台；同时把全应用的间距收进同一套 token，并拆掉了三个巨型函数。
 
-这是本分支的首个版本，版本号带 `-bk.` 后缀，因此 GitHub 会标记为 **Pre-release**，这是预期行为。
+这是本分支的首个版本。版本号中的 `bk` 标识维护者，末尾的 `0.0.1` 是本分支自己的修订号。
 
 ### 🐛 修复
 
