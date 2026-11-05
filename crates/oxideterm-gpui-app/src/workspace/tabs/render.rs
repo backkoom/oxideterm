@@ -6,6 +6,10 @@ use super::*;
 
 use gpui::StatefulInteractiveElement;
 
+// 标签之间的间隙。从 tab_natural_width 给出的宽度里切出来、右边距补回，
+// 每个标签占据的总推进量不变——拖拽落点依赖这个累加值。
+const TAB_ITEM_GAP: f32 = 6.0;
+
 const TAB_RECONNECT_PHASES: [ReconnectPhase; 8] = [
     ReconnectPhase::Snapshot,
     ReconnectPhase::GracePeriod,
@@ -222,22 +226,33 @@ impl WorkspaceApp {
             let tab_element = div()
                 .id(("workspace-tab", tab_id.0))
                 .debug_selector(move || format!("workspace-tab-{}", tab_id.0))
-                .h_full()
+                // 垂直内缩成独立卡片；水平由外层控制宽度与间隙。
+                .h(px((self.tokens.metrics.tabbar_height - 8.0).max(24.0)))
                 .flex_none()
-                .w(px(tab_width))
+                .w_full()
                 .px(px(self.tokens.metrics.tab_padding_x))
                 .relative()
                 .flex()
                 .flex_row()
                 .items_center()
                 .gap(px(self.tokens.metrics.tab_gap))
-                .border_r_1()
+                .rounded(px(self.tokens.radii.sm))
+                .border_1()
                 .border_color(if show_reconnect_progress {
                     rgb(theme.warning)
+                } else if active {
+                    rgb(theme.border)
                 } else {
-                    self.workspace_chrome_divider()
+                    rgba(0x00000000)
                 })
-                .bg(self.workspace_tab_background(active))
+                .bg(if active {
+                    rgb(theme.bg_elevated)
+                } else {
+                    rgba(0x00000000)
+                })
+                .when(!active, |tab| {
+                    tab.hover(move |tab| tab.bg(rgb(theme.bg_hover)))
+                })
                 .text_color(tab_text_color)
                 .opacity(if is_being_dragged && drag_active {
                     0.5
@@ -294,14 +309,28 @@ impl WorkspaceApp {
                             .bg(rgb(theme.accent)),
                     )
                 })
-                .when(active || show_reconnect_progress, |tab| {
+                // 当前标签的强调线放在卡片底部。
+                .when(active && !show_reconnect_progress, |tab| {
+                    tab.child(
+                        div()
+                            .absolute()
+                            .bottom(px(3.0))
+                            .left(px(8.0))
+                            .right(px(8.0))
+                            .h(px(self.tokens.metrics.tab_active_accent_height))
+                            .rounded(px(1.0))
+                            .bg(rgb(theme.accent)),
+                    )
+                })
+                .when(show_reconnect_progress, |tab| {
                     tab.child(
                         div()
                             .absolute()
                             .top_0()
-                            .left_0()
-                            .right_0()
+                            .left(px(6.0))
+                            .right(px(6.0))
                             .h(px(self.tokens.metrics.tab_active_accent_height))
+                            .rounded(px(1.0))
                             .bg(rgb(if show_reconnect_progress {
                                 theme.warning
                             } else {
@@ -359,9 +388,12 @@ impl WorkspaceApp {
                 &self.tokens,
                 ("workspace-tab-open", tab_id.0),
                 div()
-                    .w(px(tab_width))
+                    .w(px((tab_width - TAB_ITEM_GAP).max(0.0)))
+                    .mr(px(TAB_ITEM_GAP))
                     .h_full()
                     .flex_none()
+                    .flex()
+                    .items_center()
                     .child(tab_element),
                 oxideterm_gpui_ui::motion::MotionDuration::Control,
             ));
@@ -457,7 +489,8 @@ impl WorkspaceApp {
         // of the future slot before the detached window is actually closed.
         div()
             .id(("detached-tab-return-placeholder", tab_id.0))
-            .w(px(tab_width))
+            .w(px((tab_width - TAB_ITEM_GAP).max(0.0)))
+            .mr(px(TAB_ITEM_GAP))
             .h_full()
             .flex_none()
             .flex()
