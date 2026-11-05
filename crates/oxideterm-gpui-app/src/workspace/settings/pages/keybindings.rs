@@ -275,7 +275,7 @@ impl WorkspaceApp {
                 },
             )
             .w(px(280.0))
-            .h(px(36.0))
+            .h(px(self.tokens.metrics.ui_control_height))
             .pl(px(34.0))
             .child(
                 div()

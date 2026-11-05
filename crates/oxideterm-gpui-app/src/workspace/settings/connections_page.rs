@@ -1564,7 +1564,7 @@ impl WorkspaceApp {
             border: Some(rgb(self.tokens.ui.border)),
             text_color: Some(rgb(self.tokens.ui.text)),
             hover_background: Some(rgb(self.tokens.ui.bg_hover)),
-            height: Some(36.0),
+            height: Some(self.tokens.metrics.ui_control_height),
             padding_x: Some(12.0),
             font_size: Some(self.tokens.metrics.ui_text_sm),
             ..ToolbarButtonOptions::default()
