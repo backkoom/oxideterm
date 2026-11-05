@@ -2,13 +2,10 @@ use super::helpers::{
     WELCOME_PAGE_PADDING, WelcomeRecentConnection, WelcomeRecentKind, WelcomeRecentTarget,
     effective_shortcut_label, welcome_layout_is_compact, welcome_recent_connections,
 };
+use super::layout::TAB_ITEM_GAP;
 use super::*;
 
 use gpui::StatefulInteractiveElement;
-
-// 标签之间的间隙。从 tab_natural_width 给出的宽度里切出来、右边距补回，
-// 每个标签占据的总推进量不变——拖拽落点依赖这个累加值。
-const TAB_ITEM_GAP: f32 = 6.0;
 
 const TAB_RECONNECT_PHASES: [ReconnectPhase; 8] = [
     ReconnectPhase::Snapshot,

@@ -8,6 +8,10 @@ pub(super) enum TabStripItemKind {
     Exiting(usize),
 }
 
+/// 标签之间的视觉间隙。从 tab_natural_width 给出的宽度里切出来、右边距补回，
+/// 每个标签占据的总推进量不变——拖拽落点依赖这个累加值。
+pub(super) const TAB_ITEM_GAP: f32 = 6.0;
+
 pub(super) struct TabStripItem {
     pub tab_id: TabId,
     pub width: f32,
@@ -354,7 +358,9 @@ mod tests {
         let before = cx.debug_bounds("workspace-tab-102").unwrap();
         let after = cx.debug_bounds("workspace-tab-101").unwrap();
         assert!(exit.size.width > px(0.0) && exit.size.width < closing.size.width);
-        assert!((f32::from(before.right() - exit.left())).abs() < 1.0);
+        // 标签之间现在有 TAB_ITEM_GAP 的间隙，退出动画同样保留这个间距，
+        // 所以相邻关系要按间隙来算，不能要求两边严丝合缝。
+        assert!((f32::from(before.right() - exit.left()) + TAB_ITEM_GAP).abs() < 1.0);
         assert!((f32::from(after.left() - exit.right())).abs() < 1.0);
         assert_eq!(before.size.width, second.size.width);
         assert_eq!(after.size.width, single.size.width);

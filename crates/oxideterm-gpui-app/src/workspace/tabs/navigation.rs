@@ -1180,7 +1180,9 @@ impl WorkspaceApp {
             tab_id: tab.id,
             kind: tab.kind.clone(),
             title: self.tab_display_title(tab),
-            width: bounds.end - bounds.start,
+            // 与实际渲染的卡片同宽（去掉标签间隙），否则关闭动画一开始
+            // 会比正常标签宽出 6px，出现跳变。
+            width: ((bounds.end - bounds.start) - super::layout::TAB_ITEM_GAP).max(0.0),
             visual_index,
             was_active: Some(tab.id) == self.active_tab_id(cx),
             started_at: Instant::now(),
