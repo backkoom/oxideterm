@@ -87,10 +87,10 @@ pub fn settings_appearance_card_title(
         .items_center()
         .gap(px(8.0))
         .text_size(px(tokens.metrics.ui_text_sm))
-        .font_weight(gpui::FontWeight::MEDIUM)
+        .font_weight(gpui::FontWeight::SEMIBOLD)
         .text_color(rgb(tokens.ui.text))
         .when_some(icon, |title, icon| title.child(icon));
-    title_el.child(title.to_uppercase()).into_any_element()
+    title_el.child(title).into_any_element()
 }
 
 pub fn settings_appearance_card_header(
@@ -930,7 +930,7 @@ pub fn settings_theme_editor_color_section(
                 .text_size(px(11.0))
                 .font_weight(gpui::FontWeight::MEDIUM)
                 .text_color(rgb(tokens.ui.text_muted))
-                .child(title.to_uppercase()),
+                .child(title),
         )
         .child(settings_theme_editor_color_grid(cells))
         .into_any_element()

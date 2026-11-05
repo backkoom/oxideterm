@@ -280,9 +280,9 @@ impl WorkspaceApp {
     pub(in crate::workspace) fn card_title(&self, title_key: &str) -> AnyElement {
         div()
             .text_size(px(self.tokens.metrics.ui_text_sm))
-            .font_weight(gpui::FontWeight::MEDIUM)
+            .font_weight(gpui::FontWeight::SEMIBOLD)
             .text_color(rgb(self.tokens.ui.text))
-            .child(self.i18n.t(title_key).to_uppercase())
+            .child(self.i18n.t(title_key))
             .into_any_element()
     }
 

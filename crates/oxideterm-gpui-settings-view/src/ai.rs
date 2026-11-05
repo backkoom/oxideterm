@@ -163,7 +163,7 @@ pub fn settings_ai_context_sources_group(
                 .text_size(px(tokens.metrics.ui_text_xs))
                 .font_weight(gpui::FontWeight::MEDIUM)
                 .text_color(rgb(tokens.ui.text_muted))
-                .child(title.to_uppercase()),
+                .child(title),
         )
         .children(rows)
         .into_any_element()
@@ -326,10 +326,10 @@ pub fn settings_ai_section_heading(
         .child(
             div()
                 .text_size(px(tokens.metrics.ui_text_sm))
-                .font_weight(gpui::FontWeight::MEDIUM)
+                .font_weight(gpui::FontWeight::SEMIBOLD)
                 .text_color(rgb(tokens.ui.text))
                 .whitespace_nowrap()
-                .child(title.to_uppercase()),
+                .child(title),
         )
         .child(
             div()
@@ -416,9 +416,9 @@ pub fn settings_ai_context_windows_header(
                 .child(
                     div()
                         .text_size(px(tokens.metrics.ui_text_sm))
-                        .font_weight(gpui::FontWeight::MEDIUM)
+                        .font_weight(gpui::FontWeight::SEMIBOLD)
                         .text_color(rgb(tokens.ui.text))
-                        .child(title.to_uppercase()),
+                        .child(title),
                 )
                 .child(
                     div()

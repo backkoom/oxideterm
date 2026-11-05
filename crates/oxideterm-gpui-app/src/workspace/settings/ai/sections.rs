@@ -1104,7 +1104,7 @@ impl WorkspaceApp {
     ) -> AnyElement {
         settings_ai_collapsible_header(
             &self.tokens,
-            self.i18n.t(title_key).to_uppercase(),
+            self.i18n.t(title_key),
             summary,
             self.render_animated_chevron(
                 (
