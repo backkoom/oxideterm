@@ -1926,7 +1926,10 @@ impl WorkspaceApp {
             .border_color(border_color)
             .bg(background)
             .cursor_pointer()
-            .hover(move |card| card.bg(rgb(theme.bg_hover)))
+            // 同终端行：悬停不该盖掉选中态的强调色。
+            .when(!selected, |card| {
+                card.hover(move |card| card.bg(rgb(theme.bg_hover)))
+            })
             .on_mouse_down(
                 MouseButton::Left,
                 cx.listener(move |this, event: &MouseDownEvent, window, cx| {
@@ -3075,22 +3078,27 @@ impl WorkspaceApp {
             .px_2()
             .flex()
             .items_center()
-            .rounded_none()
+            .rounded(px(self.tokens.radii.sm))
             .cursor_pointer()
             .bg(if selected {
                 rgba((theme.accent << 8) | SESSION_FOCUS_TERMINAL_ACTIVE_BG_ALPHA)
             } else {
                 rgba(0x00000000)
             })
-            .hover(move |row| row.bg(rgb(theme.bg_hover)))
+            // 悬停只在未选中时生效：原来选中行一被鼠标划过就丢掉强调色，
+            // 看起来像选中态被取消了。
+            .when(!selected, |row| {
+                row.hover(move |row| row.bg(rgb(theme.bg_hover)))
+            })
             .when(selected, |row| {
                 row.child(
                     div()
                         .absolute()
-                        .left_0()
-                        .top(px(4.0))
-                        .bottom(px(4.0))
+                        .left(px(2.0))
+                        .top(px(5.0))
+                        .bottom(px(5.0))
                         .w(px(2.0))
+                        .rounded(px(1.0))
                         .bg(rgb(theme.accent)),
                 )
             })

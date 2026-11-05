@@ -17,7 +17,7 @@ const PRIMARY_SIDEBAR_CONTENT_TOP_INSET: f32 = 4.0;
 // `bg-oxide-accent/5`, `border-oxide-accent/50`, and `bg-emerald-500/20`.
 // Keep the translated alpha roles named so this card view does not drift into
 // feature-local magic colors.
-const SESSION_FOCUS_CARD_SELECTED_BG_ALPHA: u32 = 0x0d;
+const SESSION_FOCUS_CARD_SELECTED_BG_ALPHA: u32 = 0x1a;
 const SESSION_FOCUS_CARD_SELECTED_BORDER_ALPHA: u32 = 0x80;
 const SESSION_FOCUS_CARD_BORDER_ALPHA: u32 = 0x80;
 const SESSION_FOCUS_TERMINAL_ACTIVE_BG_ALPHA: u32 = 0x1a;
