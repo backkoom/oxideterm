@@ -1475,6 +1475,33 @@ impl WorkspaceApp {
         title
     }
 
+    /// 按被拖动卡片的中心判定落点。
+    ///
+    /// 直接用指针坐标的话，抓住标签左侧拖动时指针要走完一整个标签宽度才越过分界，
+    /// 表现为「几乎全拖过去才让位」。这里先算出抓取点相对标签左缘的偏移，
+    /// 再用卡片中心参与判定。
+    fn tab_drop_target_index_for_ghost(
+        &self,
+        drag: &TabDragState,
+        window: &Window,
+        cx: &mut App,
+    ) -> usize {
+        let Some(width) = drag.tab_widths.get(drag.from_index).copied() else {
+            return drag.from_index;
+        };
+        let origin: f32 = drag.tab_widths.iter().take(drag.from_index).sum();
+        let scroll = self.tabbar_effective_scroll_x(window, cx);
+        let tabbar_left = self.tabbar_left_x() - scroll;
+        let grab_offset = drag.start_x - (tabbar_left + origin);
+        let ghost_center = drag.current_x - grab_offset + width / 2.0;
+        // 只在看得见的范围内判定落点。卡片中心可能被指针带到可视区之外，
+        // 不夹紧的话算出的插入位置会落在屏幕外，空位看起来就「不准」。
+        let viewport = self.tabbar_scroll_viewport_width(window, cx);
+        let content_x = ghost_center - self.tabbar_left_x() + scroll;
+        let clamped = content_x.clamp(scroll + 1.0, scroll + (viewport - 1.0).max(1.0));
+        self.tab_strip_layout(window, cx).insertion_index(clamped)
+    }
+
     fn tab_drop_target_index_for_x(&self, client_x: f32, window: &Window, cx: &mut App) -> usize {
         let tabbar_x = client_x - self.tabbar_left_x() + self.tabbar_effective_scroll_x(window, cx);
         self.tab_strip_layout(window, cx).insertion_index(tabbar_x)
@@ -1505,12 +1532,19 @@ impl WorkspaceApp {
         self.split_drop_target = None;
         self.set_active_tab(tab_id, window, cx);
         let drop_target_index = self.tab_drop_target_index_for_x(start_x, window, cx);
+        let grab_left = self
+            .tab_strip_layout(window, cx)
+            .bounds(tab_id)
+            .map(|range| range.start)
+            .unwrap_or(0.0)
+            - self.tabbar_effective_scroll_x(window, cx);
         self.main_window_tabs.drag = Some(TabDragState {
             tab_id,
             from_index: visible_index,
             destination_tab,
             start_x,
             start_y,
+            grab_left,
             current_x: start_x,
             current_y: start_y,
             tab_widths,
@@ -1542,15 +1576,39 @@ impl WorkspaceApp {
         let previous_drop_target_index = drag.drop_target_index;
         // Browser tab drags keep pointer capture after leaving the tab label;
         // the root mouse-up is responsible for finishing or cancelling.
+        let previous_x = drag.current_x;
+        let previous_y = drag.current_y;
+        // 标签溢出时，指针靠近两端就自动滚动：否则末尾的标签根本拖不到，
+        // 表现为「移动不能补位」。
+        let viewport_left = self.tabbar_left_x();
+        let viewport_right = viewport_left + self.tabbar_scroll_viewport_width(window, cx);
+        const EDGE_BAND: f32 = 48.0;
+        const EDGE_STEP: f32 = 18.0;
+        let current_scroll = self.tabbar_effective_scroll_x(window, cx);
+        let mut next_scroll = current_scroll;
+        if f32::from(event.position.x) < viewport_left + EDGE_BAND {
+            next_scroll -= EDGE_STEP;
+        } else if f32::from(event.position.x) > viewport_right - EDGE_BAND {
+            next_scroll += EDGE_STEP;
+        }
+        if (next_scroll - current_scroll).abs() > 0.5 {
+            self.set_tabbar_scroll_x(next_scroll, window, cx);
+        }
         drag.current_x = f32::from(event.position.x);
         drag.current_y = f32::from(event.position.y);
-        drag.tab_widths = self.tab_strip_layout(window, cx).live_widths();
+        // 宽度只在拖动开始时算一次。tab_strip_layout 会逐标签测量文字宽度，
+        // 放在每次指针移动里做是拖动卡顿的主因，而拖动过程中宽度不会变。
         let delta_x = drag.current_x - drag.start_x;
         let delta_y = drag.current_y - drag.start_y;
         // Tauri uses a 10px pointer threshold for reorder. GPUI also needs the
         // browser strip axis check here so vertical drags do not become tab
         // reorders just because the root view is acting as pointer capture.
+        // 只按总位移判定时，横向拖动带一点下漂就会被判成「拖进内容区」，
+        // 于是弹出分屏预览、内容区跟着变，看起来像拖乱了。要求垂直方向
+        // 确实离开标签栏才算进入内容区。
+        let left_tabbar = delta_y > self.tokens.metrics.tabbar_height * 0.6;
         let over_content = delta_x.hypot(delta_y) > TAB_DRAG_THRESHOLD_PX
+            && left_tabbar
             && self.update_tab_split_destination(&mut drag, event, window, cx);
         if over_content {
             drag.active = true;
@@ -1562,16 +1620,22 @@ impl WorkspaceApp {
         } else if tab_drag_is_horizontal_reorder(delta_x, delta_y) {
             drag.active = true;
             drag.mode = TabDragMode::Reorder;
-            drag.drop_target_index = self.tab_drop_target_index_for_x(drag.current_x, window, cx);
+            drag.drop_target_index = self.tab_drop_target_index_for_ghost(&drag, window, cx);
         } else {
             drag.active = false;
             drag.mode = TabDragMode::Pending;
             drag.drop_target_index = drag.from_index;
         }
+        // 浮起的卡片要跟着指针走，所以位置变化本身也必须触发重绘。
+        // 用 2px 阈值过滤高频微小抖动：鼠标事件可能上百赫兹，逐次重绘
+        // 整个工作区（含终端）才是拖动卡顿的来源。
+        let ghost_moved = drag.active
+            && (drag.current_x - previous_x).abs() + (drag.current_y - previous_y).abs() >= 2.0;
         let changed = drag.active != was_active
             || drag.mode != previous_mode
             || drag.drop_target_index != previous_drop_target_index
-            || self.split_drop_target != previous_split_target;
+            || self.split_drop_target != previous_split_target
+            || ghost_moved;
         self.main_window_tabs.drag = Some(drag);
         if changed {
             // The tab strip renders activation and drop-target changes, not raw

@@ -223,6 +223,46 @@ impl WorkspaceApp {
             } else {
                 rgb(theme.text_muted)
             };
+            // 落点空位：拖动中在插入位置留出与标签等宽的槽位，其余标签自动让开。
+            // 目标位置就是拖动项自己时不留空位，避免出现「原位也空着」的错觉。
+            let drop_here = drag_active
+                && drag_state.is_some_and(|drag| {
+                    drag.mode == TabDragMode::Reorder
+                        && drag.drop_target_index == current_visible_index
+                        && drag.drop_target_index != drag.from_index
+                });
+            if drop_here {
+                let gap_width = drag_state
+                    .and_then(|drag| drag.tab_widths.get(drag.from_index).copied())
+                    .filter(|width| *width > 1.0)
+                    .unwrap_or(180.0);
+                let slot_width = (gap_width - TAB_ITEM_GAP).max(0.0);
+                scroll_viewport = scroll_viewport.child(
+                    div()
+                        .mr(px(TAB_ITEM_GAP))
+                        .h(px((self.tokens.metrics.tabbar_height - 8.0).max(24.0)))
+                        .flex_none()
+                        .rounded(px(self.tokens.radii.sm))
+                        .border_1()
+                        .border_color(rgba((theme.accent << 8) | 0x55))
+                        .bg(rgba((theme.accent << 8) | 0x14))
+                        // 空位从 0 展开到完整宽度，后面的标签因此是滑过去的，
+                        // 而不是瞬间跳位。id 里带上插入位置，换位置时重新播放。
+                        .with_animation(
+                            ("tab-drop-slot", current_visible_index as u64),
+                            gpui::Animation::new(std::time::Duration::from_millis(140))
+                                .with_easing(oxideterm_gpui_ui::motion::ease_out_cubic),
+                            move |slot, progress| slot.w(px(slot_width * progress)),
+                        ),
+                );
+            }
+
+            // 拖动中的标签从流里拿掉：原来它留在原位只是变淡，会和幽灵卡
+            // 同时出现，看着乱。拿掉之后其余标签自然合拢，落点由上面的空位表示。
+            if is_being_dragged && drag_active {
+                continue;
+            }
+
             let tab_element = div()
                 .id(("workspace-tab", tab_id.0))
                 .debug_selector(move || format!("workspace-tab-{}", tab_id.0))
@@ -254,10 +294,18 @@ impl WorkspaceApp {
                     tab.hover(move |tab| tab.bg(rgb(theme.bg_hover)))
                 })
                 .text_color(tab_text_color)
-                .opacity(if is_being_dragged && drag_active {
-                    0.5
-                } else {
-                    1.0
+                // 拖动期间其余标签做背景模糊，把注意力留给浮起的卡片和落点空位。
+                .when(drag_active && !is_being_dragged, |tab| {
+                    tab.child(
+                        div()
+                            .absolute()
+                            .top_0()
+                            .left_0()
+                            .right_0()
+                            .bottom_0()
+                            .rounded(px(self.tokens.radii.sm))
+                            .backdrop_blur(px(3.0)),
+                    )
                 })
                 .on_mouse_down(
                     MouseButton::Left,
@@ -298,17 +346,6 @@ impl WorkspaceApp {
                         this.clear_workspace_tooltip(&tab_tooltip_id, cx);
                     }
                 }))
-                .when(show_drop_indicator, |tab| {
-                    tab.child(
-                        div()
-                            .absolute()
-                            .left_0()
-                            .top_0()
-                            .bottom_0()
-                            .w(px(2.0))
-                            .bg(rgb(theme.accent)),
-                    )
-                })
                 // 当前标签的强调线放在卡片底部。
                 .when(active && !show_reconnect_progress, |tab| {
                     tab.child(
@@ -410,8 +447,30 @@ impl WorkspaceApp {
                     ) != drag.from_index
             });
         if show_trailing_drop_indicator {
-            scroll_viewport =
-                scroll_viewport.child(div().w(px(2.0)).h_full().flex_none().bg(rgb(theme.accent)));
+            let gap_width = self
+                .main_window_tabs
+                .drag
+                .as_ref()
+                .and_then(|drag| drag.tab_widths.get(drag.from_index).copied())
+                .filter(|width| *width > 1.0)
+                .unwrap_or(180.0);
+            let slot_width = (gap_width - TAB_ITEM_GAP).max(0.0);
+            scroll_viewport = scroll_viewport.child(
+                div()
+                    .mr(px(TAB_ITEM_GAP))
+                    .h(px((self.tokens.metrics.tabbar_height - 8.0).max(24.0)))
+                    .flex_none()
+                    .rounded(px(self.tokens.radii.sm))
+                    .border_1()
+                    .border_color(rgba((theme.accent << 8) | 0x55))
+                    .bg(rgba((theme.accent << 8) | 0x14))
+                    .with_animation(
+                        "tab-drop-slot-trailing",
+                        gpui::Animation::new(std::time::Duration::from_millis(140))
+                            .with_easing(oxideterm_gpui_ui::motion::ease_out_cubic),
+                        move |slot, progress| slot.w(px(slot_width * progress)),
+                    ),
+            );
         }
 
         // Only the trailing filler is draggable. Do not mark the tabbar parent
@@ -424,12 +483,83 @@ impl WorkspaceApp {
         let bar = bar
             .child(scroll_viewport)
             .child(self.render_tabbar_scrollbar(window, cx))
+            .child(self.render_tab_drag_ghost(window, cx))
             .into_any_element();
         if has_window_background {
             oxideterm_gpui_ui::surface::tab_surface(&self.tokens, bar)
         } else {
             bar
         }
+    }
+
+    /// 拖动时浮在标签栏上方的那张卡片。
+    ///
+    /// 位置用位移量算（`current_x - start_x`）而不是指针绝对坐标：标签栏的
+    /// 原点在侧栏之后，绝对坐标需要额外换算，位移量则与原点无关。
+    fn render_tab_drag_ghost(&self, window: &Window, cx: &Context<Self>) -> AnyElement {
+        let Some(drag) = self.main_window_tabs.drag.as_ref() else {
+            return div().into_any_element();
+        };
+        if !drag.active {
+            return div().into_any_element();
+        }
+        let Some(tab) = self.tab_by_id(drag.tab_id, cx) else {
+            return div().into_any_element();
+        };
+        let theme = self.tokens.ui;
+        let width = drag
+            .tab_widths
+            .get(drag.from_index)
+            .copied()
+            .filter(|width| *width > 1.0)
+            .unwrap_or(180.0);
+        // 位置 = 按下时标签左缘 + 指针位移。grab_left 在按下时固定，
+        // 不用实时滚动量，所以拖动中标签栏自动滚动时卡片不会跟着乱跳。
+        let left = drag.grab_left + (drag.current_x - drag.start_x);
+        let height = (self.tokens.metrics.tabbar_height - 8.0).max(24.0);
+        let title = self.tab_display_title(tab);
+
+        div()
+            .absolute()
+            .left(px(left))
+            .top(px(4.0))
+            .w(px(width))
+            .h(px(height))
+            .rounded(px(self.tokens.radii.sm))
+            .border_1()
+            .border_color(rgba((theme.accent << 8) | 0x66))
+            .bg(rgb(theme.bg_elevated))
+            .px(px(self.tokens.metrics.tab_padding_x))
+            .flex()
+            .flex_row()
+            .items_center()
+            .gap(px(self.tokens.metrics.tab_gap))
+            .text_color(rgb(theme.text))
+            .child(Self::render_lucide_icon(
+                tab_kind_icon(self, &tab.kind, cx),
+                self.tokens.metrics.tab_icon_size,
+                rgb(theme.text),
+            ))
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .overflow_hidden()
+                    .whitespace_nowrap()
+                    .text_size(px(self.tokens.metrics.tab_font_size))
+                    .child(title),
+            )
+            .child(
+                div()
+                    .absolute()
+                    .bottom(px(3.0))
+                    .left(px(8.0))
+                    .right(px(8.0))
+                    .h(px(self.tokens.metrics.tab_active_accent_height))
+                    .rounded(px(1.0))
+                    .bg(rgb(theme.accent)),
+            )
+            .into_any_element()
     }
 
     fn workspace_tab_background(&self, active: bool) -> Rgba {

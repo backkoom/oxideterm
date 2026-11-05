@@ -683,6 +683,11 @@ struct TabDragState {
     destination_tab: Option<TabId>,
     start_x: f32,
     start_y: f32,
+    /// 按下那一刻，被拖标签左缘在标签栏坐标系里的位置。
+    ///
+    /// 必须固定，不能每次用实时滚动量重算：拖动过程中标签栏会自动滚动，
+    /// 实时值一变卡片就跟着乱跳。幽灵卡只跟指针位移，不跟内容滚动。
+    grab_left: f32,
     current_x: f32,
     current_y: f32,
     tab_widths: Vec<f32>,
