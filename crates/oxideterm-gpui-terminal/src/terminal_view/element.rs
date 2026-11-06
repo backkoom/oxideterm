@@ -2335,7 +2335,11 @@ impl Element for TerminalElement {
         let viewport_origin = viewport_timestamp_origin + point(px(grid_gutter_width), px(0.0));
         let origin =
             timestamp_origin + point(px(grid_gutter_width) - self.scroll_x_offset, px(0.0));
-        let grid_viewport_width = px((f32::from(bounds.size.width) - grid_gutter_width).max(0.0));
+        // 网格宽度同样要扣掉行号栏，否则滚动条和横向滚动范围会算宽。
+        let grid_viewport_width = px((f32::from(bounds.size.width)
+            - line_number_gutter_width
+            - grid_gutter_width)
+            .max(0.0));
         // 遮罩必须从行号栏的起点算起：原来从时间戳栏起点算，
         // 行号栏整个落在遮罩外面，画了也被裁掉。
         let viewport_mask_bounds = Bounds::new(

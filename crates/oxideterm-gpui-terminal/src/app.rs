@@ -4818,10 +4818,15 @@ impl TerminalPane {
         self.viewport_scale_factor_bits = Some(scale_factor.to_bits());
         let cell_width = self.metrics.cell_width_f32();
         let line_height = self.metrics.line_height_f32();
+        // 左侧栏位（行号 / 时间戳 / 命令标记）都会把网格往右推，
+        // 所以 PTY 列数必须把它们全部扣掉——只扣命令标记栏时，
+        // PTY 会比可视区多出十来列，右边的内容直接被裁掉、也不换行。
         let width = terminal_grid_span_for_viewport(
             bounds.size.width,
             cell_width,
-            self.command_mark_gutter_width(),
+            self.line_number_gutter_width()
+                + self.timestamp_gutter_width()
+                + self.command_mark_gutter_width(),
         );
         let height =
             (f32::from(bounds.size.height) - TERMINAL_CONTENT_PADDING * 2.0).max(line_height * 2.0);
@@ -5176,8 +5181,9 @@ fn terminal_grid_span_for_viewport(
     // Browser terminals reserve right-side scrollbar chrome outside the grid.
     // Keep that gutter stable even before scrollback exists so history growth
     // does not resize the PTY and push the scrollbar outside the viewport.
-    // Timestamp labels are a visual overlay and must not change PTY columns;
-    // toggling them should never reflow scrollback or restamp old rows.
+    // 左侧栏位（行号 / 时间戳 / 命令标记）是真实占位的：网格原点被它们右推，
+    // 列数就必须等量扣除，否则多出来的列会跑到可视区外被裁掉。
+    // 代价是切换这些栏位会让 PTY 重新排版一次——比丢内容划算。
     (f32::from(viewport_width)
         - TERMINAL_CONTENT_PADDING * 2.0
         - left_gutter_width
