@@ -1356,7 +1356,8 @@ impl WorkspaceApp {
     }
 
     pub(in crate::workspace) fn tabbar_max_scroll(&self, window: &Window, cx: &App) -> f32 {
-        (self.tab_strip_layout(window, cx).content_width()
+        // 拖动期间 tab_strip_layout 自己走缓存宽度，这里直接调用即可。
+        (self.tab_strip_layout(window, cx).content_width() + self.tab_drag_slot_advance()
             - self.tabbar_scroll_viewport_width(window, cx))
         .max(0.0)
     }
@@ -1482,26 +1483,213 @@ impl WorkspaceApp {
     /// 直接用指针坐标的话，抓住标签左侧拖动时指针要走完一整个标签宽度才越过分界，
     /// 表现为「几乎全拖过去才让位」。这里先算出抓取点相对标签左缘的偏移，
     /// 再用卡片中心参与判定。
+    /// 幽灵卡在标签栏内的可视坐标（左缘）。
+    ///
+    /// 用按下时固定的 grab_left 加指针位移，不掺实时滚动量：拖动中标签栏会
+    /// 自动滚动，实时值一变卡片就跟着乱跳。
+    ///
+    /// 渲染与落点判定都必须走这一个函数。之前两边各算各的（渲染用固定的
+    /// grab_left，落点用「宽度累加 + 指针位移」，后者完全不含滚动量），
+    /// 一旦自动滚动生效两者就相差一个滚动距离，表现为卡片和空位对不上。
+    pub(in crate::workspace) fn tab_drag_ghost_left(&self, drag: &TabDragState) -> f32 {
+        drag.grab_left + (drag.current_x - drag.start_x)
+    }
+
+    /// 被拖卡片的宽度。取拖动开始时量到的推进宽度并去掉标签间隙，
+    /// 与实际渲染的卡片一致。
+    pub(in crate::workspace) fn tab_drag_card_width(&self, drag: &TabDragState) -> f32 {
+        drag.tab_widths
+            .get(drag.from_index)
+            .copied()
+            .filter(|width| *width > 1.0)
+            .map(|width| (width - super::layout::TAB_ITEM_GAP).max(0.0))
+            .unwrap_or(180.0)
+    }
+
+    /// 落点空位占据的推进宽度。拖动期间它作为流内元素额外占一格，
+    /// 滚动上限必须把它算进去，否则空位会伸到 content_width 之外。
+    fn tab_drag_slot_advance(&self) -> f32 {
+        self.main_window_tabs
+            .drag
+            .as_ref()
+            .filter(|drag| drag.active && drag.mode == TabDragMode::Reorder)
+            .map(|drag| self.tab_drag_card_width(drag) + super::layout::TAB_ITEM_GAP)
+            .unwrap_or(0.0)
+    }
+
+    /// 把落点空位滚进可视区。
+    ///
+    /// 空位落在最末位时会顶到内容右缘之外：滚动上限按 content_width 算，而
+    /// 空位是额外的一格，滚到底也看不见它——用户看不到落点，就以为「拖不到末尾」。
+    /// 这里在算出落点后主动把标签栏滚过去。
+    fn reveal_tab_drop_slot(&mut self, drag: &TabDragState, window: &Window, cx: &App) {
+        let slot_left = self.tokens.metrics.tabbar_leading_offset
+            + drag
+                .tab_widths
+                .iter()
+                .take(drag.drop_target_index)
+                .sum::<f32>();
+        let slot_right = slot_left + self.tab_drag_card_width(drag);
+        let viewport = self.tabbar_scroll_viewport_width(window, cx);
+        let scroll = self.tabbar_effective_scroll_x(window, cx);
+        let target = if slot_left < scroll {
+            slot_left
+        } else if slot_right > scroll + viewport {
+            slot_right - viewport
+        } else {
+            return;
+        };
+        // 上限自己算，不走 set_tabbar_scroll_x：它内部读的是「上一次」的拖动状态，
+        // 而这里刚算出的落点还没写回，夹紧值会偏小，导致滚不到位。
+        let max_scroll = (self.tokens.metrics.tabbar_leading_offset
+            + drag.tab_widths.iter().sum::<f32>()
+            + self.tab_drag_card_width(drag)
+            + super::layout::TAB_ITEM_GAP
+            - viewport)
+            .max(0.0);
+        let clamped = target.clamp(0.0, max_scroll);
+        self.main_window_tabs
+            .scroll_handle
+            .set_offset(Point::new(px(-clamped), px(0.0)));
+    }
+
+    /// 按卡片中心决定插入位置。
+    ///
+    /// 卡片在可视坐标里跟着指针走，插入位置却是内容坐标，两者相差当前滚动量。
+    /// 自动滚动时这个差值一直在变，所以必须用实时滚动量换算回内容坐标。
+    ///
+    /// 直接用拖动开始时量到的宽度累加，不再重建 tab_strip_layout——那会逐标签
+    /// 测量文字宽度，是每次指针移动都跑一遍的昂贵操作。
     fn tab_drop_target_index_for_ghost(
         &self,
         drag: &TabDragState,
         window: &Window,
         cx: &mut App,
     ) -> usize {
-        let Some(width) = drag.tab_widths.get(drag.from_index).copied() else {
+        self.tab_drop_index_at(
+            drag,
+            self.tabbar_effective_scroll_x(window, cx),
+            self.tabbar_scroll_viewport_width(window, cx),
+        )
+    }
+
+    /// 落点判定的本体：只依赖滚动量与可视宽度，不碰 Window。
+    ///
+    /// 拖动期间「贴着边缘持续让位」是由定时任务驱动的，那个任务拿不到 Window，
+    /// 所以这套几何计算必须能单独调用。
+    fn tab_drop_index_at(&self, drag: &TabDragState, scroll: f32, viewport: f32) -> usize {
+        if drag.tab_widths.is_empty() {
             return drag.from_index;
+        }
+        // 指针拖出标签栏两侧时直接取两端。
+        //
+        // 指针最多只能移到窗口边缘，而标签栏右边缘离窗口边缘还有一段距离，
+        // 卡片中心永远走不到最后一个标签的中点——表现成「拖不到最末位」。
+        let bar_left = self.tabbar_left_x();
+        if drag.current_x > bar_left + viewport {
+            return drag.tab_widths.len();
+        }
+        if drag.current_x < bar_left {
+            return 0;
+        }
+        let center = self.tab_drag_ghost_left(drag) + self.tab_drag_card_width(drag) / 2.0;
+        let content_x = center + scroll;
+        let mut left = self.tokens.metrics.tabbar_leading_offset;
+        let mut index = 0;
+        for width in &drag.tab_widths {
+            if content_x < left + width / 2.0 {
+                return index;
+            }
+            index += 1;
+            left += width;
+        }
+        index
+    }
+
+    /// 拖动期间能滚到的最大偏移量。只用拖动开始时量到的宽度，不碰 Window。
+    fn tabbar_max_scroll_measured(&self, drag: &TabDragState) -> f32 {
+        (self.tokens.metrics.tabbar_leading_offset
+            + drag.tab_widths.iter().sum::<f32>()
+            + self.tab_drag_card_width(drag)
+            + super::layout::TAB_ITEM_GAP
+            - self.main_window_tabs.tabbar_viewport_width)
+            .max(0.0)
+    }
+
+    fn tabbar_scroll_x_measured(&self, max_scroll: f32) -> f32 {
+        f32::from(-self.main_window_tabs.scroll_handle.offset().x).clamp(0.0, max_scroll)
+    }
+
+    /// 指针停在标签栏两端时，让后面的标签持续让位。
+    ///
+    /// 只在指针移动时滚动是不够的：手停在边缘就没有鼠标事件，滚动会停下，
+    /// 于是永远差一格到不了末尾。这个函数由定时任务每 16ms 调一次，
+    /// 只要指针还在边缘带里就继续滚，直到滚到底。
+    ///
+    /// 返回 false 表示拖动已结束，定时任务应当退出。
+    fn tick_tab_drag_autoscroll(&mut self, cx: &mut Context<Self>) -> bool {
+        let Some(mut drag) = self.main_window_tabs.drag.clone() else {
+            return false;
         };
-        let origin: f32 = drag.tab_widths.iter().take(drag.from_index).sum();
-        let scroll = self.tabbar_effective_scroll_x(window, cx);
-        let tabbar_left = self.tabbar_left_x() - scroll;
-        let grab_offset = drag.start_x - (tabbar_left + origin);
-        let ghost_center = drag.current_x - grab_offset + width / 2.0;
-        // 只在看得见的范围内判定落点。卡片中心可能被指针带到可视区之外，
-        // 不夹紧的话算出的插入位置会落在屏幕外，空位看起来就「不准」。
-        let viewport = self.tabbar_scroll_viewport_width(window, cx);
-        let content_x = ghost_center - self.tabbar_left_x() + scroll;
-        let clamped = content_x.clamp(scroll + 1.0, scroll + (viewport - 1.0).max(1.0));
-        self.tab_strip_layout(window, cx).insertion_index(clamped)
+        if !drag.active || drag.mode != TabDragMode::Reorder {
+            return false;
+        }
+        let viewport = self.main_window_tabs.tabbar_viewport_width;
+        if viewport <= 1.0 {
+            return true;
+        }
+        const EDGE_BAND: f32 = 56.0;
+        const EDGE_STEP: f32 = 14.0;
+        let bar_left = self.tabbar_left_x();
+        let max_scroll = self.tabbar_max_scroll_measured(&drag);
+        let scroll = self.tabbar_scroll_x_measured(max_scroll);
+        let mut next = scroll;
+        if drag.current_x < bar_left + EDGE_BAND {
+            next -= EDGE_STEP;
+        } else if drag.current_x > bar_left + viewport - EDGE_BAND {
+            next += EDGE_STEP;
+        }
+        let next = next.clamp(0.0, max_scroll);
+        if (next - scroll).abs() < 0.5 {
+            return true;
+        }
+        self.main_window_tabs
+            .scroll_handle
+            .set_offset(Point::new(px(-next), px(0.0)));
+        // 滚动之后可视区下方的标签换了，落点必须跟着重算。
+        let index = self.tab_drop_index_at(&drag, next, viewport);
+        if index != drag.drop_target_index {
+            drag.drop_target_index = index;
+            self.main_window_tabs.drag = Some(drag);
+        }
+        cx.notify();
+        true
+    }
+
+    /// 拖动进入重排模式时启动持续让位循环。
+    fn ensure_tab_drag_autoscroll(&mut self, cx: &mut Context<Self>) {
+        if self.main_window_tabs.autoscroll_running {
+            return;
+        }
+        self.main_window_tabs.autoscroll_running = true;
+        cx.spawn(async move |weak, cx| {
+            loop {
+                Timer::after(Duration::from_millis(16)).await;
+                let keep_going = weak
+                    .update(cx, |this, cx| {
+                        let running = this.tick_tab_drag_autoscroll(cx);
+                        if !running {
+                            this.main_window_tabs.autoscroll_running = false;
+                        }
+                        running
+                    })
+                    .unwrap_or(false);
+                if !keep_going {
+                    break;
+                }
+            }
+        })
+        .detach();
     }
 
     fn tab_drop_target_index_for_x(&self, client_x: f32, window: &Window, cx: &mut App) -> usize {
@@ -1598,6 +1786,8 @@ impl WorkspaceApp {
         }
         drag.current_x = f32::from(event.position.x);
         drag.current_y = f32::from(event.position.y);
+        // 定时让位任务拿不到 Window，可视宽度只能在这里记下来。
+        self.main_window_tabs.tabbar_viewport_width = self.tabbar_scroll_viewport_width(window, cx);
         // 宽度只在拖动开始时算一次。tab_strip_layout 会逐标签测量文字宽度，
         // 放在每次指针移动里做是拖动卡顿的主因，而拖动过程中宽度不会变。
         let delta_x = drag.current_x - drag.start_x;
@@ -1623,6 +1813,8 @@ impl WorkspaceApp {
             drag.active = true;
             drag.mode = TabDragMode::Reorder;
             drag.drop_target_index = self.tab_drop_target_index_for_ghost(&drag, window, cx);
+            self.reveal_tab_drop_slot(&drag, window, cx);
+            self.ensure_tab_drag_autoscroll(cx);
         } else {
             drag.active = false;
             drag.mode = TabDragMode::Pending;

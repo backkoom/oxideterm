@@ -752,6 +752,12 @@ struct WorkspaceWindowTabState {
     scroll_handle: ScrollHandle,
     scrollbar_drag: Option<TabbarScrollbarDragState>,
     scrollbar_hovered: bool,
+    /// 标签栏可视宽度，每次指针移动时刷新。
+    ///
+    /// 拖动期间的定时让位任务拿不到 Window，只能靠这里记下来的值算边界。
+    tabbar_viewport_width: f32,
+    /// 边缘持续让位的循环是否已在跑，避免重复启动。
+    autoscroll_running: bool,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -796,6 +802,8 @@ impl WorkspaceWindowTabState {
             scroll_handle: ScrollHandle::new(),
             scrollbar_drag: None,
             scrollbar_hovered: false,
+            tabbar_viewport_width: 0.0,
+            autoscroll_running: false,
         }
     }
 }

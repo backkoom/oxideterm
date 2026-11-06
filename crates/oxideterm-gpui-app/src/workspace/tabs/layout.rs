@@ -77,6 +77,27 @@ impl TabStripLayout {
 
 impl WorkspaceApp {
     pub(super) fn tab_strip_layout(&self, window: &Window, cx: &App) -> TabStripLayout {
+        // 拖动期间标签集合与宽度都不变，直接用手上缓存的宽度铺一遍，
+        // 不再为每个标签重新测量文字宽度。这个函数每帧都会调用，
+        // 逐标签测量是拖动掉帧的主要来源之一。
+        if let Some(drag) = self.main_window_tabs.drag.as_ref()
+            && drag.active
+            && drag.tab_widths.len() == self.main_tabs(cx).count()
+            && self.main_window_tabs.exiting_tabs.is_empty()
+            && self.detached_tab_return_drag.is_none()
+        {
+            let leading = self.tokens.metrics.tabbar_leading_offset;
+            let items = self
+                .main_tabs(cx)
+                .zip(drag.tab_widths.iter().copied())
+                .map(|((_, tab), width)| TabStripItem {
+                    tab_id: tab.id,
+                    width,
+                    kind: TabStripItemKind::Live,
+                })
+                .collect();
+            return TabStripLayout { items, leading };
+        }
         let mut layout = TabStripLayout {
             items: self
                 .main_tabs(cx)
