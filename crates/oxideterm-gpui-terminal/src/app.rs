@@ -5041,10 +5041,10 @@ fn current_terminal_timestamp_label() -> String {
     )
 }
 
-fn terminal_timestamp_label(hour: u32, minute: u32, second: u32, millis: u32) -> String {
-    // Bracketed fixed-width labels separate timestamp metadata from terminal
-    // output while keeping the paint-only gutter stable.
-    format!("[{hour:02}:{minute:02}:{second:02}.{millis:03}]")
+fn terminal_timestamp_label(hour: u32, minute: u32, second: u32, _millis: u32) -> String {
+    // 只到秒：毫秒对终端输出没有意义，而且把栏宽撑到 14 格，读起来全是噪声。
+    // 连续行的时间戳在绘制层做去重，同一秒内只显示一次。
+    format!("[{hour:02}:{minute:02}:{second:02}]")
 }
 
 fn record_timestampable_snapshot_rows(
@@ -6860,8 +6860,9 @@ mod tests {
             "the cheap invalidation key still follows the snapshot"
         );
 
+        // 只到秒：毫秒对终端输出没有意义，还会把栏宽撑大。
         let label = terminal_timestamp_label(1, 2, 3, 4);
-        assert_eq!(label, "[01:02:03.004]");
+        assert_eq!(label, "[01:02:03]");
         assert_eq!(label.chars().count(), TERMINAL_TIMESTAMP_LABEL_CELLS);
 
         let cleared_snapshot = timestamp_test_snapshot(timestamp_test_row(42, ""));

@@ -368,6 +368,15 @@ impl Render for TerminalPane {
         let row_timestamps = self
             .terminal_timestamps_enabled
             .then(|| self.row_timestamps.clone());
+        // 行号由面板侧算好传进去：要考虑命令折叠，而且
+        // TerminalRow::absolute_line 在真实快照里并没有被赋值。
+        let line_numbers = self.preferences.show_line_numbers.then(|| {
+            Arc::new(
+                (0..self.snapshot.lines.len())
+                    .map(|row| self.displayed_absolute_line(row) as u64 + 1)
+                    .collect::<Vec<_>>(),
+            )
+        });
         let search_matches = self.current_search_matches();
         let selection_highlight_query = self.selection_highlight_query();
 
@@ -503,7 +512,8 @@ impl Render for TerminalPane {
             self.preferences.semantic_shell,
         )
         .row_timestamps(row_timestamps)
-        .show_line_numbers(self.preferences.show_line_numbers)
+        .line_numbers(line_numbers)
+        .blank_gutter_width(self.blank_gutter_width())
         .transparent_background(background.is_some() || self.preferences.transparent_background)
         .ghost_text(self.terminal_ghost_text())
         .viewport_rows(viewport_rows)

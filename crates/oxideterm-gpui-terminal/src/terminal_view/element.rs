@@ -84,8 +84,11 @@ pub(crate) struct TerminalElement {
     input: Option<TerminalElementInput>,
     transparent_background: bool,
     row_timestamps: Option<Arc<TerminalRowTimestampStore>>,
-    /// 左侧显示行号。
-    show_line_numbers: bool,
+    /// 每一可见行要显示的行号。由面板侧算好（要考虑命令折叠），
+    /// 元素自己不猜——`TerminalRow::absolute_line` 在真实快照里并没有被赋值。
+    line_numbers: Option<Arc<Vec<u64>>>,
+    /// 「显示空白」在内容左侧额外留出的宽度。
+    blank_gutter_width: f32,
     layout_cache: Option<Arc<Mutex<TerminalLayoutCache>>>,
     performance_metrics_enabled: bool,
     viewport_rows: usize,
@@ -578,7 +581,8 @@ impl TerminalElement {
             input,
             transparent_background: false,
             row_timestamps: None,
-            show_line_numbers: false,
+            line_numbers: None,
+            blank_gutter_width: 0.0,
             ghost_text: None,
             layout_cache: None,
             performance_metrics_enabled: false,
@@ -710,8 +714,13 @@ impl TerminalElement {
         self
     }
 
-    pub(crate) fn show_line_numbers(mut self, show: bool) -> Self {
-        self.show_line_numbers = show;
+    pub(crate) fn line_numbers(mut self, line_numbers: Option<Arc<Vec<u64>>>) -> Self {
+        self.line_numbers = line_numbers;
+        self
+    }
+
+    pub(crate) fn blank_gutter_width(mut self, width: f32) -> Self {
+        self.blank_gutter_width = width;
         self
     }
 
@@ -871,6 +880,7 @@ impl TerminalElement {
         let mut text_runs = Vec::new();
         let mut timestamp_runs = Vec::new();
         let mut line_number_runs = Vec::new();
+        let mut last_timestamp_label: Option<String> = None;
         let mut cached_rows = Vec::new();
         let mut cursor = None;
         let scrollbar = terminal_scrollbar_for_viewport_display_offset(
@@ -952,11 +962,16 @@ impl TerminalElement {
             if let Some(timestamp_run) =
                 self.timestamp_run_for_row(row_index, terminal_row_timestamp_identity(row))
             {
-                timestamp_runs.push(timestamp_run);
+                // 同一秒内的连续行只画一次：逐行都打时间戳是纯噪声。
+                let repeated = last_timestamp_label
+                    .as_deref()
+                    .is_some_and(|last| last == timestamp_run.text.as_ref());
+                if !repeated {
+                    last_timestamp_label = Some(timestamp_run.text.to_string());
+                    timestamp_runs.push(timestamp_run);
+                }
             }
-            if self.show_line_numbers
-                && let Some(run) = self.line_number_run_for_row(row_index, row)
-            {
+            if let Some(run) = self.line_number_run_for_row(row_index) {
                 line_number_runs.push(run);
             }
         }
@@ -999,19 +1014,9 @@ impl TerminalElement {
     }
 
     /// 行号栏的文字 run。行号右对齐、宽度固定，避免位数变化时抖动。
-    fn line_number_run_for_row(
-        &self,
-        row_index: usize,
-        row: &TerminalRow,
-    ) -> Option<BatchedTextRun> {
-        if row.absolute_line < 0 {
-            return None;
-        }
-        let label = format!(
-            "{:>width$}",
-            row.absolute_line + 1,
-            width = TERMINAL_LINE_NUMBER_CELLS
-        );
+    fn line_number_run_for_row(&self, row_index: usize) -> Option<BatchedTextRun> {
+        let number = *self.line_numbers.as_ref()?.get(row_index)?;
+        let label = format!("{:>width$}", number, width = TERMINAL_LINE_NUMBER_CELLS);
         Some(BatchedTextRun {
             row: row_index,
             col: 0,
@@ -2318,10 +2323,14 @@ impl Element for TerminalElement {
         let timestamp_gutter_width =
             terminal_timestamp_gutter_width(&self.metrics, self.row_timestamps.is_some());
         let line_number_gutter_width =
-            terminal_line_number_gutter_width(&self.metrics, self.show_line_numbers);
-        // 行号栏在最左，时间戳栏依次右移；两者都是纯绘制层，不参与网格排版。
-        let viewport_line_number_origin =
-            bounds.origin + point(px(TERMINAL_CONTENT_PADDING), px(TERMINAL_CONTENT_PADDING));
+            terminal_line_number_gutter_width(&self.metrics, self.line_numbers.is_some());
+        // 顺序：内边距 → 空白栏 → 行号栏 → 时间戳栏 → 命令标记栏 → 内容。
+        // 全是纯绘制层，不参与网格排版。
+        let viewport_line_number_origin = bounds.origin
+            + point(
+                px(TERMINAL_CONTENT_PADDING + self.blank_gutter_width),
+                px(TERMINAL_CONTENT_PADDING),
+            );
         let line_number_origin = viewport_line_number_origin + point(px(0.0), self.scroll_y_offset);
         let viewport_timestamp_origin =
             viewport_line_number_origin + point(px(line_number_gutter_width), px(0.0));
@@ -2346,7 +2355,7 @@ impl Element for TerminalElement {
                 bounds: viewport_mask_bounds,
             }),
             |window| {
-                if self.show_line_numbers {
+                if self.line_numbers.is_some() {
                     for run in &layout.line_number_runs {
                         paint_text_run(run, line_number_origin, &self.metrics, window, cx);
                     }

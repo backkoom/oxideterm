@@ -43,7 +43,7 @@ pub(crate) const SCROLLBAR_WIDTH: f32 = 8.0;
 pub(crate) const SCROLLBAR_GAP: f32 = 0.0;
 pub(crate) const SCROLLBAR_RESERVED_WIDTH: f32 = SCROLLBAR_WIDTH;
 pub(crate) const SCROLLBAR_MIN_THUMB: f32 = 24.0;
-pub(crate) const TERMINAL_TIMESTAMP_LABEL_CELLS: usize = 14;
+pub(crate) const TERMINAL_TIMESTAMP_LABEL_CELLS: usize = 10;
 /// 「显示空白」在内容左侧额外留出的宽度，按字符格数计。
 pub(crate) const TERMINAL_BLANK_GUTTER_CELLS: f32 = 2.0;
 /// 行号栏宽度，按字符格数计。
