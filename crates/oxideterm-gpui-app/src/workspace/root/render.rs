@@ -441,318 +441,7 @@ impl WorkspaceApp {
                 }
             }))
             .capture_key_down(cx.listener(|this, event: &KeyDownEvent, window, cx| {
-                if event.keystroke.key == "escape"
-                    && this.cancel_file_manager_bookmarks_resize(
-                        window.window_handle().window_id(),
-                        cx,
-                    )
-                {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                    return;
-                }
-                if event.keystroke.key == "escape" && this.cancel_tab_merge_drag(cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                    return;
-                }
-                let page = this.active_content_tab_id(cx);
-                let kind = page
-                    .and_then(|id| this.tab_by_id(id, cx))
-                    .map(|tab| tab.kind.clone());
-                let _sftp_scope = this.enter_sftp_surface(if kind == Some(TabKind::Sftp) {
-                    sftp::SftpSurfaceId::Tab(page.unwrap())
-                } else {
-                    sftp::SftpSurfaceId::Sidebar
-                });
-                let _forward_scope = (kind == Some(TabKind::Forwards))
-                    .then(|| this.enter_forwarding_page(page.unwrap(), cx));
-                // The top rendered blocking portal owns every key before
-                // background IME, terminal, and shortcut routing can observe it.
-                if this.capture_active_window_modal_key(event, window, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                    return;
-                }
-                if this.active_window_modal_owner(cx).is_some() {
-                    // Yield only to the modal's own input or editor, never background routing.
-                    return;
-                }
-                if this.search_editor_focused(window, cx) {
-                    if this.handle_search_editor_key(event, window, cx) {
-                        window.prevent_default();
-                        cx.stop_propagation();
-                    }
-                    return;
-                }
-                if this
-                    .plugin_ui_state(cx)
-                    .focused_text_area_context(window, cx)
-                    .is_some()
-                    || this.quick_command_text_editor_focused(window, cx)
-                    || this
-                        .tab_host
-                        .read(cx)
-                        .panes()
-                        .values()
-                        .any(|pane| pane.read(cx).paste_editor_focused(window, cx))
-                {
-                    // Windows emits committed characters only after an unhandled
-                    // keydown. Do not let pane-level capture override the modal
-                    // route that gives document keys to the focused editor.
-                    return;
-                }
-                let active_ime_target =
-                    this.active_ime_target_for_window(window.window_handle().window_id(), cx);
-                let active_ime_should_receive_key = active_ime_target.is_some()
-                    && this.defer_active_ime_key(&event.keystroke, window, cx);
-                if active_ime_should_receive_key {
-                    // Tauri DOM inputs let printable keydown bubble while the
-                    // browser performs the actual text mutation through the
-                    // input/composition pipeline. GPUI follows the same shape:
-                    // if we stop propagation here, the platform input handler
-                    // may not receive the character or IME candidate control.
-                    return;
-                }
-                if active_ime_target.is_some()
-                    && this.handle_active_text_input_edit_shortcut(&event.keystroke, cx)
-                {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if active_ime_target.is_some()
-                    && this.handle_active_text_input_delete_selection(&event.keystroke, cx)
-                {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if active_ime_target.is_some()
-                    && this.handle_active_text_input_newline(&event.keystroke, cx)
-                {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if active_ime_target.is_some()
-                    && this.handle_active_text_input_transpose(&event.keystroke, cx)
-                {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_privilege_credential_picker_key(event, window, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_terminal_git_branch_picker_key(event, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_compact_terminal_command_sender_key(event, window, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if active_ime_target.is_some()
-                    && this.handle_active_text_input_navigation(&event.keystroke, cx)
-                {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_host_process_search_key(event, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_host_docker_search_key(event, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_host_service_search_key(event, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_host_log_search_key(event, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_host_tmux_search_key(event, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_host_port_search_key(event, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_host_schedule_search_key(event, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_host_filesystem_search_key(event, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_host_package_search_key(event, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_cloud_sync_select_key(event, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if !this.command_palette.read(cx).is_open()
-                    && this
-                        .settings_workspace
-                        .read(cx)
-                        .keybinding_recording_action_id()
-                        .is_none()
-                    && crate::keybindings::keystroke_matches_action(
-                        &event.keystroke,
-                        "app.commandPalette",
-                        &this.settings_store.settings().keybindings.overrides,
-                    )
-                {
-                    this.open_command_palette(window, cx);
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this
-                    .settings_workspace
-                    .read(cx)
-                    .keybinding_recording_action_id()
-                    .is_some()
-                    && this.active_surface == ActiveSurface::Settings
-                    && this.settings_workspace.read(cx).route_snapshot().active_tab
-                        == SettingsTab::Keybindings
-                {
-                    this.handle_keybinding_recording_key(event, cx);
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if {
-                    let quick_commands = &this.terminal.read(cx).quick_commands;
-                    quick_commands.is_open() && quick_commands.focused_input().is_some()
-                } {
-                    this.handle_quick_commands_key(event, window, cx);
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_terminal_git_branch_picker_key(event, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_terminal_command_overlay_escape(event, window, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_ai_inline_panel_key(event, window, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.sftp_presentation_request.is_some() {
-                    if event.keystroke.key.eq_ignore_ascii_case("escape") {
-                        this.sftp_presentation_request = None;
-                        cx.notify();
-                    }
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_transient_workspace_overlay_escape(event, window, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.handle_privilege_prompt_helper_key(event, window, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.terminal_command_sender_editor_focused(window, cx)
-                    || (window.context_stack().iter().any(|context| {
-                        context
-                            .primary()
-                            .is_some_and(|entry| entry.key == "TextEditor")
-                    }) && cx
-                        .try_global::<oxideterm_gpui_editor::EditorKeybindings>()
-                        .is_some_and(|bindings| bindings.resolve(&event.keystroke).is_some()))
-                {
-                    // The editor owns its complete key model, including Tab and
-                    // navigation keys that otherwise fall through to the pane.
-                } else if this.handle_knowledge_workspace_key(event, window, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.knowledge_text_editor_focused(window, cx) {
-                    // Notes editors and menus own their keys instead of falling through
-                    // to terminal shortcuts.
-                } else if this.forward_remote_desktop_key_from_capture(event, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this
-                    .active_content_tab(cx)
-                    .is_some_and(|tab| tab.kind == TabKind::Sftp)
-                    && this.sftp_view().read(cx).dialog.is_none()
-                    && this.sftp_view().read(cx).focused_input.is_none()
-                    && crate::keybindings::ACTION_DEFINITIONS
-                        .iter()
-                        .any(|definition| {
-                            definition.scope == crate::keybindings::ActionScope::Sftp
-                                && crate::keybindings::keystroke_matches_action(
-                                    &event.keystroke,
-                                    &definition.id,
-                                    &this.settings_store.settings().keybindings.overrides,
-                                )
-                        })
-                    && this.handle_sftp_key(event, window, cx)
-                {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this
-                    .active_content_tab(cx)
-                    .is_some_and(|tab| tab.kind == TabKind::FileManager)
-                    && this.file_manager.read(cx).dialog.is_none()
-                    && this.file_manager.read(cx).focused_input.is_none()
-                    && crate::keybindings::matched_scoped_action(
-                        &event.keystroke,
-                        crate::keybindings::ActionScope::FileManager,
-                        &this.settings_store.settings().keybindings.overrides,
-                    )
-                    .is_some()
-                    && this.handle_file_manager_key(event, cx)
-                {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.dispatch_registered_keybinding(event, window, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if !this.registered_keybinding_matches(event)
-                    && this.dispatch_runtime_plugin_keybinding(event, cx)
-                {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.forward_terminal_tab_from_capture(event, window, cx) {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.active_session_manager_input(cx).is_some() {
-                    let _ = this.handle_session_manager_key(event, cx);
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this
-                    .active_content_tab(cx)
-                    .is_some_and(|tab| tab.kind == TabKind::Forwards)
-                    && this.forwarding.read(cx).view().focused_input.is_some()
-                {
-                    let _ = this.handle_forwards_key(event, cx);
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this
-                    .active_content_tab(cx)
-                    .is_some_and(|tab| tab.kind == TabKind::Graphics)
-                    && this.graphics.read(cx).focused_input().is_some()
-                {
-                    let _ = this.handle_graphics_key(event, cx);
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.sftp_view().read(cx).focused_input().is_some()
-                    || this
-                        .active_content_tab(cx)
-                        .is_some_and(|tab| tab.kind == TabKind::Sftp)
-                {
-                    // Embedded SFTP inputs keep their keyboard model while a terminal tab is active.
-                    let _ = this.handle_sftp_key(event, window, cx);
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this
-                    .active_content_tab(cx)
-                    .is_some_and(|tab| tab.kind == TabKind::FileManager)
-                {
-                    let _ = this.handle_file_manager_key(event, cx);
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.focused_settings_input.is_some()
-                    || this
-                        .settings_workspace
-                        .read(cx)
-                        .settings_entity_focused_input()
-                        .is_some()
-                    || this.ai_entity.read(cx).focused_settings_input().is_some()
-                {
-                    let _ = this.handle_settings_input_key(event, cx);
-                    window.prevent_default();
-                    cx.stop_propagation();
-                } else if this.ai_sidebar_visible()
-                    && this.ai_entity.read(cx).sidebar_keyboard_target_focused()
-                {
-                    let _ = this.handle_ai_sidebar_key(event, cx);
-                    window.prevent_default();
-                    cx.stop_propagation();
-                }
+                this.handle_workspace_capture_key_down(event, window, cx);
             }))
             .on_key_down(cx.listener(|this, event: &KeyDownEvent, window, cx| {
                 this.handle_workspace_key(event, window, cx);
@@ -1514,6 +1203,326 @@ impl WorkspaceApp {
                 window.window_handle().window_id(),
             ))
             .into_any_element()
+    }
+    /// 工作区的按键捕获路由。
+    ///
+    /// 从 `render_main_window` 的元素树里整段搬出来：这 300 行是纯粹的按键分派，
+    /// 和布局无关，混在 `.capture_key_down(...)` 里让整棵树的形状看不出来。
+    fn handle_workspace_capture_key_down(
+        &mut self,
+        event: &KeyDownEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if event.keystroke.key == "escape"
+            && self.cancel_file_manager_bookmarks_resize(window.window_handle().window_id(), cx)
+        {
+            window.prevent_default();
+            cx.stop_propagation();
+            return;
+        }
+        if event.keystroke.key == "escape" && self.cancel_tab_merge_drag(cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+            return;
+        }
+        let page = self.active_content_tab_id(cx);
+        let kind = page
+            .and_then(|id| self.tab_by_id(id, cx))
+            .map(|tab| tab.kind.clone());
+        let _sftp_scope = self.enter_sftp_surface(if kind == Some(TabKind::Sftp) {
+            sftp::SftpSurfaceId::Tab(page.unwrap())
+        } else {
+            sftp::SftpSurfaceId::Sidebar
+        });
+        let _forward_scope = (kind == Some(TabKind::Forwards))
+            .then(|| self.enter_forwarding_page(page.unwrap(), cx));
+        // The top rendered blocking portal owns every key before
+        // background IME, terminal, and shortcut routing can observe it.
+        if self.capture_active_window_modal_key(event, window, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+            return;
+        }
+        if self.active_window_modal_owner(cx).is_some() {
+            // Yield only to the modal's own input or editor, never background routing.
+            return;
+        }
+        if self.search_editor_focused(window, cx) {
+            if self.handle_search_editor_key(event, window, cx) {
+                window.prevent_default();
+                cx.stop_propagation();
+            }
+            return;
+        }
+        if self
+            .plugin_ui_state(cx)
+            .focused_text_area_context(window, cx)
+            .is_some()
+            || self.quick_command_text_editor_focused(window, cx)
+            || self
+                .tab_host
+                .read(cx)
+                .panes()
+                .values()
+                .any(|pane| pane.read(cx).paste_editor_focused(window, cx))
+        {
+            // Windows emits committed characters only after an unhandled
+            // keydown. Do not let pane-level capture override the modal
+            // route that gives document keys to the focused editor.
+            return;
+        }
+        let active_ime_target =
+            self.active_ime_target_for_window(window.window_handle().window_id(), cx);
+        let active_ime_should_receive_key =
+            active_ime_target.is_some() && self.defer_active_ime_key(&event.keystroke, window, cx);
+        if active_ime_should_receive_key {
+            // Tauri DOM inputs let printable keydown bubble while the
+            // browser performs the actual text mutation through the
+            // input/composition pipeline. GPUI follows the same shape:
+            // if we stop propagation here, the platform input handler
+            // may not receive the character or IME candidate control.
+            return;
+        }
+        if active_ime_target.is_some()
+            && self.handle_active_text_input_edit_shortcut(&event.keystroke, cx)
+        {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if active_ime_target.is_some()
+            && self.handle_active_text_input_delete_selection(&event.keystroke, cx)
+        {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if active_ime_target.is_some()
+            && self.handle_active_text_input_newline(&event.keystroke, cx)
+        {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if active_ime_target.is_some()
+            && self.handle_active_text_input_transpose(&event.keystroke, cx)
+        {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_privilege_credential_picker_key(event, window, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_terminal_git_branch_picker_key(event, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_compact_terminal_command_sender_key(event, window, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if active_ime_target.is_some()
+            && self.handle_active_text_input_navigation(&event.keystroke, cx)
+        {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_host_process_search_key(event, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_host_docker_search_key(event, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_host_service_search_key(event, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_host_log_search_key(event, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_host_tmux_search_key(event, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_host_port_search_key(event, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_host_schedule_search_key(event, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_host_filesystem_search_key(event, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_host_package_search_key(event, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_cloud_sync_select_key(event, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if !self.command_palette.read(cx).is_open()
+            && self
+                .settings_workspace
+                .read(cx)
+                .keybinding_recording_action_id()
+                .is_none()
+            && crate::keybindings::keystroke_matches_action(
+                &event.keystroke,
+                "app.commandPalette",
+                &self.settings_store.settings().keybindings.overrides,
+            )
+        {
+            self.open_command_palette(window, cx);
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self
+            .settings_workspace
+            .read(cx)
+            .keybinding_recording_action_id()
+            .is_some()
+            && self.active_surface == ActiveSurface::Settings
+            && self.settings_workspace.read(cx).route_snapshot().active_tab
+                == SettingsTab::Keybindings
+        {
+            self.handle_keybinding_recording_key(event, cx);
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if {
+            let quick_commands = &self.terminal.read(cx).quick_commands;
+            quick_commands.is_open() && quick_commands.focused_input().is_some()
+        } {
+            self.handle_quick_commands_key(event, window, cx);
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_terminal_git_branch_picker_key(event, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_terminal_command_overlay_escape(event, window, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_ai_inline_panel_key(event, window, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.sftp_presentation_request.is_some() {
+            if event.keystroke.key.eq_ignore_ascii_case("escape") {
+                self.sftp_presentation_request = None;
+                cx.notify();
+            }
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_transient_workspace_overlay_escape(event, window, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.handle_privilege_prompt_helper_key(event, window, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.terminal_command_sender_editor_focused(window, cx)
+            || (window.context_stack().iter().any(|context| {
+                context
+                    .primary()
+                    .is_some_and(|entry| entry.key == "TextEditor")
+            }) && cx
+                .try_global::<oxideterm_gpui_editor::EditorKeybindings>()
+                .is_some_and(|bindings| bindings.resolve(&event.keystroke).is_some()))
+        {
+            // The editor owns its complete key model, including Tab and
+            // navigation keys that otherwise fall through to the pane.
+        } else if self.handle_knowledge_workspace_key(event, window, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.knowledge_text_editor_focused(window, cx) {
+            // Notes editors and menus own their keys instead of falling through
+            // to terminal shortcuts.
+        } else if self.forward_remote_desktop_key_from_capture(event, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self
+            .active_content_tab(cx)
+            .is_some_and(|tab| tab.kind == TabKind::Sftp)
+            && self.sftp_view().read(cx).dialog.is_none()
+            && self.sftp_view().read(cx).focused_input.is_none()
+            && crate::keybindings::ACTION_DEFINITIONS
+                .iter()
+                .any(|definition| {
+                    definition.scope == crate::keybindings::ActionScope::Sftp
+                        && crate::keybindings::keystroke_matches_action(
+                            &event.keystroke,
+                            &definition.id,
+                            &self.settings_store.settings().keybindings.overrides,
+                        )
+                })
+            && self.handle_sftp_key(event, window, cx)
+        {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self
+            .active_content_tab(cx)
+            .is_some_and(|tab| tab.kind == TabKind::FileManager)
+            && self.file_manager.read(cx).dialog.is_none()
+            && self.file_manager.read(cx).focused_input.is_none()
+            && crate::keybindings::matched_scoped_action(
+                &event.keystroke,
+                crate::keybindings::ActionScope::FileManager,
+                &self.settings_store.settings().keybindings.overrides,
+            )
+            .is_some()
+            && self.handle_file_manager_key(event, cx)
+        {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.dispatch_registered_keybinding(event, window, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if !self.registered_keybinding_matches(event)
+            && self.dispatch_runtime_plugin_keybinding(event, cx)
+        {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.forward_terminal_tab_from_capture(event, window, cx) {
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.active_session_manager_input(cx).is_some() {
+            let _ = self.handle_session_manager_key(event, cx);
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self
+            .active_content_tab(cx)
+            .is_some_and(|tab| tab.kind == TabKind::Forwards)
+            && self.forwarding.read(cx).view().focused_input.is_some()
+        {
+            let _ = self.handle_forwards_key(event, cx);
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self
+            .active_content_tab(cx)
+            .is_some_and(|tab| tab.kind == TabKind::Graphics)
+            && self.graphics.read(cx).focused_input().is_some()
+        {
+            let _ = self.handle_graphics_key(event, cx);
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.sftp_view().read(cx).focused_input().is_some()
+            || self
+                .active_content_tab(cx)
+                .is_some_and(|tab| tab.kind == TabKind::Sftp)
+        {
+            // Embedded SFTP inputs keep their keyboard model while a terminal tab is active.
+            let _ = self.handle_sftp_key(event, window, cx);
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self
+            .active_content_tab(cx)
+            .is_some_and(|tab| tab.kind == TabKind::FileManager)
+        {
+            let _ = self.handle_file_manager_key(event, cx);
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.focused_settings_input.is_some()
+            || self
+                .settings_workspace
+                .read(cx)
+                .settings_entity_focused_input()
+                .is_some()
+            || self.ai_entity.read(cx).focused_settings_input().is_some()
+        {
+            let _ = self.handle_settings_input_key(event, cx);
+            window.prevent_default();
+            cx.stop_propagation();
+        } else if self.ai_sidebar_visible()
+            && self.ai_entity.read(cx).sidebar_keyboard_target_focused()
+        {
+            let _ = self.handle_ai_sidebar_key(event, cx);
+            window.prevent_default();
+            cx.stop_propagation();
+        }
     }
 }
 

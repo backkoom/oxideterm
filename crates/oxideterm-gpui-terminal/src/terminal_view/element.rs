@@ -12,7 +12,7 @@ use gpui::{
     Pixels, SharedString, Style, TextRun, Window, fill, point, px, relative, rgb, rgba, size,
 };
 use oxideterm_terminal::{
-    TerminalCommandMark, TerminalCursorShape, TerminalRow, TerminalSearchMatch, TerminalSnapshot,
+    TerminalCommandMark, TerminalCursorShape, TerminalSearchMatch, TerminalSnapshot,
 };
 use oxideterm_terminal_semantic::{
     CompiledSemanticScheme, SemanticLineRole, SemanticScheme, SemanticShellDialect,
