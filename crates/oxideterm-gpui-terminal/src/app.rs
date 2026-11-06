@@ -4929,8 +4929,20 @@ impl TerminalPane {
         terminal_timestamp_gutter_width(&self.metrics, self.terminal_timestamps_enabled)
     }
 
+    /// 行号栏需要的字符格数，按当前最大可见行号的位数自适应。
+    ///
+    /// 固定 5 格时一位数也要白占 4 格；改成按位数走，行号少的时候把宽度让给正文。
+    /// 返回 0 表示不显示行号。
+    fn line_number_cells(&self) -> usize {
+        if !self.preferences.show_line_numbers || self.snapshot.lines.is_empty() {
+            return 0;
+        }
+        let last = self.displayed_absolute_line(self.snapshot.lines.len() - 1) as u64 + 1;
+        last.to_string().len().max(TERMINAL_LINE_NUMBER_MIN_CELLS)
+    }
+
     fn line_number_gutter_width(&self) -> f32 {
-        terminal_line_number_gutter_width(&self.metrics, self.preferences.show_line_numbers)
+        terminal_line_number_gutter_width(&self.metrics, self.line_number_cells())
     }
 
     fn terminal_content_padding_x(&self) -> f32 {

@@ -44,8 +44,8 @@ pub(crate) const SCROLLBAR_GAP: f32 = 0.0;
 pub(crate) const SCROLLBAR_RESERVED_WIDTH: f32 = SCROLLBAR_WIDTH;
 pub(crate) const SCROLLBAR_MIN_THUMB: f32 = 24.0;
 pub(crate) const TERMINAL_TIMESTAMP_LABEL_CELLS: usize = 8;
-/// 行号栏宽度，按字符格数计。
-pub(crate) const TERMINAL_LINE_NUMBER_CELLS: usize = 5;
+/// 行号栏最窄的宽度（一位数）。实际宽度按当前最大行号的位数自适应。
+pub(crate) const TERMINAL_LINE_NUMBER_MIN_CELLS: usize = 1;
 pub(crate) const TERMINAL_TIMESTAMP_GUTTER_GAP_CELLS: f32 = 1.0;
 pub(crate) const TERMINAL_SCROLL_MULTIPLIER: f32 = 1.0;
 pub(crate) const CURSOR_BLINK_INTERVAL: Duration = Duration::from_millis(500);
@@ -1156,12 +1156,14 @@ impl TerminalMetrics {
 }
 
 /// 行号栏占用的宽度。与时间戳栏一样，只在绘制层占位。
-pub(crate) fn terminal_line_number_gutter_width(metrics: &TerminalMetrics, enabled: bool) -> f32 {
-    if enabled {
-        (TERMINAL_LINE_NUMBER_CELLS as f32 + TERMINAL_TIMESTAMP_GUTTER_GAP_CELLS)
-            * metrics.cell_width_f32()
-    } else {
+///
+/// `cells` 为 0 表示不显示行号。宽度按当前最大行号的位数走，
+/// 避免固定 5 格时一位数也白占 4 格。
+pub(crate) fn terminal_line_number_gutter_width(metrics: &TerminalMetrics, cells: usize) -> f32 {
+    if cells == 0 {
         0.0
+    } else {
+        (cells as f32 + TERMINAL_TIMESTAMP_GUTTER_GAP_CELLS) * metrics.cell_width_f32()
     }
 }
 

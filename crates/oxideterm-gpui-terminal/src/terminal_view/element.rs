@@ -87,6 +87,8 @@ pub(crate) struct TerminalElement {
     /// 每一可见行要显示的行号。由面板侧算好（要考虑命令折叠），
     /// 元素自己不猜——`TerminalRow::absolute_line` 在真实快照里并没有被赋值。
     line_numbers: Option<Arc<Vec<u64>>>,
+    /// 行号栏宽度（字符格数），按最大行号的位数自适应。0 表示不显示。
+    line_number_cells: usize,
     layout_cache: Option<Arc<Mutex<TerminalLayoutCache>>>,
     performance_metrics_enabled: bool,
     viewport_rows: usize,
@@ -580,6 +582,7 @@ impl TerminalElement {
             transparent_background: false,
             row_timestamps: None,
             line_numbers: None,
+            line_number_cells: 0,
             ghost_text: None,
             layout_cache: None,
             performance_metrics_enabled: false,
@@ -711,8 +714,13 @@ impl TerminalElement {
         self
     }
 
-    pub(crate) fn line_numbers(mut self, line_numbers: Option<Arc<Vec<u64>>>) -> Self {
+    pub(crate) fn line_numbers(
+        mut self,
+        line_numbers: Option<Arc<Vec<u64>>>,
+        cells: usize,
+    ) -> Self {
         self.line_numbers = line_numbers;
+        self.line_number_cells = cells;
         self
     }
 
@@ -1005,11 +1013,11 @@ impl TerminalElement {
     /// 行号栏的文字 run。行号右对齐、宽度固定，避免位数变化时抖动。
     fn line_number_run_for_row(&self, row_index: usize) -> Option<BatchedTextRun> {
         let number = *self.line_numbers.as_ref()?.get(row_index)?;
-        let label = format!("{:>width$}", number, width = TERMINAL_LINE_NUMBER_CELLS);
+        let label = format!("{:>width$}", number, width = self.line_number_cells);
         Some(BatchedTextRun {
             row: row_index,
             col: 0,
-            cells: TERMINAL_LINE_NUMBER_CELLS,
+            cells: self.line_number_cells,
             style: line_number_text_run(&label, &self.theme, &self.metrics),
             text: SharedString::from(label),
             cache: None,
@@ -2312,7 +2320,7 @@ impl Element for TerminalElement {
         let timestamp_gutter_width =
             terminal_timestamp_gutter_width(&self.metrics, self.row_timestamps.is_some());
         let line_number_gutter_width =
-            terminal_line_number_gutter_width(&self.metrics, self.line_numbers.is_some());
+            terminal_line_number_gutter_width(&self.metrics, self.line_number_cells);
         // 顺序：内边距 → 空白栏 → 行号栏 → 时间戳栏 → 命令标记栏 → 内容。
         // 全是纯绘制层，不参与网格排版。
         let viewport_line_number_origin =
@@ -2343,7 +2351,7 @@ impl Element for TerminalElement {
                 bounds: viewport_mask_bounds,
             }),
             |window| {
-                if self.line_numbers.is_some() {
+                if self.line_number_cells > 0 {
                     for run in &layout.line_number_runs {
                         paint_text_run(run, line_number_origin, &self.metrics, window, cx);
                     }

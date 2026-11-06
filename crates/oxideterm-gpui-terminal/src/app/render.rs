@@ -512,7 +512,7 @@ impl Render for TerminalPane {
             self.preferences.semantic_shell,
         )
         .row_timestamps(row_timestamps)
-        .line_numbers(line_numbers)
+        .line_numbers(line_numbers, self.line_number_cells())
         .transparent_background(background.is_some() || self.preferences.transparent_background)
         .ghost_text(self.terminal_ghost_text())
         .viewport_rows(viewport_rows)
