@@ -5026,9 +5026,9 @@ fn current_terminal_timestamp_label() -> String {
 }
 
 fn terminal_timestamp_label(hour: u32, minute: u32, second: u32, _millis: u32) -> String {
-    // 只到秒：毫秒对终端输出没有意义，而且把栏宽撑到 14 格，读起来全是噪声。
-    // 连续行的时间戳在绘制层做去重，同一秒内只显示一次。
-    format!("[{hour:02}:{minute:02}:{second:02}]")
+    // 只到秒、不带方括号：栏位每多一格，终端正文就少一列。
+    // 方括号只起分隔作用，靠淡色已经能和正文区分开。
+    format!("{hour:02}:{minute:02}:{second:02}")
 }
 
 fn record_timestampable_snapshot_rows(
@@ -6846,7 +6846,7 @@ mod tests {
 
         // 只到秒：毫秒对终端输出没有意义，还会把栏宽撑大。
         let label = terminal_timestamp_label(1, 2, 3, 4);
-        assert_eq!(label, "[01:02:03]");
+        assert_eq!(label, "01:02:03");
         assert_eq!(label.chars().count(), TERMINAL_TIMESTAMP_LABEL_CELLS);
 
         let cleared_snapshot = timestamp_test_snapshot(timestamp_test_row(42, ""));

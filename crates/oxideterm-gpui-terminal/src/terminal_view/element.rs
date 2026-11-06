@@ -950,13 +950,18 @@ impl TerminalElement {
                     &mut cursor,
                 );
             }
-            if let Some(timestamp_run) =
-                self.timestamp_run_for_row(row_index, terminal_row_timestamp_identity(row))
-            {
-                timestamp_runs.push(timestamp_run);
-            }
-            if let Some(run) = self.line_number_run_for_row(row_index) {
-                line_number_runs.push(run);
+            // 空行不编号、不打时间戳：终端底部大片空白行要是也编号，
+            // 屏幕会被 1..58 这种数字占满，反而看不出哪几行有内容。
+            let row_has_content = row.cells.iter().any(|cell| cell.ch != ' ');
+            if row_has_content {
+                if let Some(run) = self.line_number_run_for_row(row_index) {
+                    line_number_runs.push(run);
+                }
+                if let Some(timestamp_run) =
+                    self.timestamp_run_for_row(row_index, terminal_row_timestamp_identity(row))
+                {
+                    timestamp_runs.push(timestamp_run);
+                }
             }
         }
         if let Some(marked_text) = &marked_text {
