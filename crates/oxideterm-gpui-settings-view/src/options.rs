@@ -81,6 +81,18 @@ pub fn set_font_ligatures(settings: &mut PersistedSettings, value: bool) {
     settings.terminal.font_ligatures = value;
 }
 
+pub fn set_terminal_show_blank_gutter(settings: &mut PersistedSettings, value: bool) {
+    settings.terminal.show_blank_gutter = value;
+}
+
+pub fn set_terminal_show_line_numbers(settings: &mut PersistedSettings, value: bool) {
+    settings.terminal.show_line_numbers = value;
+}
+
+pub fn set_terminal_show_timestamps(settings: &mut PersistedSettings, value: bool) {
+    settings.terminal.show_timestamps = value;
+}
+
 pub fn set_terminal_session_log_automatic(settings: &mut PersistedSettings, value: bool) {
     settings.terminal.session_log.automatic = value;
 }

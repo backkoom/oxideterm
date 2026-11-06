@@ -1301,7 +1301,7 @@ impl TerminalPane {
             snapshot_deferred_since: None,
             snapshot_generation: 1,
             next_snapshot_line_id,
-            terminal_timestamps_enabled: false,
+            terminal_timestamps_enabled: preferences.show_timestamps,
             row_timestamps: Arc::new(TerminalRowTimestampStore::default()),
             metrics,
             metrics_dirty: false,
@@ -2155,6 +2155,21 @@ impl TerminalPane {
         self.clear_terminal_hover(cx);
         let mut preferences = preferences;
         self.preference_overrides.apply_to(&mut preferences);
+        // 时间戳是纯绘制开关：切换时不重新打时间戳、也不重排网格，
+        // 否则旧的回滚内容看起来会像「在切换那一刻被改写过」。
+        if self.terminal_timestamps_enabled != preferences.show_timestamps {
+            self.terminal_timestamps_enabled = preferences.show_timestamps;
+            self.horizontal_scroll_offset_px = px(0.0);
+            self.horizontal_scrollbar_drag = None;
+            cx.notify();
+        }
+        // 行号栏与左侧留白会改变内容区宽度，需要重新计算列数。
+        if self.preferences.show_blank_gutter != preferences.show_blank_gutter
+            || self.preferences.show_line_numbers != preferences.show_line_numbers
+        {
+            self.last_pty_resize = None;
+            self.pending_pty_resize = None;
+        }
         if self.preferences.autosuggest_enabled != preferences.autosuggest_enabled {
             self.autosuggest_selected_index = None;
             self.autosuggest_dismissed_query = None;
@@ -4916,12 +4931,33 @@ impl TerminalPane {
         terminal_timestamp_gutter_width(&self.metrics, self.terminal_timestamps_enabled)
     }
 
+    /// 「显示空白」在内容左侧额外留出的宽度。
+    ///
+    /// 与时间戳栏一样是纯绘制层的留白：不重排网格，横向滚动可以越过它。
+    fn blank_gutter_width(&self) -> f32 {
+        if self.preferences.show_blank_gutter {
+            TERMINAL_BLANK_GUTTER_CELLS * self.metrics.cell_width_f32()
+        } else {
+            0.0
+        }
+    }
+
+    fn line_number_gutter_width(&self) -> f32 {
+        terminal_line_number_gutter_width(&self.metrics, self.preferences.show_line_numbers)
+    }
+
     fn terminal_content_padding_x(&self) -> f32 {
-        TERMINAL_CONTENT_PADDING + self.timestamp_gutter_width() + self.command_mark_gutter_width()
+        TERMINAL_CONTENT_PADDING
+            + self.blank_gutter_width()
+            + self.line_number_gutter_width()
+            + self.timestamp_gutter_width()
+            + self.command_mark_gutter_width()
     }
 
     fn terminal_horizontal_scroll_limit(&self) -> Pixels {
-        px(self.timestamp_gutter_width())
+        px(self.timestamp_gutter_width()
+            + self.blank_gutter_width()
+            + self.line_number_gutter_width())
     }
 
     fn command_mark_gutter_width(&self) -> f32 {

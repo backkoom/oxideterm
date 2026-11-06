@@ -101,6 +101,23 @@ pub(crate) fn timestamp_text_run(
     }
 }
 
+/// 行号栏的文字样式：比正文更淡，避免和终端内容抢注意力。
+pub(crate) fn line_number_text_run(
+    text: &str,
+    theme: &TerminalUiTheme,
+    metrics: &TerminalMetrics,
+) -> TextRun {
+    TextRun {
+        len: text.len(),
+        font: metrics.font.clone(),
+        color: rgba((theme.foreground << 8) | 0x66).into(),
+        background_color: None,
+        underline: None,
+        strikethrough: None,
+        letter_spacing: None,
+    }
+}
+
 pub(crate) fn text_run_style_matches(left: &TextRun, right: &TextRun) -> bool {
     fn comparable_style(
         run: &TextRun,

@@ -456,6 +456,15 @@ pub struct TerminalSettings {
     pub detect_file_paths_as_links: bool,
     #[serde(default = "default_timestamp_hover")]
     pub timestamp_hover: bool,
+    /// 在终端内容左侧额外留一段空白，缓解文字贴边。
+    #[serde(default)]
+    pub show_blank_gutter: bool,
+    /// 在终端左侧显示行号。
+    #[serde(default)]
+    pub show_line_numbers: bool,
+    /// 在终端左侧显示每行的时间戳。
+    #[serde(default)]
+    pub show_timestamps: bool,
     // Existing installations keep the protective prompt until the user opts out.
     #[serde(default = "default_confirm_before_closing_ssh")]
     pub confirm_before_closing_ssh: bool,
@@ -611,6 +620,9 @@ impl Default for TerminalSettings {
             line_height: 1.2,
             padding_horizontal: DEFAULT_TERMINAL_PADDING_HORIZONTAL,
             padding_vertical: DEFAULT_TERMINAL_PADDING_VERTICAL,
+            show_blank_gutter: false,
+            show_line_numbers: false,
+            show_timestamps: false,
             cursor_style: CursorStyle::Block,
             cursor_blink: true,
             scrollback: DEFAULT_TERMINAL_SCROLLBACK,
