@@ -3594,9 +3594,13 @@ mod tests {
     #[cfg(unix)]
     use oxideterm_terminal::{
         GraphicsOptions, LocalPtyConfig, ShellInfo, TerminalEditorClipboardOperation,
-        TerminalEncoding, TerminalEvent, TerminalSession, VIM_FREE_TYPE_INTEGRATION_SOURCE,
+        TerminalEncoding, TerminalSession, VIM_FREE_TYPE_INTEGRATION_SOURCE,
     };
-    use oxideterm_terminal::{TerminalAttrs, TerminalCell, TerminalColor, TerminalCursorShape};
+    // TerminalEvent 在非 unix 的测试里也会用到（shell 集成事件），
+    // 之前被圈在 cfg(unix) 里，导致 Windows 上 cargo test 直接编译不过。
+    use oxideterm_terminal::{
+        TerminalAttrs, TerminalCell, TerminalColor, TerminalCursorShape, TerminalEvent,
+    };
     use oxideterm_terminal::{
         TerminalEditorApplication, TerminalEditorCapabilities, TerminalEditorIntegrationEvent,
         TerminalEditorMode, TerminalEditorSelection,
