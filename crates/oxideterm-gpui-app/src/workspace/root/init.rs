@@ -1222,7 +1222,6 @@ impl WorkspaceApp {
             line_height: terminal.line_height as f32,
             padding_horizontal: terminal.padding_horizontal as f32,
             padding_vertical: terminal.padding_vertical as f32,
-            show_blank_gutter: terminal.show_blank_gutter,
             show_line_numbers: terminal.show_line_numbers,
             show_timestamps: terminal.show_timestamps,
             cursor_shape: match terminal.cursor_style {

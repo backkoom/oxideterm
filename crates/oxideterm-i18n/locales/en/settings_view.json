@@ -380,8 +380,6 @@
       "padding_vertical_hint": "Space above and below, in logical pixels (0–64).",
       "smooth_scroll": "Smooth Scrolling",
       "smooth_scroll_hint": "Animate wheel scrolling between terminal rows",
-      "show_blank_gutter": "Show blank gutter",
-      "show_blank_gutter_hint": "Leave extra blank space on the left of the terminal content",
       "show_line_numbers": "Show line numbers",
       "show_line_numbers_hint": "Show a line number column on the left of the terminal",
       "show_timestamps": "Show timestamps",

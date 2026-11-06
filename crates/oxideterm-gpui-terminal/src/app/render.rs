@@ -513,7 +513,6 @@ impl Render for TerminalPane {
         )
         .row_timestamps(row_timestamps)
         .line_numbers(line_numbers)
-        .blank_gutter_width(self.blank_gutter_width())
         .transparent_background(background.is_some() || self.preferences.transparent_background)
         .ghost_text(self.terminal_ghost_text())
         .viewport_rows(viewport_rows)

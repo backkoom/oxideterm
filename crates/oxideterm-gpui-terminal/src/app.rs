@@ -2163,10 +2163,8 @@ impl TerminalPane {
             self.horizontal_scrollbar_drag = None;
             cx.notify();
         }
-        // 行号栏与左侧留白会改变内容区宽度，需要重新计算列数。
-        if self.preferences.show_blank_gutter != preferences.show_blank_gutter
-            || self.preferences.show_line_numbers != preferences.show_line_numbers
-        {
+        // 行号栏会改变内容区宽度，需要重新计算列数。
+        if self.preferences.show_line_numbers != preferences.show_line_numbers {
             self.last_pty_resize = None;
             self.pending_pty_resize = None;
         }
@@ -4931,33 +4929,19 @@ impl TerminalPane {
         terminal_timestamp_gutter_width(&self.metrics, self.terminal_timestamps_enabled)
     }
 
-    /// 「显示空白」在内容左侧额外留出的宽度。
-    ///
-    /// 与时间戳栏一样是纯绘制层的留白：不重排网格，横向滚动可以越过它。
-    fn blank_gutter_width(&self) -> f32 {
-        if self.preferences.show_blank_gutter {
-            TERMINAL_BLANK_GUTTER_CELLS * self.metrics.cell_width_f32()
-        } else {
-            0.0
-        }
-    }
-
     fn line_number_gutter_width(&self) -> f32 {
         terminal_line_number_gutter_width(&self.metrics, self.preferences.show_line_numbers)
     }
 
     fn terminal_content_padding_x(&self) -> f32 {
         TERMINAL_CONTENT_PADDING
-            + self.blank_gutter_width()
             + self.line_number_gutter_width()
             + self.timestamp_gutter_width()
             + self.command_mark_gutter_width()
     }
 
     fn terminal_horizontal_scroll_limit(&self) -> Pixels {
-        px(self.timestamp_gutter_width()
-            + self.blank_gutter_width()
-            + self.line_number_gutter_width())
+        px(self.timestamp_gutter_width() + self.line_number_gutter_width())
     }
 
     fn command_mark_gutter_width(&self) -> f32 {

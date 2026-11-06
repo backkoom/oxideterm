@@ -895,14 +895,6 @@ impl WorkspaceApp {
                     ),
                     self.card_separator(),
                     self.bool_row(
-                        "settings_view.terminal.show_blank_gutter",
-                        "settings_view.terminal.show_blank_gutter_hint",
-                        settings.terminal.show_blank_gutter,
-                        set_terminal_show_blank_gutter,
-                        cx,
-                    ),
-                    self.card_separator(),
-                    self.bool_row(
                         "settings_view.terminal.show_line_numbers",
                         "settings_view.terminal.show_line_numbers_hint",
                         settings.terminal.show_line_numbers,

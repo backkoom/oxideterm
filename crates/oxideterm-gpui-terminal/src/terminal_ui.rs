@@ -44,8 +44,6 @@ pub(crate) const SCROLLBAR_GAP: f32 = 0.0;
 pub(crate) const SCROLLBAR_RESERVED_WIDTH: f32 = SCROLLBAR_WIDTH;
 pub(crate) const SCROLLBAR_MIN_THUMB: f32 = 24.0;
 pub(crate) const TERMINAL_TIMESTAMP_LABEL_CELLS: usize = 10;
-/// 「显示空白」在内容左侧额外留出的宽度，按字符格数计。
-pub(crate) const TERMINAL_BLANK_GUTTER_CELLS: f32 = 2.0;
 /// 行号栏宽度，按字符格数计。
 pub(crate) const TERMINAL_LINE_NUMBER_CELLS: usize = 5;
 pub(crate) const TERMINAL_TIMESTAMP_GUTTER_GAP_CELLS: f32 = 1.0;
@@ -82,8 +80,6 @@ pub struct TerminalUiPreferences {
     pub line_height: f32,
     pub padding_horizontal: f32,
     pub padding_vertical: f32,
-    /// 内容左侧额外留白。
-    pub show_blank_gutter: bool,
     /// 左侧显示行号。
     pub show_line_numbers: bool,
     /// 左侧显示每行时间戳。
@@ -215,7 +211,6 @@ impl Default for TerminalUiPreferences {
             line_height: TERMINAL_LINE_HEIGHT_RATIO,
             padding_horizontal: oxideterm_settings::DEFAULT_TERMINAL_PADDING_HORIZONTAL as f32,
             padding_vertical: oxideterm_settings::DEFAULT_TERMINAL_PADDING_VERTICAL as f32,
-            show_blank_gutter: false,
             show_line_numbers: false,
             show_timestamps: false,
             cursor_shape: TerminalCursorShape::Block,

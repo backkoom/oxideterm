@@ -380,8 +380,6 @@
       "padding_vertical_hint": "上下两侧各自的留白，单位为逻辑像素（0–64）。",
       "smooth_scroll": "平滑滚动",
       "smooth_scroll_hint": "在终端行之间平滑过渡滚轮滚动",
-      "show_blank_gutter": "显示空白",
-      "show_blank_gutter_hint": "在终端内容左侧额外留出一段空白，避免文字贴边",
       "show_line_numbers": "显示行号",
       "show_line_numbers_hint": "在终端左侧显示每一行的行号",
       "show_timestamps": "显示时间戳",
