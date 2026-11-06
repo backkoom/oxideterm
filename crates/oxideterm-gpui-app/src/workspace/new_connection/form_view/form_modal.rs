@@ -154,273 +154,41 @@ impl WorkspaceApp {
             self.ensure_kerberos_credentials_availability(cx);
         }
         let theme = self.tokens.ui;
-        let mode = new_connection_form_mode(
-            self.connection_form_state(cx)
-                .editing_saved_connection_id
-                .as_deref(),
-            self.connection_form_state(cx)
-                .duplicating_saved_connection_id
-                .as_deref(),
-            self.connection_form_state(cx)
-                .saved_connection_prompt_action,
-        );
-        let prompt_mode = mode == NewConnectionFormMode::SavedConnectionPrompt;
-        let duplicate_mode = mode == NewConnectionFormMode::DuplicateTemplate;
-        let edit_properties_mode = mode.submits_saved_connection_properties();
-        let reauthentication_mode = self
-            .connection_form_state(cx)
-            .form
-            .as_ref()
-            .is_some_and(|form| form.standalone_connection_id.is_some());
-        let remote_desktop_edit_mode = form.remote_desktop_profile_id.is_some();
-        let mosh_edit_mode = form.mosh_profile_id.is_some();
-        let serial_edit_mode = form.serial_profile_id.is_some();
-        let telnet_edit_mode = form.telnet_profile_id.is_some();
-        let standalone_sftp_edit_mode = form.standalone_sftp_profile_id.is_some();
-        let ftp_edit_mode = self
-            .connection_form_state(cx)
-            .form
-            .as_ref()
-            .is_some_and(|form| form.ftp_profile_id.is_some());
-        // Saved non-SSH profiles edit persisted assets without acquiring a runtime owner.
-        let saved_profile_edit_mode = remote_desktop_edit_mode
-            || mosh_edit_mode
-            || form.local_profile_id.is_some()
-            || serial_edit_mode
-            || telnet_edit_mode
-            || standalone_sftp_edit_mode
-            || ftp_edit_mode;
-        let drill_down_mode = self
-            .connection_form_state(cx)
-            .drill_down_parent_node_id
-            .is_some();
-        let modal_max_height = f32::from(window.viewport_size().height)
-            * self.tokens.metrics.modal_max_viewport_height_ratio;
-        let local_terminal_mode = !prompt_mode
-            && !duplicate_mode
-            && !edit_properties_mode
-            && !drill_down_mode
-            && form.transport == NewConnectionTransport::LocalTerminal;
-        let serial_mode = !prompt_mode
-            && !duplicate_mode
-            && !edit_properties_mode
-            && !drill_down_mode
-            && form.transport == NewConnectionTransport::Serial;
-        let ble_mode = !prompt_mode
-            && !duplicate_mode
-            && !edit_properties_mode
-            && !drill_down_mode
-            && form.transport == NewConnectionTransport::Ble;
-        let telnet_mode = !prompt_mode
-            && !duplicate_mode
-            && !edit_properties_mode
-            && !drill_down_mode
-            && form.transport == NewConnectionTransport::Telnet;
-        let mosh_mode = !prompt_mode
-            && !duplicate_mode
-            && !edit_properties_mode
-            && !drill_down_mode
-            && form.transport == NewConnectionTransport::Mosh;
-        let standalone_sftp_mode = !prompt_mode
-            && !duplicate_mode
-            && !edit_properties_mode
-            && !drill_down_mode
-            && form.transport == NewConnectionTransport::StandaloneSftp;
-        if standalone_sftp_mode {
-            return self.render_standalone_sftp_connection_modal(
-                window,
-                !saved_profile_edit_mode,
-                cx,
-            );
-        }
-        let remote_desktop_protocol =
-            if !prompt_mode && !duplicate_mode && !edit_properties_mode && !drill_down_mode {
-                match form.transport {
-                    NewConnectionTransport::Rdp => {
-                        Some(oxideterm_remote_desktop::RemoteDesktopProtocol::Rdp)
-                    }
-                    NewConnectionTransport::Vnc => {
-                        Some(oxideterm_remote_desktop::RemoteDesktopProtocol::Vnc)
-                    }
-                    _ => None,
-                }
-            } else {
-                None
-            };
-        let wsl_graphics_mode = !prompt_mode
-            && !duplicate_mode
-            && !edit_properties_mode
-            && !drill_down_mode
-            && form.transport == NewConnectionTransport::WslGraphics;
-        let local_transport_mode = serial_mode || telnet_mode || ble_mode;
-        let ftp_mode = form.transport == NewConnectionTransport::Ftp;
-        let remote_desktop_mode = remote_desktop_protocol.is_some();
-        let ssh_submission_mode = !local_terminal_mode
-            && !ftp_mode
-            && !local_transport_mode
-            && !remote_desktop_mode
-            && !wsl_graphics_mode
-            && !mosh_mode
-            && !standalone_sftp_mode;
-        let shows_transport_selector = !prompt_mode
-            && !duplicate_mode
-            && !edit_properties_mode
-            && !saved_profile_edit_mode
-            && !drill_down_mode;
-        let shows_icon_field = connection_icon_field_visible(mode, drill_down_mode, form.transport);
-        let title = if local_terminal_mode {
-            self.i18n
-                .t("modals.new_connection.transport_local_terminal")
-        } else if drill_down_mode {
-            self.i18n.t("ssh.drill_down.title")
-        } else if prompt_mode {
-            self.i18n
-                .t("sessionManager.connect_prompt.title")
-                .replace("{{name}}", &form.name)
-        } else if duplicate_mode {
-            self.i18n
-                .t("sessionManager.edit_properties.duplicate_title")
-        } else if edit_properties_mode || saved_profile_edit_mode {
-            self.i18n.t("sessionManager.edit_properties.title")
-        } else if ftp_mode {
-            self.i18n.t("modals.new_connection.transport_ftp")
-        } else if ble_mode {
-            self.i18n.t("ssh.form.title")
-        } else if mosh_mode {
-            self.i18n.t("mosh.form.title")
-        } else if standalone_sftp_mode {
-            self.i18n.t("sftp.standalone.form_title")
-        } else {
-            self.i18n.t("ssh.form.title")
+        let view = match self.new_connection_modal_view(&form, window, cx) {
+            Ok(view) => view,
+            Err(element) => return element,
         };
-        let description = if local_terminal_mode {
-            self.i18n
-                .t("modals.new_connection.local_terminal_description")
-        } else if drill_down_mode {
-            let parent_host = self
-                .connection_form_state(cx)
-                .drill_down_parent_node_id
-                .as_ref()
-                .and_then(|node_id| self.ssh_nodes.get(node_id))
-                .map(|node| node.title.clone())
-                .unwrap_or_default();
-            self.i18n
-                .t("ssh.drill_down.description")
-                .replace("{{host}}", &parent_host)
-                .replace("<host>", "")
-                .replace("</host>", "")
-        } else if prompt_mode {
-            format!("{}@{}:{}", form.username, form.host, form.port)
-        } else if duplicate_mode {
-            self.i18n
-                .t("sessionManager.edit_properties.duplicate_description")
-        } else if edit_properties_mode || saved_profile_edit_mode {
-            self.i18n.t("sessionManager.edit_properties.description")
-        } else if telnet_mode {
-            self.i18n.t("modals.new_connection.telnet_description")
-        } else if ftp_mode {
-            self.i18n.t("modals.new_connection.ftp_description")
-        } else if mosh_mode {
-            self.i18n.t("mosh.form.description")
-        } else if standalone_sftp_mode {
-            self.i18n.t("sftp.standalone.form_description")
-        } else if ble_mode {
-            self.i18n.t("modals.new_connection.ble_description")
-        } else if serial_mode {
-            self.i18n.t("modals.new_connection.serial_description")
-        } else if remote_desktop_protocol
-            == Some(oxideterm_remote_desktop::RemoteDesktopProtocol::Rdp)
-        {
-            self.i18n.t("modals.new_connection.rdp_description")
-        } else if remote_desktop_protocol
-            == Some(oxideterm_remote_desktop::RemoteDesktopProtocol::Vnc)
-        {
-            self.i18n.t("modals.new_connection.vnc_description")
-        } else if wsl_graphics_mode {
-            self.i18n
-                .t("modals.new_connection.wsl_graphics_description")
-        } else {
-            self.i18n.t("ssh.form.subtitle")
-        };
-        let connect_timeout_valid = form
-            .connect_timeout_seconds_text
-            .trim()
-            .parse::<u64>()
-            .is_ok_and(|seconds| seconds > 0);
-        let has_required_fields = if local_terminal_mode {
-            true
-        } else if serial_mode {
-            !form.serial_port_path.trim().is_empty()
-                && form
-                    .serial_baud_rate
-                    .trim()
-                    .parse::<u32>()
-                    .is_ok_and(|baud| baud > 0)
-        } else if telnet_mode {
-            !form.host.trim().is_empty() && form.port.trim().parse::<u16>().is_ok()
-        } else if mosh_mode {
-            !form.host.trim().is_empty()
-                && !form.username.trim().is_empty()
-                && !form.mosh_server_executable.trim().is_empty()
-                && form.port.trim().parse::<u16>().is_ok_and(|port| port > 0)
-                && connect_timeout_valid
-        } else if remote_desktop_protocol
-            == Some(oxideterm_remote_desktop::RemoteDesktopProtocol::Rdp)
-        {
-            !form.host.trim().is_empty()
-                && !form.username.trim().is_empty()
-                && (remote_desktop_edit_mode
-                    || form.password_present
-                    || form.saved_password_keychain_id.is_some())
-                && form.port.trim().parse::<u16>().is_ok_and(|port| port > 0)
-        } else if remote_desktop_mode {
-            !form.host.trim().is_empty()
-                && form.port.trim().parse::<u16>().is_ok_and(|port| port > 0)
-        } else if wsl_graphics_mode {
-            true
-        } else if ble_mode {
-            // The primary action is enabled only once a service with both
-            // notify and write characteristics is selected in the details
-            // table; that pairing is the minimum for a read/write channel.
-            form.ble_can_open
-        } else {
-            !form.host.trim().is_empty()
-                && !form.username.trim().is_empty()
-                && form.port.trim().parse::<u16>().is_ok()
-                && connect_timeout_valid
-        };
-        let primary_disabled = form.pending || !has_required_fields;
-        // Editing a saved BLE profile can persist metadata changes without a
-        // live scan because the stored device identity is reused on save.
-        let save_disabled =
-            form.pending || !(has_required_fields || (ble_mode && form.ble_profile_id.is_some()));
-        let form_visible = self.connection_form_state(cx).presence.phase()
-            == oxideterm_gpui_ui::motion::ExitPhase::Visible;
-        let base_modal_width = if drill_down_mode {
-            TAURI_DRILL_DOWN_MODAL_WIDTH
-        } else if prompt_mode || edit_properties_mode || saved_profile_edit_mode {
-            TAURI_EDIT_MODAL_WIDTH
-        } else if shows_transport_selector {
-            self.tokens.metrics.modal_width
-                + NEW_CONNECTION_TYPE_SIDEBAR_WIDTH
-                + self.tokens.metrics.modal_section_gap
-        } else {
-            self.tokens.metrics.modal_width
-        };
-        let algorithm_editor_visible =
-            form.ssh_algorithm_editor_open && (ssh_submission_mode || mosh_mode);
-        let requested_modal_width = if algorithm_editor_visible {
-            base_modal_width
-                + SSH_ALGORITHM_CATEGORY_COLUMN_WIDTH
-                + SSH_ALGORITHM_DETAIL_COLUMN_WIDTH
-                + self.tokens.metrics.modal_section_gap * 2.0
-        } else {
-            base_modal_width
-        };
-        let available_modal_width = (f32::from(window.viewport_size().width)
-            - NEW_CONNECTION_MODAL_VIEWPORT_MARGIN * 2.0)
-            .max(TAURI_EDIT_MODAL_WIDTH);
-        let modal_width = requested_modal_width.min(available_modal_width);
+        let mode = view.mode;
+        let prompt_mode = view.prompt_mode;
+        let edit_properties_mode = view.edit_properties_mode;
+        let reauthentication_mode = view.reauthentication_mode;
+        let remote_desktop_edit_mode = view.remote_desktop_edit_mode;
+        let mosh_edit_mode = view.mosh_edit_mode;
+        let standalone_sftp_edit_mode = view.standalone_sftp_edit_mode;
+        let saved_profile_edit_mode = view.saved_profile_edit_mode;
+        let drill_down_mode = view.drill_down_mode;
+        let modal_max_height = view.modal_max_height;
+        let local_terminal_mode = view.local_terminal_mode;
+        let serial_mode = view.serial_mode;
+        let ble_mode = view.ble_mode;
+        let telnet_mode = view.telnet_mode;
+        let mosh_mode = view.mosh_mode;
+        let standalone_sftp_mode = view.standalone_sftp_mode;
+        let remote_desktop_protocol = view.remote_desktop_protocol;
+        let wsl_graphics_mode = view.wsl_graphics_mode;
+        let local_transport_mode = view.local_transport_mode;
+        let ftp_mode = view.ftp_mode;
+        let remote_desktop_mode = view.remote_desktop_mode;
+        let ssh_submission_mode = view.ssh_submission_mode;
+        let shows_transport_selector = view.shows_transport_selector;
+        let shows_icon_field = view.shows_icon_field;
+        let title = view.title;
+        let description = view.description;
+        let primary_disabled = view.primary_disabled;
+        let save_disabled = view.save_disabled;
+        let form_visible = view.form_visible;
+        let algorithm_editor_visible = view.algorithm_editor_visible;
+        let modal_width = view.modal_width;
         // A long scrolling form uses an opaque theme surface: underlying text
         // must not bleed through, and live backdrop blur would add GPU work
         // to every scroll frame.
@@ -1621,5 +1389,357 @@ impl WorkspaceApp {
                 }),
             )
             .into_any_element()
+    }
+}
+
+/// 新建连接弹窗的显示状态。
+///
+/// 整块模式判断、文案选择、宽度计算从渲染函数里搬出来，渲染部分只负责布局。
+struct NewConnectionModalView {
+    mode: NewConnectionFormMode,
+    prompt_mode: bool,
+    edit_properties_mode: bool,
+    reauthentication_mode: bool,
+    remote_desktop_edit_mode: bool,
+    mosh_edit_mode: bool,
+    standalone_sftp_edit_mode: bool,
+    saved_profile_edit_mode: bool,
+    drill_down_mode: bool,
+    modal_max_height: f32,
+    local_terminal_mode: bool,
+    serial_mode: bool,
+    ble_mode: bool,
+    telnet_mode: bool,
+    mosh_mode: bool,
+    standalone_sftp_mode: bool,
+    remote_desktop_protocol: Option<oxideterm_remote_desktop::RemoteDesktopProtocol>,
+    wsl_graphics_mode: bool,
+    local_transport_mode: bool,
+    ftp_mode: bool,
+    remote_desktop_mode: bool,
+    ssh_submission_mode: bool,
+    shows_transport_selector: bool,
+    shows_icon_field: bool,
+    title: String,
+    description: String,
+    primary_disabled: bool,
+    save_disabled: bool,
+    form_visible: bool,
+    algorithm_editor_visible: bool,
+    modal_width: f32,
+}
+
+impl WorkspaceApp {
+    /// 计算新建连接弹窗的显示状态。
+    ///
+    /// `Err` 表示这个弹窗已被独立 SFTP 的渲染接管，调用方应直接返回该元素。
+    fn new_connection_modal_view(
+        &self,
+        form: &ConnectionFormModalSnapshot,
+        window: &Window,
+        cx: &mut Context<Self>,
+    ) -> Result<NewConnectionModalView, AnyElement> {
+        let mode = new_connection_form_mode(
+            self.connection_form_state(cx)
+                .editing_saved_connection_id
+                .as_deref(),
+            self.connection_form_state(cx)
+                .duplicating_saved_connection_id
+                .as_deref(),
+            self.connection_form_state(cx)
+                .saved_connection_prompt_action,
+        );
+        let prompt_mode = mode == NewConnectionFormMode::SavedConnectionPrompt;
+        let duplicate_mode = mode == NewConnectionFormMode::DuplicateTemplate;
+        let edit_properties_mode = mode.submits_saved_connection_properties();
+        let reauthentication_mode = self
+            .connection_form_state(cx)
+            .form
+            .as_ref()
+            .is_some_and(|form| form.standalone_connection_id.is_some());
+        let remote_desktop_edit_mode = form.remote_desktop_profile_id.is_some();
+        let mosh_edit_mode = form.mosh_profile_id.is_some();
+        let serial_edit_mode = form.serial_profile_id.is_some();
+        let telnet_edit_mode = form.telnet_profile_id.is_some();
+        let standalone_sftp_edit_mode = form.standalone_sftp_profile_id.is_some();
+        let ftp_edit_mode = self
+            .connection_form_state(cx)
+            .form
+            .as_ref()
+            .is_some_and(|form| form.ftp_profile_id.is_some());
+        // Saved non-SSH profiles edit persisted assets without acquiring a runtime owner.
+        let saved_profile_edit_mode = remote_desktop_edit_mode
+            || mosh_edit_mode
+            || form.local_profile_id.is_some()
+            || serial_edit_mode
+            || telnet_edit_mode
+            || standalone_sftp_edit_mode
+            || ftp_edit_mode;
+        let drill_down_mode = self
+            .connection_form_state(cx)
+            .drill_down_parent_node_id
+            .is_some();
+        let modal_max_height = f32::from(window.viewport_size().height)
+            * self.tokens.metrics.modal_max_viewport_height_ratio;
+        let local_terminal_mode = !prompt_mode
+            && !duplicate_mode
+            && !edit_properties_mode
+            && !drill_down_mode
+            && form.transport == NewConnectionTransport::LocalTerminal;
+        let serial_mode = !prompt_mode
+            && !duplicate_mode
+            && !edit_properties_mode
+            && !drill_down_mode
+            && form.transport == NewConnectionTransport::Serial;
+        let ble_mode = !prompt_mode
+            && !duplicate_mode
+            && !edit_properties_mode
+            && !drill_down_mode
+            && form.transport == NewConnectionTransport::Ble;
+        let telnet_mode = !prompt_mode
+            && !duplicate_mode
+            && !edit_properties_mode
+            && !drill_down_mode
+            && form.transport == NewConnectionTransport::Telnet;
+        let mosh_mode = !prompt_mode
+            && !duplicate_mode
+            && !edit_properties_mode
+            && !drill_down_mode
+            && form.transport == NewConnectionTransport::Mosh;
+        let standalone_sftp_mode = !prompt_mode
+            && !duplicate_mode
+            && !edit_properties_mode
+            && !drill_down_mode
+            && form.transport == NewConnectionTransport::StandaloneSftp;
+        if standalone_sftp_mode {
+            // 独立 SFTP 有自己的一套弹窗，这里把渲染结果交回给调用方直接返回。
+            return Err(self.render_standalone_sftp_connection_modal(
+                window,
+                !saved_profile_edit_mode,
+                cx,
+            ));
+        }
+        let remote_desktop_protocol =
+            if !prompt_mode && !duplicate_mode && !edit_properties_mode && !drill_down_mode {
+                match form.transport {
+                    NewConnectionTransport::Rdp => {
+                        Some(oxideterm_remote_desktop::RemoteDesktopProtocol::Rdp)
+                    }
+                    NewConnectionTransport::Vnc => {
+                        Some(oxideterm_remote_desktop::RemoteDesktopProtocol::Vnc)
+                    }
+                    _ => None,
+                }
+            } else {
+                None
+            };
+        let wsl_graphics_mode = !prompt_mode
+            && !duplicate_mode
+            && !edit_properties_mode
+            && !drill_down_mode
+            && form.transport == NewConnectionTransport::WslGraphics;
+        let local_transport_mode = serial_mode || telnet_mode || ble_mode;
+        let ftp_mode = form.transport == NewConnectionTransport::Ftp;
+        let remote_desktop_mode = remote_desktop_protocol.is_some();
+        let ssh_submission_mode = !local_terminal_mode
+            && !ftp_mode
+            && !local_transport_mode
+            && !remote_desktop_mode
+            && !wsl_graphics_mode
+            && !mosh_mode
+            && !standalone_sftp_mode;
+        let shows_transport_selector = !prompt_mode
+            && !duplicate_mode
+            && !edit_properties_mode
+            && !saved_profile_edit_mode
+            && !drill_down_mode;
+        let shows_icon_field = connection_icon_field_visible(mode, drill_down_mode, form.transport);
+        let title = if local_terminal_mode {
+            self.i18n
+                .t("modals.new_connection.transport_local_terminal")
+        } else if drill_down_mode {
+            self.i18n.t("ssh.drill_down.title")
+        } else if prompt_mode {
+            self.i18n
+                .t("sessionManager.connect_prompt.title")
+                .replace("{{name}}", &form.name)
+        } else if duplicate_mode {
+            self.i18n
+                .t("sessionManager.edit_properties.duplicate_title")
+        } else if edit_properties_mode || saved_profile_edit_mode {
+            self.i18n.t("sessionManager.edit_properties.title")
+        } else if ftp_mode {
+            self.i18n.t("modals.new_connection.transport_ftp")
+        } else if ble_mode {
+            self.i18n.t("ssh.form.title")
+        } else if mosh_mode {
+            self.i18n.t("mosh.form.title")
+        } else if standalone_sftp_mode {
+            self.i18n.t("sftp.standalone.form_title")
+        } else {
+            self.i18n.t("ssh.form.title")
+        };
+        let description = if local_terminal_mode {
+            self.i18n
+                .t("modals.new_connection.local_terminal_description")
+        } else if drill_down_mode {
+            let parent_host = self
+                .connection_form_state(cx)
+                .drill_down_parent_node_id
+                .as_ref()
+                .and_then(|node_id| self.ssh_nodes.get(node_id))
+                .map(|node| node.title.clone())
+                .unwrap_or_default();
+            self.i18n
+                .t("ssh.drill_down.description")
+                .replace("{{host}}", &parent_host)
+                .replace("<host>", "")
+                .replace("</host>", "")
+        } else if prompt_mode {
+            format!("{}@{}:{}", form.username, form.host, form.port)
+        } else if duplicate_mode {
+            self.i18n
+                .t("sessionManager.edit_properties.duplicate_description")
+        } else if edit_properties_mode || saved_profile_edit_mode {
+            self.i18n.t("sessionManager.edit_properties.description")
+        } else if telnet_mode {
+            self.i18n.t("modals.new_connection.telnet_description")
+        } else if ftp_mode {
+            self.i18n.t("modals.new_connection.ftp_description")
+        } else if mosh_mode {
+            self.i18n.t("mosh.form.description")
+        } else if standalone_sftp_mode {
+            self.i18n.t("sftp.standalone.form_description")
+        } else if ble_mode {
+            self.i18n.t("modals.new_connection.ble_description")
+        } else if serial_mode {
+            self.i18n.t("modals.new_connection.serial_description")
+        } else if remote_desktop_protocol
+            == Some(oxideterm_remote_desktop::RemoteDesktopProtocol::Rdp)
+        {
+            self.i18n.t("modals.new_connection.rdp_description")
+        } else if remote_desktop_protocol
+            == Some(oxideterm_remote_desktop::RemoteDesktopProtocol::Vnc)
+        {
+            self.i18n.t("modals.new_connection.vnc_description")
+        } else if wsl_graphics_mode {
+            self.i18n
+                .t("modals.new_connection.wsl_graphics_description")
+        } else {
+            self.i18n.t("ssh.form.subtitle")
+        };
+        let connect_timeout_valid = form
+            .connect_timeout_seconds_text
+            .trim()
+            .parse::<u64>()
+            .is_ok_and(|seconds| seconds > 0);
+        let has_required_fields = if local_terminal_mode {
+            true
+        } else if serial_mode {
+            !form.serial_port_path.trim().is_empty()
+                && form
+                    .serial_baud_rate
+                    .trim()
+                    .parse::<u32>()
+                    .is_ok_and(|baud| baud > 0)
+        } else if telnet_mode {
+            !form.host.trim().is_empty() && form.port.trim().parse::<u16>().is_ok()
+        } else if mosh_mode {
+            !form.host.trim().is_empty()
+                && !form.username.trim().is_empty()
+                && !form.mosh_server_executable.trim().is_empty()
+                && form.port.trim().parse::<u16>().is_ok_and(|port| port > 0)
+                && connect_timeout_valid
+        } else if remote_desktop_protocol
+            == Some(oxideterm_remote_desktop::RemoteDesktopProtocol::Rdp)
+        {
+            !form.host.trim().is_empty()
+                && !form.username.trim().is_empty()
+                && (remote_desktop_edit_mode
+                    || form.password_present
+                    || form.saved_password_keychain_id.is_some())
+                && form.port.trim().parse::<u16>().is_ok_and(|port| port > 0)
+        } else if remote_desktop_mode {
+            !form.host.trim().is_empty()
+                && form.port.trim().parse::<u16>().is_ok_and(|port| port > 0)
+        } else if wsl_graphics_mode {
+            true
+        } else if ble_mode {
+            // The primary action is enabled only once a service with both
+            // notify and write characteristics is selected in the details
+            // table; that pairing is the minimum for a read/write channel.
+            form.ble_can_open
+        } else {
+            !form.host.trim().is_empty()
+                && !form.username.trim().is_empty()
+                && form.port.trim().parse::<u16>().is_ok()
+                && connect_timeout_valid
+        };
+        let primary_disabled = form.pending || !has_required_fields;
+        // Editing a saved BLE profile can persist metadata changes without a
+        // live scan because the stored device identity is reused on save.
+        let save_disabled =
+            form.pending || !(has_required_fields || (ble_mode && form.ble_profile_id.is_some()));
+        let form_visible = self.connection_form_state(cx).presence.phase()
+            == oxideterm_gpui_ui::motion::ExitPhase::Visible;
+        let base_modal_width = if drill_down_mode {
+            TAURI_DRILL_DOWN_MODAL_WIDTH
+        } else if prompt_mode || edit_properties_mode || saved_profile_edit_mode {
+            TAURI_EDIT_MODAL_WIDTH
+        } else if shows_transport_selector {
+            self.tokens.metrics.modal_width
+                + NEW_CONNECTION_TYPE_SIDEBAR_WIDTH
+                + self.tokens.metrics.modal_section_gap
+        } else {
+            self.tokens.metrics.modal_width
+        };
+        let algorithm_editor_visible =
+            form.ssh_algorithm_editor_open && (ssh_submission_mode || mosh_mode);
+        let requested_modal_width = if algorithm_editor_visible {
+            base_modal_width
+                + SSH_ALGORITHM_CATEGORY_COLUMN_WIDTH
+                + SSH_ALGORITHM_DETAIL_COLUMN_WIDTH
+                + self.tokens.metrics.modal_section_gap * 2.0
+        } else {
+            base_modal_width
+        };
+        let available_modal_width = (f32::from(window.viewport_size().width)
+            - NEW_CONNECTION_MODAL_VIEWPORT_MARGIN * 2.0)
+            .max(TAURI_EDIT_MODAL_WIDTH);
+        let modal_width = requested_modal_width.min(available_modal_width);
+
+        Ok(NewConnectionModalView {
+            mode,
+            prompt_mode,
+            edit_properties_mode,
+            reauthentication_mode,
+            remote_desktop_edit_mode,
+            mosh_edit_mode,
+            standalone_sftp_edit_mode,
+            saved_profile_edit_mode,
+            drill_down_mode,
+            modal_max_height,
+            local_terminal_mode,
+            serial_mode,
+            ble_mode,
+            telnet_mode,
+            mosh_mode,
+            standalone_sftp_mode,
+            remote_desktop_protocol,
+            wsl_graphics_mode,
+            local_transport_mode,
+            ftp_mode,
+            remote_desktop_mode,
+            ssh_submission_mode,
+            shows_transport_selector,
+            shows_icon_field,
+            title,
+            description,
+            primary_disabled,
+            save_disabled,
+            form_visible,
+            algorithm_editor_visible,
+            modal_width,
+        })
     }
 }
