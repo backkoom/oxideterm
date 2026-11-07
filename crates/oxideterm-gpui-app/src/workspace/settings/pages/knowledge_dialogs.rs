@@ -50,48 +50,28 @@ impl WorkspaceApp {
                     .flex()
                     .flex_col()
                     .gap(px(self.tokens.spacing.three))
-                    .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .gap(px(self.tokens.spacing.two))
-                            .child(
-                                div()
-                                    .text_size(px(self.tokens.metrics.ui_text_sm))
-                                    .font_weight(gpui::FontWeight::MEDIUM)
-                                    .text_color(rgb(self.tokens.ui.text))
-                                    .child(self.i18n.t("settings_view.knowledge.collection_name")),
-                            )
-                            .child(
-                                self.settings_text_input_control(
-                                    SettingsInput::KnowledgeCollectionName,
-                                    collection_name,
-                                    self.i18n
-                                        .t("settings_view.knowledge.collection_name_placeholder"),
-                                    420.0,
-                                    cx,
-                                ),
-                            ),
-                    )
-                    .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .gap(px(self.tokens.spacing.two))
-                            .child(
-                                div()
-                                    .text_size(px(self.tokens.metrics.ui_text_sm))
-                                    .font_weight(gpui::FontWeight::MEDIUM)
-                                    .text_color(rgb(self.tokens.ui.text))
-                                    .child(self.i18n.t("settings_view.knowledge.scope")),
-                            )
-                            .child(self.ai_settings_select_control(
-                                SettingsSelect::KnowledgeCollectionScope,
-                                self.knowledge_collection_scope_label(cx),
-                                420.0,
-                                cx,
-                            )),
-                    ),
+                    .child(form_field(
+                        &self.tokens,
+                        self.i18n.t("settings_view.knowledge.collection_name"),
+                        self.settings_text_input_control(
+                            SettingsInput::KnowledgeCollectionName,
+                            collection_name,
+                            self.i18n
+                                .t("settings_view.knowledge.collection_name_placeholder"),
+                            420.0,
+                            cx,
+                        ),
+                    ))
+                    .child(form_field(
+                        &self.tokens,
+                        self.i18n.t("settings_view.knowledge.scope"),
+                        self.ai_settings_select_control(
+                            SettingsSelect::KnowledgeCollectionScope,
+                            self.knowledge_collection_scope_label(cx),
+                            420.0,
+                            cx,
+                        ),
+                    )),
             )
             .child(
                 dialog_footer(&self.tokens)
@@ -181,51 +161,29 @@ impl WorkspaceApp {
                     .flex()
                     .flex_col()
                     .gap(px(self.tokens.spacing.three))
-                    .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .gap(px(self.tokens.spacing.two))
-                            .child(
-                                div()
-                                    .text_size(px(self.tokens.metrics.ui_text_sm))
-                                    .font_weight(gpui::FontWeight::MEDIUM)
-                                    .text_color(rgb(self.tokens.ui.text))
-                                    .child(
-                                        self.i18n.t("settings_view.knowledge.new_document_title"),
-                                    ),
-                            )
-                            .child(
-                                self.settings_text_input_control(
-                                    SettingsInput::KnowledgeDocumentTitle,
-                                    document_title,
-                                    self.i18n.t(
-                                        "settings_view.knowledge.new_document_title_placeholder",
-                                    ),
-                                    420.0,
-                                    cx,
+                        .child(form_field(
+                            &self.tokens,
+                            self.i18n.t("settings_view.knowledge.new_document_title"),
+                            self.settings_text_input_control(
+                                SettingsInput::KnowledgeDocumentTitle,
+                                document_title,
+                                self.i18n.t(
+                                    "settings_view.knowledge.new_document_title_placeholder",
                                 ),
+                                420.0,
+                                cx,
                             ),
-                    )
-                    .child(
-                        div()
-                            .flex()
-                            .flex_col()
-                            .gap(px(self.tokens.spacing.two))
-                            .child(
-                                div()
-                                    .text_size(px(self.tokens.metrics.ui_text_sm))
-                                    .font_weight(gpui::FontWeight::MEDIUM)
-                                    .text_color(rgb(self.tokens.ui.text))
-                                    .child(self.i18n.t("settings_view.knowledge.format")),
-                            )
-                            .child(self.ai_settings_select_control(
+                        ))
+                        .child(form_field(
+                            &self.tokens,
+                            self.i18n.t("settings_view.knowledge.format"),
+                            self.ai_settings_select_control(
                                 SettingsSelect::KnowledgeDocumentFormat,
                                 self.knowledge_document_format_label(cx),
                                 420.0,
                                 cx,
-                            )),
-                    )
+                            ),
+                        ))
                     .when_some(creation_error, |content, error| {
                         content.child(self.knowledge_error_row(&error))
                     }),
