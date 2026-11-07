@@ -1845,6 +1845,13 @@ impl TerminalPane {
     }
 
     pub(crate) fn handle_mouse_move(&mut self, event: &MouseMoveEvent, cx: &mut Context<Self>) {
+        // 在窗口外松开左键时收不到 mouse_up，拖选会一直自动滚下去。
+        // 鼠标一回到窗口、且左键已经松开，就补一次收尾。
+        if event.pressed_button.is_none() && self.selecting {
+            self.selecting = false;
+            self.selection_autoscroll_position = None;
+            cx.notify();
+        }
         if self.tmux_selection_pending {
             self.pending_tmux_mouse
                 .push_back(DeferredTmuxMouse::Move(event.clone()));

@@ -1291,6 +1291,8 @@ pub(crate) fn paint_scrollbar(
     window: &mut Window,
 ) {
     let x = terminal_scrollbar_x_for_viewport(viewport_width);
+    // 用当前文本色而不是硬编码白色：浅色主题下白底上的白色滚动条完全看不见。
+    let base = window.text_style().color;
     let track = Bounds::new(
         origin + point(x, px(0.0)),
         size(
@@ -1298,13 +1300,13 @@ pub(crate) fn paint_scrollbar(
             px(rows as f32 * metrics.line_height_f32()),
         ),
     );
-    window.paint_quad(fill(track, rgba(0xffffff20)));
+    window.paint_quad(fill(track, base.alpha(0.08)));
 
     let thumb = Bounds::new(
         origin + point(x, px(scrollbar.top)),
         size(px(SCROLLBAR_WIDTH), px(scrollbar.height)),
     );
-    window.paint_quad(fill(thumb, rgba(0xffffff66)));
+    window.paint_quad(fill(thumb, base.alpha(0.38)));
 }
 
 pub(crate) fn paint_horizontal_scrollbar(
@@ -1315,15 +1317,16 @@ pub(crate) fn paint_horizontal_scrollbar(
     window: &mut Window,
 ) {
     let y = viewport_height - px(SCROLLBAR_WIDTH);
+    let base = window.text_style().color;
     let track = Bounds::new(
         origin + point(px(0.0), y),
         size(viewport_width.max(px(0.0)), px(SCROLLBAR_WIDTH)),
     );
-    window.paint_quad(fill(track, rgba(0xffffff20)));
+    window.paint_quad(fill(track, base.alpha(0.08)));
 
     let thumb = Bounds::new(
         origin + point(px(scrollbar.left), y),
         size(px(scrollbar.width), px(SCROLLBAR_WIDTH)),
     );
-    window.paint_quad(fill(thumb, rgba(0xffffff66)));
+    window.paint_quad(fill(thumb, base.alpha(0.38)));
 }

@@ -1171,6 +1171,16 @@ impl TerminalPane {
             this.handle_focus_change(false, cx);
         });
 
+        // 窗口失焦时结束拖选：在窗口外松开左键收不到 mouse_up，拖选的自动滚
+        // 会一直跑下去，切回来才发现内容还在动。
+        let window_activation = cx.observe_window_activation(window, |this, window, cx| {
+            if !window.is_window_active() && this.selecting {
+                this.selecting = false;
+                this.selection_autoscroll_position = None;
+                cx.notify();
+            }
+        });
+
         // GPUI unit tests use a deterministic single-thread scheduler, so real PTY threads must
         // not wake its local executor directly. Production builds keep the activity-driven path.
         let backend_activity_enabled = !cfg!(test);
@@ -1473,7 +1483,7 @@ impl TerminalPane {
             modem_progress: None,
             modem_transfer: None,
             modem_worker: None,
-            _subscriptions: vec![focus_in, focus_out],
+            _subscriptions: vec![focus_in, focus_out, window_activation],
         };
         pane.sync_terminal_output_events_enabled();
         Ok(pane)
