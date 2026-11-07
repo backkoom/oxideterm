@@ -188,13 +188,6 @@ pub(crate) struct TerminalScrollbar {
     pub(crate) height: f32,
 }
 
-#[derive(Clone, Copy)]
-pub(crate) struct TerminalHorizontalScrollbar {
-    pub(crate) left: f32,
-    pub(crate) width: f32,
-    pub(crate) max_scroll: f32,
-}
-
 #[derive(Clone)]
 struct TerminalRowLayout {
     backgrounds: Vec<TerminalRowRect>,

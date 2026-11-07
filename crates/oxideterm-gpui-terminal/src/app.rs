@@ -80,9 +80,7 @@ use crate::trzsz_worker::{
 use image_cache::ImageRenderCache;
 pub(crate) use image_cache::TerminalRenderedImage;
 pub(crate) use ime::TerminalInputHandler;
-use scrollbar::{
-    HorizontalScrollbarDrag, HorizontalScrollbarGeometry, ScrollbarDrag, ScrollbarGeometry,
-};
+use scrollbar::{ScrollbarDrag, ScrollbarGeometry};
 
 #[derive(Clone, Debug)]
 enum TmuxPromptKind {
@@ -611,7 +609,6 @@ pub struct TerminalPane {
     // Horizontal panning belongs to the visual timestamp overlay and never
     // changes the backing PTY grid or remote window size.
     horizontal_scroll_offset_px: Pixels,
-    horizontal_scrollbar_drag: Option<HorizontalScrollbarDrag>,
     tmux_separator_drag: Option<TmuxSeparatorDrag>,
     pending_tmux_mouse: std::collections::VecDeque<interactions::DeferredTmuxMouse>,
     tmux_selection_pending: bool,
@@ -1419,7 +1416,6 @@ impl TerminalPane {
             scrollbar_drag: None,
             scrollbar_hovered: false,
             horizontal_scroll_offset_px: px(0.0),
-            horizontal_scrollbar_drag: None,
             tmux_separator_drag: None,
             pending_tmux_mouse: Default::default(),
             tmux_selection_pending: false,
@@ -1654,7 +1650,6 @@ impl TerminalPane {
     pub fn toggle_terminal_timestamps(&mut self, cx: &mut Context<Self>) {
         self.terminal_timestamps_enabled = !self.terminal_timestamps_enabled;
         self.horizontal_scroll_offset_px = px(0.0);
-        self.horizontal_scrollbar_drag = None;
         // Timestamp visibility is paint-only. Do not restamp or resize here:
         // both would make old scrollback look like it was modified at toggle time.
         cx.notify();
@@ -2178,7 +2173,6 @@ impl TerminalPane {
         if self.terminal_timestamps_enabled != preferences.show_timestamps {
             self.terminal_timestamps_enabled = preferences.show_timestamps;
             self.horizontal_scroll_offset_px = px(0.0);
-            self.horizontal_scrollbar_drag = None;
             cx.notify();
         }
         // 行号栏会改变内容区宽度，需要重新计算列数。

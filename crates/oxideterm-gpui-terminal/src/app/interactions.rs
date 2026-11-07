@@ -18,10 +18,10 @@ use unicode_width::UnicodeWidthStr;
 use zeroize::Zeroizing;
 
 use super::{
-    FreeTypeDragAction, FreeTypeDragState, HorizontalScrollbarDrag, HorizontalScrollbarGeometry,
-    PendingTerminalEditorClipboard, ScrollbarDrag, ScrollbarGeometry, SelectionHighlightCache,
-    SmoothScrollAnimation, TerminalContextAction, TerminalContextMenu, TerminalKeybindings,
-    TerminalPane, TerminalPaneEvent, TerminalShortcut, TmuxSeparatorDirection, TmuxSeparatorDrag,
+    FreeTypeDragAction, FreeTypeDragState, PendingTerminalEditorClipboard, ScrollbarDrag,
+    ScrollbarGeometry, SelectionHighlightCache, SmoothScrollAnimation, TerminalContextAction,
+    TerminalContextMenu, TerminalKeybindings, TerminalPane, TerminalPaneEvent, TerminalShortcut,
+    TmuxSeparatorDirection, TmuxSeparatorDrag,
 };
 use crate::command_facts::TerminalAutosuggestInputState;
 use crate::terminal_ui::*;
@@ -1254,45 +1254,6 @@ impl TerminalPane {
         })
     }
 
-    fn horizontal_scrollbar_geometry(&self) -> Option<HorizontalScrollbarGeometry> {
-        let bounds = self.bounds?;
-        let max_scroll = self.terminal_horizontal_scroll_limit();
-        let gutter_width = self.timestamp_gutter_width() + self.command_mark_gutter_width();
-        let track_width =
-            (bounds.size.width - px(gutter_width + SCROLLBAR_RESERVED_WIDTH)).max(px(0.0));
-        let scrollbar = terminal_horizontal_scrollbar_for_viewport(
-            f32::from(track_width),
-            f32::from(max_scroll),
-            f32::from(self.horizontal_scroll_offset_px),
-        )?;
-        Some(HorizontalScrollbarGeometry {
-            x: bounds.origin.x + px(gutter_width),
-            y: bounds.origin.y + bounds.size.height - px(SCROLLBAR_WIDTH),
-            left: px(scrollbar.left),
-            width: px(scrollbar.width),
-            track_width,
-            max_scroll: px(scrollbar.max_scroll),
-        })
-    }
-
-    fn set_horizontal_scrollbar_position(
-        &mut self,
-        position: gpui::Point<Pixels>,
-        thumb_offset_x: Pixels,
-        cx: &mut Context<Self>,
-    ) {
-        let Some(geometry) = self.horizontal_scrollbar_geometry() else {
-            return;
-        };
-        let thumb_travel = (geometry.track_width - geometry.width).max(px(1.0));
-        let thumb_left = (position.x - geometry.x - thumb_offset_x).clamp(px(0.0), thumb_travel);
-        let next_offset = thumb_left / thumb_travel * geometry.max_scroll;
-        if next_offset != self.horizontal_scroll_offset_px {
-            self.horizontal_scroll_offset_px = next_offset;
-            cx.notify();
-        }
-    }
-
     fn set_scrollbar_position(
         &mut self,
         position: gpui::Point<Pixels>,
@@ -1610,20 +1571,8 @@ impl TerminalPane {
             self.dismiss_terminal_context_menu(cx);
         }
 
-        if event.button == MouseButton::Left
-            && let Some(geometry) = self.horizontal_scrollbar_geometry()
-            && geometry.contains_track(event.position)
-        {
-            let thumb_offset_x = if geometry.contains_thumb(event.position) {
-                event.position.x - geometry.x - geometry.left
-            } else {
-                geometry.width / 2.0
-            };
-            self.horizontal_scrollbar_drag = Some(HorizontalScrollbarDrag { thumb_offset_x });
-            self.set_horizontal_scrollbar_position(event.position, thumb_offset_x, cx);
-            return;
-        }
-
+        // 横向滚动条已经去掉了，这里不再接住底部那条横带的拖拽：
+        // 画都不画了还能拖，只会让人莫名其妙。
         if event.button == MouseButton::Left && self.command_gutter_contains(event.position) {
             self.set_selection(None);
             self.selecting = false;
@@ -1882,13 +1831,6 @@ impl TerminalPane {
             }
             self.mouse_paste_button = None;
         }
-        if let Some(drag) = self.horizontal_scrollbar_drag
-            && event.pressed_button == Some(MouseButton::Left)
-        {
-            self.set_horizontal_scrollbar_position(event.position, drag.thumb_offset_x, cx);
-            return;
-        }
-
         if let Some(drag) = self.tmux_separator_drag
             && event.pressed_button == Some(MouseButton::Left)
         {
@@ -1918,7 +1860,6 @@ impl TerminalPane {
         let mode = self.terminal.lock().mode();
         let can_hover_terminal_content = !self.selecting
             && self.scrollbar_drag.is_none()
-            && self.horizontal_scrollbar_drag.is_none()
             && !mouse_mode(mode, event.modifiers.shift);
         let mut hovered_link = can_hover_terminal_content
             .then(|| self.link_at_position(event.position))
@@ -2005,11 +1946,6 @@ impl TerminalPane {
                 .push_back(DeferredTmuxMouse::Up(event.clone()));
             return;
         }
-        if self.horizontal_scrollbar_drag.take().is_some() {
-            cx.notify();
-            return;
-        }
-
         if self.tmux_separator_drag.take().is_some() {
             cx.notify();
             return;
