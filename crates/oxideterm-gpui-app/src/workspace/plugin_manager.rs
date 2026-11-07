@@ -4253,8 +4253,11 @@ mod tests {
         std::fs::write(&license, "Packaged license").unwrap();
         let resolved =
             native_plugin_package_document_url(&root, &["LICENSE", "LICENSE.txt"]).unwrap();
+        let resolved_path = url::Url::parse(&resolved).unwrap().to_file_path().unwrap();
+        // Windows 的 canonicalize 会加 \\?\ 前缀，to_file_path 不会加；
+        // 两边都先规范化再比，否则这条断言只在 Linux 成立。
         assert_eq!(
-            url::Url::parse(&resolved).unwrap().to_file_path().unwrap(),
+            resolved_path.canonicalize().unwrap(),
             license.canonicalize().unwrap()
         );
         assert_eq!(native_plugin_package_document_url(&root, &["NOTICE"]), None);

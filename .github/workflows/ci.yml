@@ -73,7 +73,19 @@ jobs:
         env:
           # Cargo runs each package's tests from its crate directory.
           OXIDETERM_AGENT_DIR: ${{ github.workspace }}/crates/oxideterm-gpui-app/resources/agents
-        run: cargo test --workspace
+        run: |
+          # --no-fail-fast：一次把所有 crate 都跑完，避免第一个失败遮住后面的。
+          set +e
+          cargo test --workspace --no-fail-fast 2>&1 | tee "$RUNNER_TEMP/cargo-test.log"
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            # 失败的测试名写成 annotation：job 日志需要 admin 权限才能下载，
+            # 但 check run 的 annotations 是公开可读的，便于排查。
+            grep -E '^    [A-Za-z_][A-Za-z0-9_]*::[A-Za-z0-9_:]+$' "$RUNNER_TEMP/cargo-test.log" \
+              | sort -u | sed -n '1,40p' \
+              | while IFS= read -r failed; do echo "::error::test failed:$failed"; done
+          fi
+          exit "$status"
 
   i18n:
     name: i18n completeness
