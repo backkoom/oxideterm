@@ -2559,11 +2559,17 @@ impl Element for TerminalElement {
                 window,
             );
         }
-        if let Some(horizontal_scrollbar) = terminal_horizontal_scrollbar_for_viewport(
-            f32::from(grid_viewport_width) - SCROLLBAR_RESERVED_WIDTH,
-            timestamp_gutter_width,
-            f32::from(self.scroll_x_offset),
-        ) {
+        // 横向滚动条只在用户真的横向滚过之后才画。PTY 列数已经按视口宽度
+        // 扣掉了行号栏和时间戳栏（terminal_grid_span_for_viewport），内容本来
+        // 就该正好填满；只要时间戳开着就常驻一条横条，看着像「内容溢出了」，
+        // 实际是误报。
+        if self.scroll_x_offset > px(0.0)
+            && let Some(horizontal_scrollbar) = terminal_horizontal_scrollbar_for_viewport(
+                f32::from(grid_viewport_width) - SCROLLBAR_RESERVED_WIDTH,
+                timestamp_gutter_width,
+                f32::from(self.scroll_x_offset),
+            )
+        {
             paint_horizontal_scrollbar(
                 horizontal_scrollbar,
                 viewport_origin,
