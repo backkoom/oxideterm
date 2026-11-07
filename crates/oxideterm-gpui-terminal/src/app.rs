@@ -606,6 +606,8 @@ pub struct TerminalPane {
     smooth_scroll_animation: Option<SmoothScrollAnimation>,
     smooth_scroll_snapshot_cache: Option<SmoothScrollSnapshotCache>,
     scrollbar_drag: Option<ScrollbarDrag>,
+    /// 鼠标是否停在右侧滚动条热区。用来把文本光标换成手型。
+    scrollbar_hovered: bool,
     // Horizontal panning belongs to the visual timestamp overlay and never
     // changes the backing PTY grid or remote window size.
     horizontal_scroll_offset_px: Pixels,
@@ -1415,6 +1417,7 @@ impl TerminalPane {
             smooth_scroll_animation: None,
             smooth_scroll_snapshot_cache: None,
             scrollbar_drag: None,
+            scrollbar_hovered: false,
             horizontal_scroll_offset_px: px(0.0),
             horizontal_scrollbar_drag: None,
             tmux_separator_drag: None,

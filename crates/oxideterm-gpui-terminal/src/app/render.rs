@@ -530,7 +530,13 @@ impl Render for TerminalPane {
             .id("terminal-pane")
             .size_full()
             .relative()
-            .cursor(gpui::CursorStyle::IBeam)
+            .cursor(if self.scrollbar_drag.is_some() {
+                gpui::CursorStyle::ClosedHand
+            } else if self.scrollbar_hovered {
+                gpui::CursorStyle::OpenHand
+            } else {
+                gpui::CursorStyle::IBeam
+            })
             .bg(if transparent_pane_base {
                 rgba(0x00000000)
             } else {

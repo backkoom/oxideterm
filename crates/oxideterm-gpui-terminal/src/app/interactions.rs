@@ -1844,7 +1844,26 @@ impl TerminalPane {
         cx.notify();
     }
 
+    /// 鼠标是否落在右侧滚动条热区。
+    ///
+    /// 滚动条是 paint 阶段直接画的，没有自己的元素，所以光标样式得由面板
+    /// 根据鼠标位置算——否则停在滚动条上还是文本光标（IBeam）。
+    fn scrollbar_hovered_at(&self, position: gpui::Point<Pixels>) -> bool {
+        let Some(bounds) = self.bounds else {
+            return false;
+        };
+        let x = f32::from(position.x - bounds.origin.x);
+        let width = f32::from(bounds.size.width);
+        x >= width - (SCROLLBAR_WIDTH + 6.0) && x <= width
+    }
+
     pub(crate) fn handle_mouse_move(&mut self, event: &MouseMoveEvent, cx: &mut Context<Self>) {
+        // 停在右侧滚动条上时把光标换成箭头/手型，别继续显示文本光标。
+        let scrollbar_hovered = self.scrollbar_hovered_at(event.position);
+        if scrollbar_hovered != self.scrollbar_hovered {
+            self.scrollbar_hovered = scrollbar_hovered;
+            cx.notify();
+        }
         // 在窗口外松开左键时收不到 mouse_up，拖选会一直自动滚下去。
         // 鼠标一回到窗口、且左键已经松开，就补一次收尾。
         if event.pressed_button.is_none() && self.selecting {
