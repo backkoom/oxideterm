@@ -1,6 +1,5 @@
 use super::*;
 
-pub(in crate::workspace) const SFTP_SETTINGS_CARD_PADDING: f32 = 20.0; // Tauri p-5
 // Leave room for large transfer rates and the localized unlimited placeholder.
 const SFTP_SPEED_LIMIT_INPUT_WIDTH: f32 = 180.0;
 
@@ -153,7 +152,7 @@ impl WorkspaceApp {
             .rounded(px(self.tokens.radii.lg))
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
-            .p(px(SFTP_SETTINGS_CARD_PADDING))
+            .p(px(self.tokens.metrics.settings_card_padding))
             .flex()
             .flex_col()
             .gap(px(gap))

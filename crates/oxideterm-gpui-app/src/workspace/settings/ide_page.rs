@@ -1,6 +1,5 @@
 use super::*;
 
-pub(in crate::workspace) const IDE_SETTINGS_CARD_PADDING: f32 = 20.0; // Tauri p-5.
 pub(in crate::workspace) const IDE_SETTINGS_CARD_GAP: f32 = 16.0; // Tauri space-y-4.
 pub(in crate::workspace) const IDE_SETTINGS_AGENT_DOT_SIZE: f32 = 4.0; // Tauri w-1 h-1.
 pub(in crate::workspace) const IDE_SETTINGS_AGENT_DOT_TOP_MARGIN: f32 = 6.0; // Tauri mt-1.5.
@@ -54,7 +53,7 @@ impl WorkspaceApp {
             .rounded(px(self.tokens.radii.lg))
             .border_1()
             .border_color(rgb(self.tokens.ui.border))
-            .p(px(IDE_SETTINGS_CARD_PADDING));
+            .p(px(self.tokens.metrics.settings_card_padding));
         self.settings_card_surface(card, self.tokens.ui.bg_card)
     }
 
