@@ -95,7 +95,7 @@ impl WorkspaceApp {
                 .min_w_0()
                 .items_center()
                 .gap(px(self.tokens.spacing.one))
-                .text_size(px(9.0))
+                .text_size(px(11.0))
                 .font_weight(gpui::FontWeight::BOLD)
                 .text_color(rgb(self.tokens.ui.accent))
                 .child(Self::render_lucide_icon(
@@ -578,7 +578,7 @@ impl WorkspaceApp {
                             .when_some(method.description, |column, description| {
                                 column.child(
                                     div()
-                                        .text_size(px(10.0))
+                                        .text_size(px(11.0))
                                         .text_color(rgb(self.tokens.ui.text_muted))
                                         .child(description),
                                 )
@@ -586,7 +586,7 @@ impl WorkspaceApp {
                             .when_some(setup_hint, |column, hint| {
                                 column.child(
                                     div()
-                                        .text_size(px(10.0))
+                                        .text_size(px(11.0))
                                         .text_color(rgb(self.tokens.ui.text_muted))
                                         .child(hint),
                                 )
@@ -867,7 +867,7 @@ impl WorkspaceApp {
                     )
                     .child(
                         div()
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .line_height(px(15.0))
                             .text_color(rgb(self.tokens.ui.text_muted))
                             .child(self.render_display_text_with_role(
@@ -1134,7 +1134,7 @@ impl WorkspaceApp {
                 .min_w_0()
                 .items_center()
                 .gap(px(self.tokens.spacing.one))
-                .text_size(px(10.0))
+                .text_size(px(11.0))
                 .text_color(rgb(self.tokens.ui.text_muted))
                 .child(Self::render_lucide_icon(
                     LucideIcon::ListChecks,
@@ -1191,7 +1191,7 @@ impl WorkspaceApp {
                     .child(
                         div()
                             .mb(px(self.tokens.spacing.one_half))
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .font_weight(gpui::FontWeight::SEMIBOLD)
                             .text_color(rgb(self.tokens.ui.text_muted))
                             .child(self.render_display_text_with_role(
@@ -1231,7 +1231,7 @@ impl WorkspaceApp {
                     .child(
                         div()
                             .mb(px(self.tokens.spacing.one_half))
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .font_weight(gpui::FontWeight::SEMIBOLD)
                             .text_color(rgb(self.tokens.ui.text_muted))
                             .child(self.render_display_text_with_role(

@@ -1307,7 +1307,7 @@ impl WorkspaceApp {
             .py(px(self.tokens.spacing.half))
             .rounded(px(self.tokens.radii.sm))
             .bg(rgba((self.tokens.ui.accent << 8) | 0x20))
-            .text_size(px(10.0))
+            .text_size(px(11.0))
             .text_color(rgb(self.tokens.ui.accent_secondary))
             .child(
                 self.i18n
@@ -1902,7 +1902,7 @@ impl WorkspaceApp {
             .py(px(self.tokens.spacing.half))
             .rounded(px(self.tokens.radii.sm))
             .bg(rgba((self.tokens.ui.accent << 8) | 0x20))
-            .text_size(px(10.0))
+            .text_size(px(11.0))
             .text_color(rgb(self.tokens.ui.accent))
             .child(self.i18n.t("settings_view.connections.importers.duplicate"))
             .into_any_element()

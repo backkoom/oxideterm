@@ -2145,7 +2145,7 @@ impl WorkspaceApp {
                                     .font_family(settings_mono_font_family(
                                         self.settings_store.settings(),
                                     ))
-                                    .text_size(px(10.0))
+                                    .text_size(px(11.0))
                                     .text_color(rgb(self.tokens.ui.text_muted))
                                     .child(if cfg!(target_os = "macos") {
                                         "⌘/".to_string()

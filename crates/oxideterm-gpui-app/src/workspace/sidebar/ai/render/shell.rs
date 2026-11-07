@@ -505,7 +505,7 @@ impl WorkspaceApp {
             .child(
                 div()
                     .flex_1()
-                    .text_size(px(10.0))
+                    .text_size(px(11.0))
                     .text_color(rgb(warning_color))
                     .child(
                         self.render_display_text_with_role(

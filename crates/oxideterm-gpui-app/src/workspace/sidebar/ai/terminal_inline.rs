@@ -528,7 +528,7 @@ window.focus(&this.focus_handle, cx);
             .flex()
             .items_center()
             .gap(px(self.tokens.spacing.one_half))
-            .text_size(px(10.0))
+            .text_size(px(11.0))
             .text_color(rgb(theme.text_muted))
             .when(!response_has_text && !loading && prompt_has_text, |hints| {
                 hints.when_some(
@@ -821,7 +821,7 @@ pub(in crate::workspace) fn inline_ai_keycap(tokens: &ThemeTokens, label: String
         .bg(rgb(tokens.ui.bg_hover))
         .px(px(tokens.spacing.one))
         .py(px(1.0))
-        .text_size(px(9.0))
+        .text_size(px(11.0))
         .child(label)
         .into_any_element()
 }

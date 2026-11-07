@@ -1720,7 +1720,7 @@ impl WorkspaceApp {
                         .flex()
                         .items_center()
                         .gap(px(3.0))
-                        .text_size(px(10.0))
+                        .text_size(px(11.0))
                         .text_color(rgb(self.tokens.ui.text_muted))
                         .child(Self::render_lucide_icon(
                             category_icon,

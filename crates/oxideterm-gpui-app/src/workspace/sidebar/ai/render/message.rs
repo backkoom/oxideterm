@@ -583,7 +583,7 @@ impl WorkspaceApp {
                         div()
                             .min_w(px(28.0))
                             .text_align(gpui::TextAlign::Center)
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .text_color(rgba((self.tokens.ui.text_muted << 8) | 0x80))
                             .child(self.render_display_text_with_role_and_alpha(
                                 SelectableTextRole::PlainDocument,
@@ -1875,7 +1875,7 @@ impl WorkspaceApp {
                     div()
                         .flex_1()
                         .min_w_0()
-                        .text_size(px(10.0))
+                        .text_size(px(11.0))
                         .text_color(rgba((self.tokens.ui.text_muted << 8) | 0xcc))
                         .child(self.i18n.t("ai.tool_use.recoverable_error")),
                     ai_tool_approval_button(
@@ -1975,7 +1975,7 @@ impl WorkspaceApp {
                     }
                     prompt = prompt.child(
                         div()
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .text_color(rgb(self.tokens.ui.text_muted))
                             .child(self.i18n.t("ai.questions.hint")),
                     );
@@ -2002,7 +2002,7 @@ impl WorkspaceApp {
                     div()
                         .flex_1()
                         .min_w_0()
-                        .text_size(px(10.0))
+                        .text_size(px(11.0))
                         .text_color(rgba((self.tokens.ui.text_muted << 8) | 0xcc))
                         .child(self.i18n.t(if wait_expired {
                             "settings_view.ai.wait_expired"
@@ -2117,7 +2117,7 @@ impl WorkspaceApp {
                     div()
                         .flex_1()
                         .min_w_0()
-                        .text_size(px(10.0))
+                        .text_size(px(11.0))
                         .text_color(rgba((self.tokens.ui.text_muted << 8) | 0xcc))
                         .child(self.i18n.t("ai.tool_use.approval_required")),
                     option_buttons,
@@ -2153,7 +2153,7 @@ impl WorkspaceApp {
                     .py(px(self.tokens.spacing.two))
                     .child(
                         div()
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .text_color(rgba((self.tokens.ui.text_muted << 8) | 0xcc))
                             .child(self.i18n.t("ai.tool_use.choose_target")),
                     )
@@ -2217,7 +2217,7 @@ impl WorkspaceApp {
                                 .when(!kind.is_empty(), |row| {
                                     row.child(
                                         div()
-                                            .text_size(px(9.0))
+                                            .text_size(px(11.0))
                                             .text_color(rgba(
                                                 (self.tokens.ui.text_muted << 8) | 0x99,
                                             ))
@@ -2420,7 +2420,7 @@ impl WorkspaceApp {
                     .child(
                         div()
                             .flex_none()
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .font_weight(gpui::FontWeight::BOLD)
                             .text_color(rgb(self.tokens.ui.text_muted))
                             .child(self.render_display_text_with_role(

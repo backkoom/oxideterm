@@ -703,7 +703,7 @@ impl WorkspaceApp {
             .bg(rgba((self.tokens.ui.accent << 8) | 0x33))
             .px(px(self.tokens.spacing.one_half))
             .py(px(1.0))
-            .text_size(px(10.0))
+            .text_size(px(11.0))
             .font_weight(gpui::FontWeight::MEDIUM)
             .text_color(rgb(self.tokens.ui.accent))
             .child(self.render_display_text_with_role(

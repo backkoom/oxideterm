@@ -599,7 +599,7 @@ impl WorkspaceApp {
             Some(
                 div()
                     .truncate()
-                    .text_size(px(10.0))
+                    .text_size(px(11.0))
                     .font_family(settings_mono_font_family(self.settings_store.settings()))
                     .text_color(rgb(theme.text_muted))
                     .child(entry.path)
@@ -943,7 +943,7 @@ impl WorkspaceApp {
                         .truncate()
                         .max_w(px(260.0))
                         .font_family(settings_mono_font_family(self.settings_store.settings()))
-                        .text_size(px(10.0))
+                        .text_size(px(11.0))
                         .text_color(rgb(theme.text_muted))
                         .child(format!(
                             "{}: {git_root}",
@@ -971,7 +971,7 @@ impl WorkspaceApp {
             Some(
                 div()
                     .truncate()
-                    .text_size(px(10.0))
+                    .text_size(px(11.0))
                     .text_color(rgb(theme.text_muted))
                     .child(snapshot.display_label())
                     .into_any_element(),
@@ -1031,7 +1031,7 @@ impl WorkspaceApp {
                     .flex()
                     .items_center()
                     .gap(px(5.0))
-                    .text_size(px(10.0))
+                    .text_size(px(11.0))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(Self::render_lucide_icon(
                         terminal_project_group_icon(group),
@@ -1090,7 +1090,7 @@ impl WorkspaceApp {
             Some(
                 div()
                     .truncate()
-                    .text_size(px(10.0))
+                    .text_size(px(11.0))
                     .font_family(settings_mono_font_family(self.settings_store.settings()))
                     .text_color(rgb(theme.text_muted))
                     .child(task_command)

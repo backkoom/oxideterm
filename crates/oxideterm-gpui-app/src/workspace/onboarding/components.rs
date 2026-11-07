@@ -127,7 +127,7 @@ impl WorkspaceApp {
                     .border_color(rgb(self.tokens.ui.border))
                     .px(px(self.tokens.spacing.one))
                     .py(px(1.0))
-                    .text_size(px(9.0))
+                    .text_size(px(11.0))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(badge.to_string())
                     .into_any_element()

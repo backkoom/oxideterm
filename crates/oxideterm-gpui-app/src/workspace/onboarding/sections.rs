@@ -250,7 +250,7 @@ impl WorkspaceApp {
                     .when(bundled, |row| {
                         row.child(
                             div()
-                                .text_size(px(10.0))
+                                .text_size(px(11.0))
                                 .text_color(rgb(self.tokens.ui.success))
                                 .child("✓"),
                         )
@@ -864,7 +864,7 @@ impl WorkspaceApp {
                 .gap(px(self.tokens.spacing.two))
                 .child(
                     div()
-                        .text_size(px(10.0))
+                        .text_size(px(11.0))
                         .font_weight(gpui::FontWeight::SEMIBOLD)
                         .text_color(rgb(self.tokens.ui.text_muted))
                         .child(self.i18n.t(&format!("onboarding.{title}")).to_uppercase()),
@@ -907,7 +907,7 @@ impl WorkspaceApp {
                     .font_family(SharedString::from(
                         FontFamily::Jetbrains.terminal_family_name(""),
                     ))
-                    .text_size(px(10.0))
+                    .text_size(px(11.0))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(key.to_string()),
             )

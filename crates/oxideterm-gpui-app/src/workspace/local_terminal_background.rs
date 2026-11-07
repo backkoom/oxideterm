@@ -430,7 +430,7 @@ impl WorkspaceApp {
                             .flex()
                             .items_center()
                             .gap(px(self.tokens.spacing.two))
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .line_height(px(14.0))
                             .text_color(rgb(theme.text_muted))
                             .child(

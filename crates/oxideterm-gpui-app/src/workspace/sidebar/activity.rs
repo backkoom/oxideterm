@@ -447,7 +447,7 @@ impl WorkspaceApp {
                         .rounded_full()
                         .bg(rgb(badge_color))
                         .text_color(rgb(badge_text_color))
-                        .text_size(px(9.0))
+                        .text_size(px(11.0))
                         .child(if badge_count > 99 {
                             "99+".to_string()
                         } else {

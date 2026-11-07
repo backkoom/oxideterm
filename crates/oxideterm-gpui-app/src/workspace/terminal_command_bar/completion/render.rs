@@ -178,7 +178,7 @@ impl WorkspaceApp {
                         .bg(rgba((theme.bg << 8) | SUGGESTIONS_HEADER_BG_ALPHA))
                         .px(px(self.tokens.spacing.three))
                         .py(px(self.tokens.spacing.one))
-                        .text_size(px(10.0))
+                        .text_size(px(11.0))
                         .font_weight(gpui::FontWeight::MEDIUM)
                         .text_color(rgb(theme.text_muted))
                         .child(self.i18n.t(suggestion.group_label_key).to_uppercase()),

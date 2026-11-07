@@ -978,7 +978,7 @@ impl WorkspaceApp {
                                 div()
                                     .mt_1()
                                     .truncate()
-                                    .text_size(px(10.0))
+                                    .text_size(px(11.0))
                                     .text_color(rgb(theme.text_muted))
                                     .child(self.render_display_text_with_role(
                                         SelectableTextRole::NonSelectable,

@@ -365,7 +365,7 @@ impl WorkspaceApp {
                                         .justify_center()
                                         .rounded_full()
                                         .bg(rgba((theme.warning << 8) | 0x24))
-                                        .text_size(px(10.0))
+                                        .text_size(px(11.0))
                                         .text_color(rgb(theme.warning))
                                         .child(command_sender_running_count.to_string()),
                                 )
@@ -1045,7 +1045,7 @@ impl WorkspaceApp {
                     .child(div().flex_1().truncate().child(name))
                     .child(
                         div()
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .text_color(rgb(theme.accent))
                             .child(self.i18n.t(
                                 if self.terminal.read(cx).sync_groups().enabled(Some(group_id)) {
@@ -1057,7 +1057,7 @@ impl WorkspaceApp {
                     )
                     .child(
                         div()
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .text_color(rgb(theme.text_muted))
                             .child(member_count.to_string()),
                     )
@@ -1277,14 +1277,14 @@ impl WorkspaceApp {
                 .child(
                     div()
                         .flex_none()
-                        .text_size(px(10.0))
+                        .text_size(px(11.0))
                         .text_color(rgb(theme.text_muted))
                         .child(format!("#{}", pane_id.0)),
                 )
                 .when(Some(pane_id) == active_pane_id, |row| {
                     row.child(
                         div()
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .text_color(rgb(theme.accent))
                             .child(self.i18n.t("terminal.broadcast.current")),
                     )
@@ -1292,7 +1292,7 @@ impl WorkspaceApp {
                 .when_some(other_group, |row, member| {
                     row.child(
                         div()
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .text_color(rgb(theme.text_muted))
                             .child(self.terminal_sync_group_name(member.group)),
                     )

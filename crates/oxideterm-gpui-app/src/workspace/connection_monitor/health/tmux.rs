@@ -1381,7 +1381,7 @@ impl HostToolsEntity {
                     .child(
                         div()
                             .flex_none()
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .text_color(rgb(theme.text_muted))
                             .child(format!(
                                 "{} {}",

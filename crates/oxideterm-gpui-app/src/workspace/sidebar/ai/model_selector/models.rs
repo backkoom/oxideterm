@@ -57,7 +57,7 @@ impl WorkspaceApp {
             .rounded(px(self.tokens.radii.md))
             .px(px(self.tokens.spacing.one))
             .py(px(self.tokens.spacing.one / 2.0))
-            .text_size(px(10.0))
+            .text_size(px(11.0))
             .font_weight(gpui::FontWeight::MEDIUM)
             .text_color(if open {
                 rgb(self.tokens.ui.text)
@@ -197,7 +197,7 @@ impl WorkspaceApp {
                     .px(px(self.tokens.spacing.three))
                     .pt(px(self.tokens.spacing.two))
                     .pb(px(self.tokens.spacing.one))
-                    .text_size(px(9.0))
+                    .text_size(px(11.0))
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(self.i18n.t("ai.reasoning.custom_model_hint")),
             )
@@ -502,7 +502,7 @@ impl WorkspaceApp {
                     .mt(px(self.tokens.spacing.one))
                     .px(px(self.tokens.spacing.two))
                     .py(px(self.tokens.spacing.one))
-                    .text_size(px(10.0))
+                    .text_size(px(11.0))
                     .font_weight(gpui::FontWeight::SEMIBOLD)
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(self.i18n.t("ai.model_selector.session_mode")),
@@ -552,7 +552,7 @@ impl WorkspaceApp {
                     .mt(px(self.tokens.spacing.one))
                     .px(px(self.tokens.spacing.two))
                     .py(px(self.tokens.spacing.one))
-                    .text_size(px(10.0))
+                    .text_size(px(11.0))
                     .font_weight(gpui::FontWeight::SEMIBOLD)
                     .text_color(rgb(self.tokens.ui.text_muted))
                     .child(config_option.name.clone()),

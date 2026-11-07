@@ -165,7 +165,7 @@ impl WorkspaceApp {
                                 let error_label = self.i18n.t(acp_agent_error_kind_key(error));
                                 row.child(
                                     div()
-                                        .text_size(px(10.0))
+                                        .text_size(px(11.0))
                                         .text_color(rgb(self.tokens.ui.text_muted))
                                         .child(self.ai_i18n_error(
                                             "settings_view.ai.acp_agent_last_error",
@@ -415,7 +415,7 @@ impl WorkspaceApp {
             .bg(rgba((self.tokens.ui.bg << 8) | 0x80))
             .px(px(self.tokens.spacing.two))
             .py(px(self.tokens.spacing.one))
-            .text_size(px(10.0))
+            .text_size(px(11.0))
             .text_color(rgb(self.tokens.ui.text_muted))
             .child(
                 self.i18n

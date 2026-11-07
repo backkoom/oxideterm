@@ -68,7 +68,7 @@ impl WorkspaceApp {
                     .child(
                         div()
                             .flex_none()
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .text_color(rgb(self.tokens.ui.text_muted))
                             .child(format!("{state_label} · {run_label}")),
                     )
@@ -119,7 +119,7 @@ impl WorkspaceApp {
                 .bg(self.context_sidebar_content_background(self.tokens.ui.bg))
                 .child(
                     div()
-                        .text_size(px(10.0))
+                        .text_size(px(11.0))
                         .font_weight(gpui::FontWeight::SEMIBOLD)
                         .text_color(rgb(self.tokens.ui.text_muted))
                         .child(self.i18n.t("ai.background_tasks.title")),

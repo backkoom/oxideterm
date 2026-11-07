@@ -1358,7 +1358,7 @@ impl WorkspaceApp {
                     .child(
                         div()
                             .truncate()
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .text_color(rgb(theme.text_muted))
                             .child(detail),
                     ),
@@ -1371,7 +1371,7 @@ impl WorkspaceApp {
                         .bg(rgba((theme.accent << 8) | 0x1a))
                         .px(px(self.tokens.spacing.one_half))
                         .py(px(self.tokens.spacing.half))
-                        .text_size(px(10.0))
+                        .text_size(px(11.0))
                         .text_color(rgb(theme.accent))
                         .child(proxy_badge),
                 )

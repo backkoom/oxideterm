@@ -999,7 +999,7 @@ impl WorkspaceApp {
             .flex_none()
             .items_center()
             .gap(px(self.tokens.spacing.one))
-            .text_size(px(10.0))
+            .text_size(px(11.0))
             .text_color(rgb(theme.warning))
             .child(Self::render_lucide_icon(
                 LucideIcon::RefreshCw,

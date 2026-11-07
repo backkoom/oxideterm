@@ -181,7 +181,7 @@ impl OxideExportConnectionRowRenderer {
                                                 .flex()
                                                 .items_center()
                                                 .gap(px(self.tokens.spacing.half))
-                                                .text_size(px(10.0))
+                                                .text_size(px(11.0))
                                                 .font_weight(gpui::FontWeight::SEMIBOLD)
                                                 .text_color(rgb(OXIDE_GREEN_500))
                                                 .child(WorkspaceApp::render_lucide_icon(

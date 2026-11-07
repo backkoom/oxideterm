@@ -770,7 +770,7 @@ impl HostToolsEntity {
                     .items_center()
                     .rounded(px(10.0))
                     .bg(rgba((color << 8) | MONITOR_TINT_ALPHA))
-                    .text_size(px(10.0))
+                    .text_size(px(11.0))
                     .text_color(rgb(color))
                     .child(i18n.t(key)),
             );

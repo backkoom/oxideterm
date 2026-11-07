@@ -723,7 +723,7 @@ impl WorkspaceApp {
                 div()
                     .max_w(px(120.0))
                     .truncate()
-                    .text_size(px(10.0))
+                    .text_size(px(11.0))
                     .text_color(rgb(theme.text_muted))
                     .child(summary),
             )

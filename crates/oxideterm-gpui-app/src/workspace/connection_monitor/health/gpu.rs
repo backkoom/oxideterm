@@ -240,7 +240,7 @@ impl HostToolsEntity {
             .gap(px(tokens.spacing.half))
             .child(
                 div()
-                    .text_size(px(10.0))
+                    .text_size(px(11.0))
                     .text_color(rgb(theme.text_muted))
                     .child(i18n.t(label_key)),
             )
@@ -472,7 +472,7 @@ impl HostToolsEntity {
                                 div()
                                     .min_w_0()
                                     .truncate()
-                                    .text_size(px(10.0))
+                                    .text_size(px(11.0))
                                     .text_color(rgb(theme.text_muted))
                                     .child(device.pci_bus_id.clone()),
                             ),
@@ -490,7 +490,7 @@ impl HostToolsEntity {
                             .flex_none()
                             .w(px(HOST_GPU_MEMORY_COLUMN_WIDTH))
                             .truncate()
-                            .text_size(px(10.0))
+                            .text_size(px(11.0))
                             .text_color(rgb(theme.text))
                             .child(memory),
                     ),
@@ -520,7 +520,7 @@ impl HostToolsEntity {
             .flex()
             .flex_col()
             .gap_2()
-            .text_size(px(10.0))
+            .text_size(px(11.0))
             .text_color(rgb(theme.text_muted))
             .child(Self::render_host_gpu_detail_line(
                 "sidebar.host_gpu.details.uuid",

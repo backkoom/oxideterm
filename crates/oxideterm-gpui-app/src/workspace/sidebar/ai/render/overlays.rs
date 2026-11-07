@@ -609,7 +609,7 @@ impl WorkspaceApp {
                     )
                     .child(
                         div()
-                            .text_size(px(9.0))
+                            .text_size(px(11.0))
                             .text_color(rgba((self.tokens.ui.text_muted << 8) | 0x66))
                             .child(meta),
                     ),

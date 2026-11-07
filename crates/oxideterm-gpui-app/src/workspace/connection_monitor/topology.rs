@@ -325,7 +325,7 @@ impl WorkspaceApp {
                     .absolute()
                     .bottom(px(16.0))
                     .left(px(16.0))
-                    .text_size(px(10.0))
+                    .text_size(px(11.0))
                     .font_family(settings_mono_font_family(self.settings_store.settings()))
                     .text_color(rgba(
                         (theme.text_muted << 8) | TOPOLOGY_INSTRUCTION_ALPHA_60,
@@ -612,7 +612,7 @@ impl WorkspaceApp {
                 .child(
                     div()
                         .font_family(settings_mono_font_family(self.settings_store.settings()))
-                        .text_size(px(10.0))
+                        .text_size(px(11.0))
                         .text_color(rgb(theme.text_muted))
                         .child(self.render_display_text_with_role(
                             SelectableTextRole::PlainDocument,
@@ -636,7 +636,7 @@ impl WorkspaceApp {
                 .rounded_b(px(rounded_shell_child_radius(self.tokens.radii.lg)))
                 .bg(rgba((theme.bg << 8) | 0x4d))
                 .text_align(gpui::TextAlign::Center)
-                .text_size(px(10.0))
+                .text_size(px(11.0))
                 .text_color(rgb(theme.text_muted))
                 .child(self.render_display_text_with_role(
                     SelectableTextRole::PlainDocument,
