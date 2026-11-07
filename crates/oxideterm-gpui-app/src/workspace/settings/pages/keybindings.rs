@@ -498,7 +498,10 @@ impl WorkspaceApp {
         let action_id = definition.id.to_string();
         let record_action_id = action_id.clone();
         let unbind_action_id = action_id.clone();
+        // 每行一个独立的分组名，让右侧的删除/重置按钮只在悬停本行时显形。
+        let row_group: gpui::SharedString = format!("keybinding-row-{action_id}").into();
         let reset_action_id = action_id;
+        let row_hover_background = self.keybinding_hover_background();
         let conflicts = if recording {
             self.settings_workspace
                 .read(cx)
@@ -517,6 +520,11 @@ impl WorkspaceApp {
             .items_center()
             .justify_between()
             .gap(px(self.tokens.spacing.three))
+            .group(row_group.clone())
+            // 整行轻微高亮，提示这一行可以操作；录制态已经有强调底色，不再叠。
+            .when(!recording, |row| {
+                row.hover(move |style| style.bg(row_hover_background))
+            })
             // Tauri's `divide-y` does not draw a divider after the last row.
             // Avoid a final border inside the rounded bottom because GPUI's
             // rounded overflow can otherwise expose the line outside the mask.
@@ -563,78 +571,106 @@ impl WorkspaceApp {
                         controls.child(self.keybinding_recording_cell(&conflicts, side, cx))
                     })
                     .when(!recording, |controls| {
-                        controls
-                            .child(
-                                div()
-                                    .flex()
-                                    .items_center()
-                                    .gap(px(self.tokens.spacing.one))
-                                    .rounded(px(self.tokens.radii.sm))
-                                    .px(px(self.tokens.spacing.two))
-                                    .py(px(self.tokens.spacing.one))
-                                    .cursor_pointer()
-                                    .hover(|style| style.bg(self.keybinding_hover_background()))
-                                    .child(
-                                        self.keybinding_kbd_badge(
-                                            &current
-                                                .as_ref()
-                                                .map(crate::keybindings::format_combo)
-                                                .unwrap_or_else(|| {
-                                                    self.i18n.t("settings_view.keybindings.unbound")
-                                                }),
-                                            false,
-                                            cx,
-                                        ),
-                                    )
-                                    .on_mouse_down(
-                                        MouseButton::Left,
-                                        cx.listener(move |this, _event, _window, cx| {
-                                            this.settings_workspace.update(cx, |settings, cx| {
-                                                settings.start_keybinding_recording(
-                                                    record_action_id.clone(),
+                        controls.child(
+                            div()
+                                .flex()
+                                .items_center()
+                                .gap(px(self.tokens.spacing.one))
+                                .child(
+                                    div()
+                                        .flex()
+                                        .items_center()
+                                        .rounded(px(self.tokens.radii.sm))
+                                        .px(px(self.tokens.spacing.two))
+                                        .py(px(self.tokens.spacing.one))
+                                        .cursor_pointer()
+                                        .hover(|style| style.bg(self.keybinding_hover_background()))
+                                        .child(
+                                            self.keybinding_kbd_badge(
+                                                &current
+                                                    .as_ref()
+                                                    .map(crate::keybindings::format_combo)
+                                                    .unwrap_or_else(|| {
+                                                        self.i18n
+                                                            .t("settings_view.keybindings.unbound")
+                                                    }),
+                                                false,
+                                                cx,
+                                            ),
+                                        )
+                                        .on_mouse_down(
+                                            MouseButton::Left,
+                                            cx.listener(move |this, _event, _window, cx| {
+                                                this.settings_workspace.update(
                                                     cx,
+                                                    |settings, cx| {
+                                                        settings.start_keybinding_recording(
+                                                            record_action_id.clone(),
+                                                            cx,
+                                                        );
+                                                    },
                                                 );
-                                            });
-                                            cx.stop_propagation();
+                                                cx.stop_propagation();
+                                            }),
+                                        ),
+                                )
+                                // 删除/重置只在悬停本行时显形：每行常驻一个垃圾桶图标
+                                // 会把整页变成噪音。保留占位，悬停时布局不跳动。
+                                .child(
+                                    div()
+                                        .flex()
+                                        .items_center()
+                                        .gap(px(self.tokens.spacing.one))
+                                        .opacity(0.0)
+                                        .group_hover(row_group.clone(), |style| style.opacity(1.0))
+                                        .when(current.is_some(), |row| {
+                                            row.child(self.workspace_icon_action_button(
+                                                LucideIcon::Trash2,
+                                                14.0,
+                                                rgb(self.tokens.ui.text_muted),
+                                                IconButtonOptions {
+                                                    hover_background: Some(
+                                                        self.keybinding_hover_background(),
+                                                    ),
+                                                    ..IconButtonOptions::opaque_toolbar(
+                                                        28.0,
+                                                        ButtonRadius::Sm,
+                                                    )
+                                                },
+                                                move |this, _event, _window, cx| {
+                                                    this.unbind_keybinding(&unbind_action_id, cx);
+                                                    cx.stop_propagation();
+                                                },
+                                                cx,
+                                            ))
+                                        })
+                                        .when(modified, |row| {
+                                            row.child(self.workspace_icon_action_button(
+                                                LucideIcon::RotateCcw,
+                                                14.0,
+                                                rgb(self.tokens.ui.text_muted),
+                                                IconButtonOptions {
+                                                    hover_background: Some(
+                                                        self.keybinding_hover_background(),
+                                                    ),
+                                                    // KeybindingEditorSection renders this
+                                                    // as a compact icon Button. Use the
+                                                    // shared icon guard instead of a local
+                                                    // wrapper so reset actions cannot drift.
+                                                    ..IconButtonOptions::opaque_toolbar(
+                                                        28.0,
+                                                        ButtonRadius::Sm,
+                                                    )
+                                                },
+                                                move |this, _event, _window, cx| {
+                                                    this.reset_keybinding(&reset_action_id, cx);
+                                                    cx.stop_propagation();
+                                                },
+                                                cx,
+                                            ))
                                         }),
-                                    ),
-                            )
-                            .when(current.is_some(), |controls| {
-                                controls.child(self.workspace_icon_action_button(
-                                    LucideIcon::Trash2,
-                                    14.0,
-                                    rgb(self.tokens.ui.text_muted),
-                                    IconButtonOptions {
-                                        hover_background: Some(self.keybinding_hover_background()),
-                                        ..IconButtonOptions::opaque_toolbar(28.0, ButtonRadius::Sm)
-                                    },
-                                    move |this, _event, _window, cx| {
-                                        this.unbind_keybinding(&unbind_action_id, cx);
-                                        cx.stop_propagation();
-                                    },
-                                    cx,
-                                ))
-                            })
-                            .when(modified, |controls| {
-                                controls.child(self.workspace_icon_action_button(
-                                    LucideIcon::RotateCcw,
-                                    14.0,
-                                    rgb(self.tokens.ui.text_muted),
-                                    IconButtonOptions {
-                                        hover_background: Some(self.keybinding_hover_background()),
-                                        // KeybindingEditorSection renders this
-                                        // as a compact icon Button. Use the
-                                        // shared icon guard instead of a local
-                                        // wrapper so reset actions cannot drift.
-                                        ..IconButtonOptions::opaque_toolbar(28.0, ButtonRadius::Sm)
-                                    },
-                                    move |this, _event, _window, cx| {
-                                        this.reset_keybinding(&reset_action_id, cx);
-                                        cx.stop_propagation();
-                                    },
-                                    cx,
-                                ))
-                            })
+                                ),
+                        )
                     }),
             )
             .into_any_element()
