@@ -2559,25 +2559,9 @@ impl Element for TerminalElement {
                 window,
             );
         }
-        // 横向滚动条只在用户真的横向滚过之后才画。PTY 列数已经按视口宽度
-        // 扣掉了行号栏和时间戳栏（terminal_grid_span_for_viewport），内容本来
-        // 就该正好填满；只要时间戳开着就常驻一条横条，看着像「内容溢出了」，
-        // 实际是误报。
-        if self.scroll_x_offset > px(0.0)
-            && let Some(horizontal_scrollbar) = terminal_horizontal_scrollbar_for_viewport(
-                f32::from(grid_viewport_width) - SCROLLBAR_RESERVED_WIDTH,
-                timestamp_gutter_width,
-                f32::from(self.scroll_x_offset),
-            )
-        {
-            paint_horizontal_scrollbar(
-                horizontal_scrollbar,
-                viewport_origin,
-                grid_viewport_width - px(SCROLLBAR_RESERVED_WIDTH),
-                bounds.size.height,
-                window,
-            );
-        }
+        // 终端不该有横向滚动条。PTY 列数是按视口宽度扣掉行号栏/时间戳栏算出来的，
+        // 内容本来就该正好填满；真溢出了那是列数算错，得修列数，而不是挂一条
+        // 横条让用户自己去拖。窗口最大化时还常驻一条，纯粹是视觉噪音。
         if let (Some(started), Some(cache)) = (paint_started, &self.layout_cache) {
             cache.lock().record_paint_duration(started.elapsed());
         }
