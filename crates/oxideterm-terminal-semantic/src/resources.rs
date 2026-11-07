@@ -12,6 +12,9 @@ use crate::{
 const RESOURCE_FIELD_PRIORITY: u8 = 94;
 const DISK_WARNING_PERCENT: u8 = 80;
 const DISK_ERROR_PERCENT: u8 = 90;
+/// 已用超过总容量的这个比例时，Used 和 Avail 一起转黄——剩余不足 20%，
+/// 两个数字说的是同一件事。
+const DISK_CAPACITY_WARNING_RATIO: f64 = 0.8;
 
 pub(crate) fn line_candidates(
     text: &str,
@@ -51,8 +54,8 @@ pub(crate) fn line_candidates(
 
 fn push_header(
     text: &str,
-    allows_class: &impl Fn(SemanticClass) -> bool,
-    candidates: &mut Vec<Candidate>,
+    _allows_class: &impl Fn(SemanticClass) -> bool,
+    _candidates: &mut Vec<Candidate>,
 ) -> bool {
     let Some(first) = ranges(text).next() else {
         return false;
@@ -60,42 +63,9 @@ fn push_header(
     let Some(first_text) = text_at(text, &first) else {
         return false;
     };
-    if !matches!(first_text, "Filesystem" | "total") {
-        return false;
-    }
-    if !allows_class(SemanticClass::Keyword) {
-        return true;
-    }
-
-    for range in ranges(text) {
-        let Some(token) = text_at(text, &range) else {
-            continue;
-        };
-        if matches!(
-            token,
-            "Filesystem"
-                | "Type"
-                | "Size"
-                | "Used"
-                | "Avail"
-                | "Use%"
-                | "Mounted"
-                | "on"
-                | "total"
-                | "used"
-                | "free"
-                | "shared"
-                | "buff/cache"
-                | "available"
-        ) {
-            candidates.push(Candidate::new(
-                range,
-                SemanticClass::Keyword,
-                RESOURCE_FIELD_PRIORITY,
-            ));
-        }
-    }
-    true
+    // 表头不着色：它只是列名，跟着内容一起上色反而抢眼。这里只负责识别
+    // 「这一行是表头」，好让调用方跳过数据行解析。
+    matches!(first_text, "Filesystem" | "total")
 }
 
 fn push_memory_row(
@@ -224,10 +194,11 @@ fn push_disk_row(
     // Mount points may contain spaces; preserve their complete display value.
     mount.end = text.trim_end().len();
 
+    // 只有真正的设备路径才着色；tmpfs / devtmpfs / efivars 这类名字保持默认色。
     let filesystem_class = if text_at(text, &filesystem).is_some_and(|value| value.contains('/')) {
         SemanticClass::Path
     } else {
-        SemanticClass::Variable
+        SemanticClass::Plain
     };
     if allows_class(filesystem_class) {
         candidates.push(Candidate::new(
@@ -243,6 +214,21 @@ fn push_disk_row(
             RESOURCE_FIELD_PRIORITY,
         ));
     }
+    // 容量列的黄绿判断看「已用占总量的比例」：到 80% 就把 Used 和 Avail 一起转黄，
+    // 因为剩余不足 20% 时两个数字说的是同一件事。
+    let capacity_class = match (
+        text_at(text, &size).and_then(parse_quantity),
+        text_at(text, &used).and_then(parse_quantity),
+    ) {
+        (Some(size_bytes), Some(used_bytes)) if size_bytes > 0.0 => {
+            if used_bytes / size_bytes >= DISK_CAPACITY_WARNING_RATIO {
+                SemanticClass::Warning
+            } else {
+                SemanticClass::Success
+            }
+        }
+        _ => SemanticClass::Success,
+    };
     // Size 列显式钉回默认色：它只是参照值，而通用的「数字+单位」规则会把 248G
     // 染成品红。这里用更高的优先级压住那条规则。
     if allows_class(SemanticClass::Plain) {
@@ -252,13 +238,11 @@ fn push_disk_row(
             RESOURCE_FIELD_PRIORITY,
         ));
     }
-    // Used / Avail 用绿色（Success），和 Use% 的阈值色组成一套语义：
-    // 绿=健康、黄=80% 以上、红=90% 以上。
-    if allows_class(SemanticClass::Success) {
+    if allows_class(capacity_class) {
         for range in [used, available] {
             candidates.push(Candidate::new(
                 range,
-                SemanticClass::Success,
+                capacity_class,
                 RESOURCE_FIELD_PRIORITY,
             ));
         }
@@ -277,6 +261,27 @@ fn push_disk_row(
 
 fn parse_percent(value: &str) -> Option<u8> {
     value.strip_suffix('%')?.parse().ok()
+}
+
+/// 把 `7.6G` / `256K` / `1.1M` 解析成字节数，用于算占比。
+/// df -h 用 1024 进制，但这里只拿它算比值，单位口径不影响结果。
+fn parse_quantity(value: &str) -> Option<f64> {
+    let number_end = value
+        .bytes()
+        .position(|byte| !byte.is_ascii_digit() && !matches!(byte, b'.' | b','))
+        .unwrap_or(value.len());
+    let number: f64 = value[..number_end].replace(',', "").parse().ok()?;
+    let multiplier = match &value[number_end..] {
+        "" | "B" => 1.0,
+        "k" | "K" | "KB" | "KiB" | "Ki" => 1024.0,
+        "M" | "MB" | "MiB" | "Mi" => 1024.0_f64.powi(2),
+        "G" | "GB" | "GiB" | "Gi" => 1024.0_f64.powi(3),
+        "T" | "TB" | "TiB" | "Ti" => 1024.0_f64.powi(4),
+        "P" | "PB" | "PiB" | "Pi" => 1024.0_f64.powi(5),
+        "E" | "EB" | "EiB" | "Ei" => 1024.0_f64.powi(6),
+        _ => return None,
+    };
+    Some(number * multiplier)
 }
 
 fn is_quantity(value: &str) -> bool {

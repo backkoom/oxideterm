@@ -222,7 +222,9 @@ fn structured_output_variants_preserve_column_identity() {
                 ("ext4", SemanticClass::Keyword),
                 // 阈值 80% 转黄、90% 转红，所以 90% 已经是 Error。
                 ("90%", SemanticClass::Error),
-                ("90G", SemanticClass::Success),
+                // 已用 90G / 总 100G = 90%，越过 80% 的比例线，Used 和 Avail 一起转黄。
+                ("90G", SemanticClass::Warning),
+                ("10G", SemanticClass::Warning),
                 ("/media/my disk", SemanticClass::Path),
             ],
         ),
@@ -464,9 +466,10 @@ fn structured_output_fields_keep_their_command_specific_meaning() {
             "/dev/nvme0n1p2 100G 91G 9G 96% /",
             &[
                 ("/dev/nvme0n1p2", Path),
-                // Size 列不着色；Used/Avail 绿色；96% 越过 90% 阈值升为 Error。
-                ("91G", Success),
-                ("9G", Success),
+                // Size 列不着色；91/100 越过 80% 比例线，Used/Avail 转黄；
+                // 96% 越过 90% 阈值升为 Error。
+                ("91G", Warning),
+                ("9G", Warning),
                 ("96%", Error),
                 ("/", Path),
             ],
