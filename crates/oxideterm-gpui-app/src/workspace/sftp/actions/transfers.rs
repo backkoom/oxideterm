@@ -638,27 +638,23 @@ impl WorkspaceApp {
         let Some((source_backend, source_lease)) =
             self.acquire_sftp_transfer_backend(&source_remote_id, &transfer_id)
         else {
-            let _ = tx.send(SftpWorkerResult::TransferComplete {
-                remote_id: secondary_remote_id,
+            let _ = tx.send(sftp_transfer_failed_result(
+                secondary_remote_id,
                 transfer_id,
                 id,
-                result: Err("SFTP source endpoint is no longer available".to_string()),
-                refresh_remote: false,
-                refresh_local: false,
-            });
+                "SFTP source endpoint is no longer available".to_string(),
+            ));
             return;
         };
         let Some((destination_backend, destination_lease)) =
             self.acquire_sftp_transfer_backend(&destination_remote_id, &transfer_id)
         else {
-            let _ = tx.send(SftpWorkerResult::TransferComplete {
-                remote_id: secondary_remote_id,
+            let _ = tx.send(sftp_transfer_failed_result(
+                secondary_remote_id,
                 transfer_id,
                 id,
-                result: Err("SFTP destination endpoint is no longer available".to_string()),
-                refresh_remote: false,
-                refresh_local: false,
-            });
+                "SFTP destination endpoint is no longer available".to_string(),
+            ));
             return;
         };
         let manager = self.sftp_transfer_manager.clone();
@@ -700,28 +696,24 @@ impl WorkspaceApp {
             let source = match source_backend.acquire_transfer_sftp().await {
                 Ok(source) => source,
                 Err(error) => {
-                    let _ = tx.send(SftpWorkerResult::TransferComplete {
-                        remote_id: secondary_remote_id,
+                    let _ = tx.send(sftp_transfer_failed_result(
+                        secondary_remote_id,
                         transfer_id,
                         id,
-                        result: Err(error),
-                        refresh_remote: false,
-                        refresh_local: false,
-                    });
+                        error,
+                    ));
                     return;
                 }
             };
             let destination = match destination_backend.acquire_transfer_sftp().await {
                 Ok(destination) => destination,
                 Err(error) => {
-                    let _ = tx.send(SftpWorkerResult::TransferComplete {
-                        remote_id: secondary_remote_id,
+                    let _ = tx.send(sftp_transfer_failed_result(
+                        secondary_remote_id,
                         transfer_id,
                         id,
-                        result: Err(error),
-                        refresh_remote: false,
-                        refresh_local: false,
-                    });
+                        error,
+                    ));
                     return;
                 }
             };
@@ -789,14 +781,12 @@ impl WorkspaceApp {
                     .map(|_| ())
             } else {
                 let Some(relay_context) = relay_context else {
-                    let _ = tx.send(SftpWorkerResult::TransferComplete {
-                        remote_id: secondary_remote_id,
+                    let _ = tx.send(sftp_transfer_failed_result(
+                        secondary_remote_id,
                         transfer_id,
                         id,
-                        result: Err("Saved SFTP endpoint configuration is unavailable".to_string()),
-                        refresh_remote: false,
-                        refresh_local: false,
-                    });
+                        "Saved SFTP endpoint configuration is unavailable".to_string(),
+                    ));
                     return;
                 };
                 let transfer_type = match direction {
@@ -903,14 +893,12 @@ impl WorkspaceApp {
         let Some((backend, standalone_lease)) =
             self.acquire_sftp_transfer_backend(&remote_id, &transfer_id)
         else {
-            let _ = tx.send(SftpWorkerResult::TransferComplete {
+            let _ = tx.send(sftp_transfer_failed_result(
                 remote_id,
                 transfer_id,
                 id,
-                result: Err("SFTP endpoint is no longer available".to_string()),
-                refresh_remote: false,
-                refresh_local: false,
-            });
+                "SFTP endpoint is no longer available".to_string(),
+            ));
             return;
         };
         let manager = self.sftp_transfer_manager.clone();
@@ -936,14 +924,12 @@ impl WorkspaceApp {
                 if matches!(error, SftpError::TransferCancelled) {
                     let _ = progress_store.delete(&transfer_id).await;
                 }
-                let _ = tx.send(SftpWorkerResult::TransferComplete {
+                let _ = tx.send(sftp_transfer_failed_result(
                     remote_id,
                     transfer_id,
                     id,
-                    result: Err(error.to_string()),
-                    refresh_remote: false,
-                    refresh_local: false,
-                });
+                    error.to_string(),
+                ));
                 return;
             }
             if let SftpRemoteBackend::Ftp { runtime } = &backend {
@@ -975,14 +961,12 @@ impl WorkspaceApp {
             let resolved_handle = match backend.resolve_connection().await {
                 Ok(handle) => handle,
                 Err(error) => {
-                    let _ = tx.send(SftpWorkerResult::TransferComplete {
+                    let _ = tx.send(sftp_transfer_failed_result(
                         remote_id,
                         transfer_id,
                         id,
-                        result: Err(error),
-                        refresh_remote: false,
-                        refresh_local: false,
-                    });
+                        error,
+                    ));
                     return;
                 }
             };
@@ -1018,14 +1002,12 @@ impl WorkspaceApp {
                             .scp_capabilities(&resolved_connection_id, &resolved_handle)
                             .await;
                         if !capabilities.supports_scp {
-                            let _ = tx.send(SftpWorkerResult::TransferComplete {
+                            let _ = tx.send(sftp_transfer_failed_result(
                                 remote_id,
                                 transfer_id,
                                 id,
-                                result: Err(scp_unavailable_error),
-                                refresh_remote: false,
-                                refresh_local: false,
-                            });
+                                scp_unavailable_error,
+                            ));
                             return;
                         }
                         RemoteTransferProtocol::Scp
@@ -1041,27 +1023,23 @@ impl WorkspaceApp {
                                     .scp_capabilities(&resolved_connection_id, &resolved_handle)
                                     .await;
                                 if !capabilities.supports_scp {
-                                    let _ = tx.send(SftpWorkerResult::TransferComplete {
+                                    let _ = tx.send(sftp_transfer_failed_result(
                                         remote_id,
                                         transfer_id,
                                         id,
-                                        result: Err(transfer_protocol_unavailable_error),
-                                        refresh_remote: false,
-                                        refresh_local: false,
-                                    });
+                                        transfer_protocol_unavailable_error,
+                                    ));
                                     return;
                                 }
                                 RemoteTransferProtocol::Scp
                             }
                             Err(error) => {
-                                let _ = tx.send(SftpWorkerResult::TransferComplete {
+                                let _ = tx.send(sftp_transfer_failed_result(
                                     remote_id,
                                     transfer_id,
                                     id,
-                                    result: Err(error),
-                                    refresh_remote: false,
-                                    refresh_local: false,
-                                });
+                                    error,
+                                ));
                                 return;
                             }
                         }
@@ -1793,4 +1771,21 @@ async fn sftp_tar_capabilities_for_handle(
     manager
         .tar_capabilities(handle.connection_id(), handle)
         .await
+}
+
+/// 传输以失败收场时的统一结果：远端列表和本地目录都不需要刷新。
+fn sftp_transfer_failed_result(
+    remote_id: SftpRemoteId,
+    transfer_id: String,
+    id: u64,
+    error: String,
+) -> SftpWorkerResult {
+    SftpWorkerResult::TransferComplete {
+        remote_id,
+        transfer_id,
+        id,
+        result: Err(error),
+        refresh_remote: false,
+        refresh_local: false,
+    }
 }
