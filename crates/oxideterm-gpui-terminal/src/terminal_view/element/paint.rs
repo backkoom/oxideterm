@@ -1291,14 +1291,22 @@ pub(crate) fn paint_scrollbar(
     window: &mut Window,
 ) {
     let x = terminal_scrollbar_x_for_viewport(viewport_width);
+    let track_height = px(rows as f32 * metrics.line_height_f32());
+    // 鼠标不靠近就不画：8px 的常驻竖条在日志流里很碍眼。
+    // 热区比可视宽度多留 6px，免得非要对得很准才能看见。
+    let hit = Bounds::new(
+        origin + point(x - px(6.0), px(0.0)),
+        size(px(SCROLLBAR_WIDTH + 6.0), track_height),
+    );
+    if !hit.contains(&window.mouse_position()) {
+        return;
+    }
+
     // 用当前文本色而不是硬编码白色：浅色主题下白底上的白色滚动条完全看不见。
     let base = window.text_style().color;
     let track = Bounds::new(
         origin + point(x, px(0.0)),
-        size(
-            px(SCROLLBAR_WIDTH),
-            px(rows as f32 * metrics.line_height_f32()),
-        ),
+        size(px(SCROLLBAR_WIDTH), track_height),
     );
     window.paint_quad(fill(track, base.alpha(0.08)));
 

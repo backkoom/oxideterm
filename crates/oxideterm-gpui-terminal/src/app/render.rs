@@ -541,6 +541,19 @@ impl Render for TerminalPane {
             .text_size(self.metrics.font_size)
             .line_height(self.metrics.line_height)
             .track_focus(&self.focus_handle)
+            // 在面板外（含窗口外）松开左键：结束拖选并停掉自动滚。
+            // 窗口外的 mouse_up 不会派发到面板的 on_mouse_up，只能靠这个兜住，
+            // 否则拖选滑出窗口松手后内容会一直滚下去。
+            .on_mouse_up_out(
+                MouseButton::Left,
+                cx.listener(|this, _event, _window, cx| {
+                    if this.selecting {
+                        this.selecting = false;
+                        this.selection_autoscroll_position = None;
+                        cx.notify();
+                    }
+                }),
+            )
             .when(accepts_ssh_path_drop, |pane| {
                 let accent = self.theme.tokens.ui.accent;
                 pane.drag_over::<ExternalPaths>(move |style, _paths, _window, _cx| {
