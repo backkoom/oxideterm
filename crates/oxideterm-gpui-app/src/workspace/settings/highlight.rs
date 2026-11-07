@@ -28,6 +28,7 @@ pub(in crate::workspace) fn semantic_class_label(class: SemanticClass, i18n: &I1
         SemanticClass::Warning => "warning",
         SemanticClass::Success => "success",
         SemanticClass::Info => "info",
+        SemanticClass::Plain => "plain",
     };
     i18n.t(&format!(
         "settings_view.terminal.highlight_rules.semantic_class_{key}"

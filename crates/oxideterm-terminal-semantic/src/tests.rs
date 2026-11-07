@@ -220,7 +220,9 @@ fn structured_output_variants_preserve_column_identity() {
             "/dev/sda1 ext4 100G 90G 10G 90% /media/my disk",
             vec![
                 ("ext4", SemanticClass::Keyword),
-                ("90%", SemanticClass::Error),
+                // 阈值提到 95% 之后，90% 落在警告区间。
+                ("90%", SemanticClass::Warning),
+                ("90G", SemanticClass::Success),
                 ("/media/my disk", SemanticClass::Path),
             ],
         ),
@@ -237,7 +239,8 @@ fn structured_output_variants_preserve_column_identity() {
             "df -h",
             "/dev/disk1s1 100Gi 10Gi 90Gi 10% 459k 4.3G 1% /Volumes/My Disk",
             vec![
-                ("100Gi", SemanticClass::Number),
+                // Size 列不再着色，容量列（Used/Avail）走绿色。
+                ("10Gi", SemanticClass::Success),
                 ("/Volumes/My Disk", SemanticClass::Path),
             ],
         ),
@@ -458,11 +461,13 @@ fn structured_output_fields_keep_their_command_specific_meaning() {
         ),
         (
             DiskUsageOutput,
-            "/dev/nvme0n1p2 100G 91G 9G 91% /",
+            "/dev/nvme0n1p2 100G 91G 9G 96% /",
             &[
                 ("/dev/nvme0n1p2", Path),
-                ("100G", Number),
-                ("91%", Error),
+                // Size 列不着色；Used/Avail 绿色；96% 越过 95% 阈值升为 Error。
+                ("91G", Success),
+                ("9G", Success),
+                ("96%", Error),
                 ("/", Path),
             ],
         ),

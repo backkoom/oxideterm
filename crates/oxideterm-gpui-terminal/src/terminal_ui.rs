@@ -974,6 +974,8 @@ pub fn terminal_semantic_color(
         SemanticClass::PermissionExecute => terminal.bright_green,
         SemanticClass::PermissionSpecial => terminal.bright_magenta,
         SemanticClass::Number => terminal.magenta,
+        // 显式不着色：回到终端默认前景色，用来压掉不该染色的列。
+        SemanticClass::Plain => theme.foreground,
         SemanticClass::Comment => terminal.bright_black,
         SemanticClass::Error => terminal.bright_red,
         SemanticClass::Warning => terminal.bright_yellow,

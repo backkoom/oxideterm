@@ -11,7 +11,7 @@ use crate::{
 
 const RESOURCE_FIELD_PRIORITY: u8 = 94;
 const DISK_WARNING_PERCENT: u8 = 80;
-const DISK_ERROR_PERCENT: u8 = 90;
+const DISK_ERROR_PERCENT: u8 = 95;
 
 pub(crate) fn line_candidates(
     text: &str,
@@ -243,11 +243,22 @@ fn push_disk_row(
             RESOURCE_FIELD_PRIORITY,
         ));
     }
-    if allows_class(SemanticClass::Number) {
-        for range in [size, used, available] {
+    // Size 列显式钉回默认色：它只是参照值，而通用的「数字+单位」规则会把 248G
+    // 染成品红。这里用更高的优先级压住那条规则。
+    if allows_class(SemanticClass::Plain) {
+        candidates.push(Candidate::new(
+            size,
+            SemanticClass::Plain,
+            RESOURCE_FIELD_PRIORITY,
+        ));
+    }
+    // Used / Avail 用绿色（Success），和 Use% 的阈值色组成一套语义：
+    // 绿=健康、黄=80% 以上、红=95% 以上。
+    if allows_class(SemanticClass::Success) {
+        for range in [used, available] {
             candidates.push(Candidate::new(
                 range,
-                SemanticClass::Number,
+                SemanticClass::Success,
                 RESOURCE_FIELD_PRIORITY,
             ));
         }
@@ -257,8 +268,7 @@ fn push_disk_row(
     } else if percent >= DISK_WARNING_PERCENT {
         SemanticClass::Warning
     } else {
-        // Healthy capacity is informational; green is reserved for explicit success states.
-        SemanticClass::Number
+        SemanticClass::Success
     };
     if allows_class(usage_class) {
         candidates.push(Candidate::new(usage, usage_class, RESOURCE_FIELD_PRIORITY));

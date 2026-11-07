@@ -26,6 +26,12 @@ pub enum SemanticClass {
     PermissionExecute,
     PermissionSpecial,
     Number,
+    /// 显式不着色：把一段文本钉回终端默认前景色。
+    ///
+    /// 用在「这一列不该被任何规则染色」的场景，比如 df 的 Size 列——它只是参照值，
+    /// 而通用的「数字+单位」规则会把 248G 染成品红。给这段标 Plain 并配上更高
+    /// 优先级，就能压住那些规则。
+    Plain,
     Error,
     Warning,
     Success,
@@ -55,6 +61,9 @@ pub const SEMANTIC_CLASSES: &[SemanticClass] = &[
     SemanticClass::Warning,
     SemanticClass::Success,
     SemanticClass::Info,
+    // 追加在末尾：这个数组的下标就是设置页里自定义颜色的索引，
+    // 中间插入会让用户已保存的配色整体错位。
+    SemanticClass::Plain,
 ];
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, Serialize, Deserialize)]
