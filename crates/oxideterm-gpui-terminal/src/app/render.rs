@@ -2316,6 +2316,12 @@ impl TerminalPane {
                             cx,
                         ))
                     })
+                    // 插件动作和 IDE 转换是「入口级」操作，与下面「对内容做什么」分开。
+                    .when(
+                        self.session_kind == TerminalSessionKind::SshPty
+                            || !self.plugin_text_actions.is_empty(),
+                        |menu| menu.child(context_menu_separator(tokens)),
+                    )
                     .child(self.render_terminal_context_menu_item(
                         copy_label,
                         !menu.has_selection,
@@ -2351,23 +2357,8 @@ impl TerminalPane {
                         |this, _, window, cx| this.edit_clipboard_paste(window, cx),
                         cx,
                     ))
-                    .when(self.kitty_file_transmission.is_some(), |menu| {
-                        menu.child(
-                            self.render_terminal_context_menu_item(
-                                self.preferences
-                                    .kitty_file_transmission_labels
-                                    .title
-                                    .clone(),
-                                self.terminal_exited,
-                                |this, _, _, cx| {
-                                    this.dismiss_terminal_context_menu(cx);
-                                    this.kitty_file_transmission_confirm_open = true;
-                                    cx.notify();
-                                },
-                                cx,
-                            ),
-                        )
-                    })
+                    // 剪贴板之后是「对选区做什么」，两者操作对象不同。
+                    .child(context_menu_separator(tokens))
                     .child(self.render_terminal_context_menu_item(
                         insert_selection_label,
                         !free_type_insert_selection_available,
@@ -2394,7 +2385,6 @@ impl TerminalPane {
                         },
                         cx,
                     ))
-                    .child(context_menu_separator(tokens))
                     .child(self.render_terminal_context_menu_item(
                         send_to_ai_label,
                         !menu.has_selection,
@@ -2419,6 +2409,25 @@ impl TerminalPane {
                         },
                         cx,
                     ))
+                    // 会话级工具：Kitty 本地资源授权、搜索、触发器，与内容操作分开。
+                    .child(context_menu_separator(tokens))
+                    .when(self.kitty_file_transmission.is_some(), |menu| {
+                        menu.child(
+                            self.render_terminal_context_menu_item(
+                                self.preferences
+                                    .kitty_file_transmission_labels
+                                    .title
+                                    .clone(),
+                                self.terminal_exited,
+                                |this, _, _, cx| {
+                                    this.dismiss_terminal_context_menu(cx);
+                                    this.kitty_file_transmission_confirm_open = true;
+                                    cx.notify();
+                                },
+                                cx,
+                            ),
+                        )
+                    })
                     .child(self.render_terminal_context_menu_item(
                         find_label,
                         false,
