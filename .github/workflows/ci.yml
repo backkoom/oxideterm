@@ -82,8 +82,18 @@ jobs:
             # 失败的测试名写成 annotation：job 日志需要 admin 权限才能下载，
             # 但 check run 的 annotations 是公开可读的，便于排查。
             grep -E '^    [A-Za-z_][A-Za-z0-9_]*::[A-Za-z0-9_:]+$' "$RUNNER_TEMP/cargo-test.log" \
-              | sort -u | sed -n '1,40p' \
+              | sort -u | sed -n '1,20p' \
               | while IFS= read -r failed; do echo "::error::test failed:$failed"; done
+            # 再带上断言详情（左值/右值、panic 位置），否则只知道哪个用例挂了没法定位。
+            awk '/^---- .* stdout ----$/{flag=1} flag{print} flag&&/^note: run with/{flag=0}' \
+              "$RUNNER_TEMP/cargo-test.log" \
+              | sed -n '1,40p' \
+              | while IFS= read -r line; do
+                  case "$line" in
+                    "") ;;
+                    *) echo "::error::detail:${line}" ;;
+                  esac
+                done
           fi
           exit "$status"
 

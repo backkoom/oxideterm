@@ -1068,6 +1068,10 @@ async fn process_runtime_rejects_unknown_response_protocol_version() {
         r#"#!/bin/sh
 read request
 printf '%s\n' '{"protocolVersion":2,"requestId":"activate-test","payload":{"requestId":"activate-test","result":{"status":"ok","value":{}}}}'
+# 输出完立刻退出时，host 有概率先读到 stdout EOF 而不是这一行，
+# 错误码就变成 process_exited，断言「必须是版本错误」会失败。
+# 留一点存活时间，保证这一行先被消费掉。
+sleep 2
 "#,
     );
 
