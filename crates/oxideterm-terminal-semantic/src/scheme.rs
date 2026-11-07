@@ -182,6 +182,17 @@ static BUILT_IN_RULES: LazyLock<Vec<Rule>> = LazyLock::new(|| {
             89,
             SemanticRuleContext::Any,
         ),
+        // 带单位的容量值（190G / 7.9G / 4.0M / 256K）。没有这条时，通用规则只认
+        // 纯数字，df -h、ls -lh 这类输出里「数字+单位」会一半着色一半默认色。
+        // 长后缀写在前面，避免 KiB 被 K 抢先匹配。
+        Rule::new(
+            "quantity",
+            r"\b\d+(?:[.,]\d+)?(?:KiB|MiB|GiB|TiB|PiB|EiB|KB|MB|GB|TB|PB|EB|Ki|Mi|Gi|Ti|Pi|Ei|[kKMGTPE]|B)\b",
+            0,
+            SemanticClass::Number,
+            86,
+            SemanticRuleContext::Any,
+        ),
         Rule::new(
             "ipv6-address",
             IPV6_ADDRESS_PATTERN,

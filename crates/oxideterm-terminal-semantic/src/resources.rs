@@ -30,6 +30,20 @@ pub(crate) fn line_candidates(
                 push_memory_row(text, &allows_class, &mut candidates);
             }
         }
+        // 没有命令标记时（SSH 远端通常没装 shell 集成，拿不到 OSC 133），角色会退化成
+        // Unknown/Output，列感知解析整个不生效，df/free 只剩通用正则逐 token 猜，
+        // 结果就是「同列数据一半着色一半默认色」。这里按输出形状兜底：
+        // push_disk_row / push_memory_row 自带严格校验（列数、数量后缀、百分比、
+        // 绝对路径挂载点），不符合就什么都不产生，不会误伤 ls -l、ps 这类多列输出。
+        _ if role.is_output() || role == SemanticLineRole::Unknown => {
+            if !push_header(text, &allows_class, &mut candidates) {
+                let before = candidates.len();
+                push_disk_row(text, &allows_class, &mut candidates);
+                if candidates.len() == before {
+                    push_memory_row(text, &allows_class, &mut candidates);
+                }
+            }
+        }
         _ => {}
     }
     candidates
