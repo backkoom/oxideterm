@@ -162,7 +162,7 @@ fn normalize_font_family_name(family: &str) -> String {
     }
 }
 
-fn tauri_default_ui_font_family() -> SharedString {
+pub fn tauri_default_ui_font_family() -> SharedString {
     // GPUI resolves this virtual family to the current platform's system UI font.
     SharedString::from(".SystemUIFont")
 }

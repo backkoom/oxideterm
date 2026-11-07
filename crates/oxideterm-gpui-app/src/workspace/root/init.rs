@@ -1215,6 +1215,11 @@ impl WorkspaceApp {
             font_family: terminal
                 .font_family
                 .terminal_family_name(&terminal.custom_font_family),
+            // 菜单等 UI 元素不跟终端字体走，用设置里的界面字体。
+            ui_font_family: settings_ui_font_family(
+                &self.settings_store.settings().appearance.ui_font_family,
+            )
+            .to_string(),
             cjk_font_family: terminal_cjk_font_family_preference(&terminal.cjk_font_family),
             font_ligatures: terminal.font_ligatures,
             font_size: terminal.font_size as f32,

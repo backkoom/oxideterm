@@ -73,6 +73,11 @@ pub(crate) const TERMINAL_COMMAND_MARKS_SHOW_HOVER_ACTIONS: bool = true;
 #[derive(Clone)]
 pub struct TerminalUiPreferences {
     pub font_family: String,
+    /// 菜单等非终端内容用的字体族。
+    ///
+    /// 终端字体是等宽的，菜单如果继承它，中文会明显比按 UI 字体算的宽度更宽，
+    /// 加上菜单容器是固定宽度，文字就会溢出到面板外。
+    pub ui_font_family: String,
     pub cjk_font_family: Option<String>,
     pub font_ligatures: bool,
     pub font_size: f32,
@@ -204,6 +209,8 @@ impl Default for TerminalUiPreferences {
     fn default() -> Self {
         Self {
             font_family: TERMINAL_FONT.to_string(),
+            ui_font_family: oxideterm_gpui_ui::typography::tauri_default_ui_font_family()
+                .to_string(),
             cjk_font_family: None,
             font_ligatures: TERMINAL_FONT_LIGATURES,
             font_size: TERMINAL_FONT_SIZE,

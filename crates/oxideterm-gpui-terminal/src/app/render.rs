@@ -2264,7 +2264,12 @@ impl TerminalPane {
         let popup = if let Some(trigger) = menu.trigger.as_ref() {
             context_menu_event_boundary(
                 context_menu_content(tokens)
-                    .w(px(TERMINAL_CONTEXT_MENU_WIDTH))
+                    .min_w(px(TERMINAL_CONTEXT_MENU_WIDTH))
+                    // 菜单挂在 terminal-pane 子树里，不显式指定就会继承终端的
+                    // 等宽字体、终端字号和终端行高，中文比 UI 字体宽，文字会溢出面板。
+                    .font_family(SharedString::from(self.preferences.ui_font_family.clone()))
+                    .text_size(px(tokens.metrics.ui_text_sm))
+                    .line_height(px(tokens.metrics.ui_text_sm * 1.4))
                     .children(trigger.labels.iter().enumerate().map(|(index, label)| {
                         self.render_terminal_context_menu_item(
                             label.to_string(),
@@ -2281,7 +2286,12 @@ impl TerminalPane {
         } else {
             context_menu_event_boundary(
                 context_menu_content(tokens)
-                    .w(px(TERMINAL_CONTEXT_MENU_WIDTH))
+                    .min_w(px(TERMINAL_CONTEXT_MENU_WIDTH))
+                    // 菜单挂在 terminal-pane 子树里，不显式指定就会继承终端的
+                    // 等宽字体、终端字号和终端行高，中文比 UI 字体宽，文字会溢出面板。
+                    .font_family(SharedString::from(self.preferences.ui_font_family.clone()))
+                    .text_size(px(tokens.metrics.ui_text_sm))
+                    .line_height(px(tokens.metrics.ui_text_sm * 1.4))
                     .children(self.plugin_text_actions.iter().cloned().map(|action| {
                         self.render_terminal_context_menu_item(
                             action.label.clone(),
