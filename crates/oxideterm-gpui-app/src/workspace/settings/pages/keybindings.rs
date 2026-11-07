@@ -223,12 +223,19 @@ impl WorkspaceApp {
                     .min_w(px(0.0))
                     .flex()
                     .flex_row()
-                    .flex_wrap()
                     .items_center()
                     .gap(px(self.tokens.spacing.three))
+                    // 分类靠左并占满剩余宽度，溢出时横向滚动，而不是换行挤成两排。
+                    .child(
+                        div()
+                            .id("keybinding-scope-scroll")
+                            .flex_1()
+                            .min_w(px(0.0))
+                            .overflow_x_scroll()
+                            .child(self.keybinding_scope_filter(cx)),
+                    )
+                    // 搜索固定在右侧，导入导出跟在它后面。
                     .child(self.keybinding_search_input(cx))
-                    .child(self.keybinding_scope_filter(cx))
-                    .child(div().flex_1().min_w(px(0.0)))
                     .child(self.keybinding_toolbar_button(
                         KeybindingToolbarAction::Import,
                         false,
@@ -274,7 +281,7 @@ impl WorkspaceApp {
                     marked_text: self.marked_text_for_target(target, cx),
                 },
             )
-            .w(px(280.0))
+            .w(px(220.0))
             .h(px(self.tokens.metrics.ui_control_height))
             .pl(px(34.0))
             .child(
@@ -301,12 +308,13 @@ impl WorkspaceApp {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let selected = self.settings_workspace.read(cx).keybinding_scope_filter();
-        let mut filters = div()
-            .flex()
-            .flex_wrap()
-            .gap(px(self.tokens.spacing.one))
-            .max_w_full();
+        let mut filters = div().flex().flex_none().gap(px(self.tokens.spacing.one));
         for filter in SettingsKeybindingScopeFilter::all().iter().copied() {
+            // 「全部」不占一个 chip：它是默认态。点已选中的分类即可回到全部，
+            // 十一个分类挤一排本来就紧，少一个是一个。
+            if filter == SettingsKeybindingScopeFilter::All {
+                continue;
+            }
             let active = filter == selected;
             let item = oxideterm_gpui_ui::segmented_control_item(
                 &self.tokens,
@@ -318,8 +326,14 @@ impl WorkspaceApp {
             .on_mouse_down(
                 MouseButton::Left,
                 cx.listener(move |this, _, _, cx| {
+                    // 再点一次已选中的分类就取消筛选，回到「全部」。
+                    let next = if active {
+                        SettingsKeybindingScopeFilter::All
+                    } else {
+                        filter
+                    };
                     this.settings_workspace.update(cx, |settings, cx| {
-                        settings.set_keybinding_scope_filter(filter, cx);
+                        settings.set_keybinding_scope_filter(next, cx);
                     });
                     cx.stop_propagation();
                     cx.notify();
@@ -515,7 +529,7 @@ impl WorkspaceApp {
             .w_full()
             .min_w(px(0.0))
             .px(px(self.tokens.spacing.five))
-            .py(px(self.tokens.spacing.three))
+            .py(px(self.tokens.spacing.two))
             .flex()
             .items_center()
             .justify_between()
