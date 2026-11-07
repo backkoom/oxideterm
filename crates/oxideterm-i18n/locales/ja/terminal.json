@@ -124,6 +124,7 @@
       "replace_command_with_selection": "選択範囲でコマンドを置換",
       "find": "検索...",
       "manage_triggers": "このセッションのトリガーを管理…",
+      "shell_integration": "シェル統合を設定…",
       "select_command": "コマンドを選択",
       "collapse_output": "出力を折りたたむ",
       "expand_output": "出力を展開",

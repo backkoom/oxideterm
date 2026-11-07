@@ -124,6 +124,7 @@
       "replace_command_with_selection": "Sostituisci comando con selezione",
       "find": "Trova...",
       "manage_triggers": "Gestisci i trigger per questa sessione…",
+      "shell_integration": "Configura l'integrazione della shell…",
       "select_command": "Seleziona comando",
       "collapse_output": "Comprimi output",
       "expand_output": "Espandi output",

@@ -124,6 +124,7 @@
       "replace_command_with_selection": "Remplacer la commande par la sélection",
       "find": "Rechercher...",
       "manage_triggers": "Gérer les déclencheurs de cette session…",
+      "shell_integration": "Configurer l'intégration du shell…",
       "select_command": "Sélectionner la commande",
       "collapse_output": "Replier la sortie",
       "expand_output": "Déplier la sortie",

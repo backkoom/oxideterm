@@ -124,6 +124,7 @@
       "replace_command_with_selection": "Thay lệnh bằng vùng chọn",
       "find": "Tìm...",
       "manage_triggers": "Quản lý trình kích hoạt cho phiên này…",
+      "shell_integration": "Cấu hình tích hợp shell…",
       "select_command": "Chọn lệnh",
       "collapse_output": "Thu gọn đầu ra",
       "expand_output": "Mở rộng đầu ra",

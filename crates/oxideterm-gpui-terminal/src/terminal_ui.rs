@@ -440,6 +440,8 @@ pub struct TerminalCommandSelectionLabels {
     pub replace_command_with_selection: String,
     pub find: String,
     pub manage_triggers: String,
+    /// 打开设置里的「Shell 集成与触发器」页面。
+    pub shell_integration: String,
     pub select_command: String,
     pub collapse_output: String,
     pub expand_output: String,
@@ -466,6 +468,7 @@ impl Default for TerminalCommandSelectionLabels {
             replace_command_with_selection: "Replace command with selection".to_string(),
             find: "Find...".to_string(),
             manage_triggers: "Manage triggers...".to_string(),
+            shell_integration: "Configure shell integration...".to_string(),
             select_command: "Select command".to_string(),
             collapse_output: "Collapse output".to_string(),
             expand_output: "Expand output".to_string(),

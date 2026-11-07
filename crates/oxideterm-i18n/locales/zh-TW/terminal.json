@@ -124,6 +124,7 @@
       "replace_command_with_selection": "用選取內容取代目前命令",
       "find": "尋找...",
       "manage_triggers": "管理此工作階段的觸發器…",
+      "shell_integration": "設定 Shell 整合…",
       "select_command": "選取命令",
       "collapse_output": "收合輸出",
       "expand_output": "展開輸出",

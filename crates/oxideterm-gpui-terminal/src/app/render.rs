@@ -2214,6 +2214,11 @@ impl TerminalPane {
             .command_selection_labels
             .manage_triggers
             .clone();
+        let shell_integration_label = self
+            .preferences
+            .command_selection_labels
+            .shell_integration
+            .clone();
         let select_command_label = self
             .preferences
             .command_selection_labels
@@ -2446,6 +2451,20 @@ impl TerminalPane {
                         |this, _event, _window, cx| {
                             this.request_context_action(
                                 TerminalContextAction::OpenSessionTriggers,
+                                false,
+                                cx,
+                            );
+                        },
+                        cx,
+                    ))
+                    // SSH 远端没装 shell 集成时，命令块导航和「复制命令」都是灰的，
+                    // 但终端里没有任何提示告诉用户去哪儿配。这条就是那条路。
+                    .child(self.render_terminal_context_menu_item(
+                        shell_integration_label,
+                        false,
+                        |this, _event, _window, cx| {
+                            this.request_context_action(
+                                TerminalContextAction::OpenShellIntegrationSettings,
                                 false,
                                 cx,
                             );

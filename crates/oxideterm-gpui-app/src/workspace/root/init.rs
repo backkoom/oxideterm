@@ -1353,6 +1353,7 @@ impl WorkspaceApp {
                     .t("terminal.command_selection.replace_command_with_selection"),
                 find: self.i18n.t("terminal.command_selection.find"),
                 manage_triggers: self.i18n.t("terminal.command_selection.manage_triggers"),
+                shell_integration: self.i18n.t("terminal.command_selection.shell_integration"),
                 select_command: self.i18n.t("terminal.command_selection.select_command"),
                 collapse_output: self.i18n.t("terminal.command_selection.collapse_output"),
                 expand_output: self.i18n.t("terminal.command_selection.expand_output"),

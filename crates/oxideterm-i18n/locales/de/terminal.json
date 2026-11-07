@@ -124,6 +124,7 @@
       "replace_command_with_selection": "Befehl durch Auswahl ersetzen",
       "find": "Suchen...",
       "manage_triggers": "Auslöser für diese Sitzung verwalten…",
+      "shell_integration": "Shell-Integration einrichten…",
       "select_command": "Befehl auswählen",
       "collapse_output": "Ausgabe einklappen",
       "expand_output": "Ausgabe ausklappen",

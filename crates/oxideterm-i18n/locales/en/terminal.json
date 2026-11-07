@@ -212,6 +212,7 @@
       "replace_command_with_selection": "Replace command with selection",
       "find": "Find...",
       "manage_triggers": "Manage triggers for this session…",
+      "shell_integration": "Configure shell integration…",
       "select_command": "Select command",
       "collapse_output": "Collapse output",
       "expand_output": "Expand output",

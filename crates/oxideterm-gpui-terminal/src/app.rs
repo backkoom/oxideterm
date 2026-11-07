@@ -707,6 +707,11 @@ pub enum TerminalContextAction {
     FillCommandBarFromSelection,
     OpenSearch,
     OpenSessionTriggers,
+    /// 打开设置里的「Shell 集成与触发器」页面。
+    ///
+    /// SSH 远端没装 shell 集成时，命令块导航、复制命令这些功能都是灰的，
+    /// 但从终端里没有任何提示告诉用户去哪儿配。这个入口就是那条路。
+    OpenShellIntegrationSettings,
     PreviewArchiveCommand,
 }
 

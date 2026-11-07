@@ -124,6 +124,7 @@
       "replace_command_with_selection": "선택 항목으로 명령 바꾸기",
       "find": "찾기...",
       "manage_triggers": "이 세션의 트리거 관리…",
+      "shell_integration": "셸 통합 설정…",
       "select_command": "명령 선택",
       "collapse_output": "출력 접기",
       "expand_output": "출력 펼치기",

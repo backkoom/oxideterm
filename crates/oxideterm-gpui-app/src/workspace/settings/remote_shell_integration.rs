@@ -517,6 +517,23 @@ impl WorkspaceApp {
         }
     }
 
+    /// 从终端右键菜单打开「Shell 集成与触发器」页面。
+    ///
+    /// SSH 远端没装集成时，命令块导航和「复制命令」都是灰的，但终端里没有
+    /// 任何提示告诉用户去哪儿配。这个入口补上那条路。
+    pub(in crate::workspace) fn open_shell_integration_settings(
+        &mut self,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        self.settings_workspace.update(cx, |settings, cx| {
+            settings.set_active_tab(SettingsTab::Terminal, cx);
+            settings.set_terminal_page(TerminalSettingsPage::Awareness, cx);
+        });
+        self.sync_settings_section_list_state(cx);
+        self.open_settings(window, cx);
+    }
+
     pub(in crate::workspace) fn remote_shell_integration_mode_changed(
         &mut self,
         mode: RemoteShellIntegrationMode,
