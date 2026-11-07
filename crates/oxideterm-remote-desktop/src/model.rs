@@ -412,7 +412,9 @@ pub struct RemoteDesktopConnectionProfile {
     pub protocol: RemoteDesktopProtocol,
     pub endpoint: RemoteDesktopEndpoint,
     /// Optional loopback tunnel endpoint; the public endpoint remains the server identity.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// 本地隧道地址是运行时解析出来的，端口每次连接都可能不同，落盘只会让
+    /// 恢复出来的记录指向一个已经失效的端口。和 socks_proxy 一样不参与序列化。
+    #[serde(skip)]
     pub transport_endpoint: Option<RemoteDesktopEndpoint>,
     /// Runtime-only proxy credentials belong to the session, never to profile exports.
     #[serde(skip)]
