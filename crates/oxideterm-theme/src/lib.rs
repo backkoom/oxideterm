@@ -381,7 +381,7 @@ impl UiMetrics {
             ui_menu_min_width: 128.0,
             ui_menu_padding: 4.0,
             ui_menu_item_padding_x: 8.0,
-            ui_menu_item_padding_y: 6.0,
+            ui_menu_item_padding_y: 5.0,
             ui_menu_inset_padding_left: 32.0,
             ui_menu_indicator_size: 14.0,
             ui_menu_icon_size: 16.0,

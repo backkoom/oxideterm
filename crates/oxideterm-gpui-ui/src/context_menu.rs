@@ -11,7 +11,7 @@ use crate::{
 
 const CONTEXT_MENU_DISABLED_OPACITY: f32 = 0.5;
 const CONTEXT_MENU_RADIO_DOT_SIZE: f32 = 8.0;
-const CONTEXT_MENU_LINE_HEIGHT_RATIO: f32 = 1.35;
+const CONTEXT_MENU_LINE_HEIGHT_RATIO: f32 = 1.3;
 
 pub fn context_menu_line_height(tokens: &ThemeTokens) -> f32 {
     // Menu overlays can be mounted under terminal/editor roots that set their

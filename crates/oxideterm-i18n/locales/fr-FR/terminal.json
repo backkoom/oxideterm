@@ -104,7 +104,7 @@
       "paste": "Coller"
     },
     "kitty_file_transmission": {
-      "title": "Autoriser les ressources locales Kitty pour cette session ?",
+      "title": "Autoriser les ressources locales Kitty pour cette session ",
       "description": "Les programmes de ce terminal, y compris les programmes distants, pourront lire les fichiers locaux et la mémoire partagée pour afficher des images. N’autorisez que les sessions de confiance. L’autorisation expire à la fermeture ou à la reconnexion. Relancez ensuite le transfert bloqué.",
       "cancel": "Refuser",
       "allow": "Autoriser pour cette session",
@@ -123,7 +123,7 @@
       "insert_selection_into_command": "Insérer la sélection ici",
       "replace_command_with_selection": "Remplacer la commande par la sélection",
       "find": "Rechercher...",
-      "manage_triggers": "Gérer les déclencheurs de cette session...",
+      "manage_triggers": "Gérer les déclencheurs de cette session…",
       "select_command": "Sélectionner la commande",
       "collapse_output": "Replier la sortie",
       "expand_output": "Déplier la sortie",

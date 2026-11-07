@@ -192,7 +192,7 @@
       "paste": "Paste"
     },
     "kitty_file_transmission": {
-      "title": "Allow Kitty local resources for this session?",
+      "title": "Allow Kitty local resources for this session",
       "description": "Programs in this terminal, including remote programs, will be able to read local files and shared memory for images. Only allow sessions you trust. Permission ends on close or reconnect; retry blocked transfers after allowing.",
       "cancel": "Deny",
       "allow": "Allow for this session",
@@ -211,7 +211,7 @@
       "insert_selection_into_command": "Insert selection here",
       "replace_command_with_selection": "Replace command with selection",
       "find": "Find...",
-      "manage_triggers": "Manage triggers for this session...",
+      "manage_triggers": "Manage triggers for this session…",
       "select_command": "Select command",
       "collapse_output": "Collapse output",
       "expand_output": "Expand output",

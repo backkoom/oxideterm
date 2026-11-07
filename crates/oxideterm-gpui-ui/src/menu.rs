@@ -40,7 +40,8 @@ pub(crate) fn menu_item_chrome(tokens: &ThemeTokens, left_padding: f32, right_pa
         .pl(px(left_padding))
         .pr(px(right_padding))
         .py(px(tokens.metrics.ui_menu_item_padding_y))
-        .text_size(px(tokens.metrics.ui_text_sm))
+        // 菜单比正文小一档：14px 的中文在窄菜单里显得挤，行距也被撑开。
+        .text_size(px(tokens.metrics.ui_text_sm - 1.0))
         .text_color(rgb(tokens.ui.text))
 }
 
