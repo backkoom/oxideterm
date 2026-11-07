@@ -11,7 +11,7 @@ use crate::{
 
 const RESOURCE_FIELD_PRIORITY: u8 = 94;
 const DISK_WARNING_PERCENT: u8 = 80;
-const DISK_ERROR_PERCENT: u8 = 95;
+const DISK_ERROR_PERCENT: u8 = 90;
 
 pub(crate) fn line_candidates(
     text: &str,
@@ -253,7 +253,7 @@ fn push_disk_row(
         ));
     }
     // Used / Avail 用绿色（Success），和 Use% 的阈值色组成一套语义：
-    // 绿=健康、黄=80% 以上、红=95% 以上。
+    // 绿=健康、黄=80% 以上、红=90% 以上。
     if allows_class(SemanticClass::Success) {
         for range in [used, available] {
             candidates.push(Candidate::new(
