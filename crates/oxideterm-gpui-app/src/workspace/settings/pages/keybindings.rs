@@ -7,9 +7,7 @@ pub(in crate::workspace) enum KeybindingToolbarAction {
     ResetAll,
 }
 
-pub(in crate::workspace) const KEYBINDING_BG_ACTIVE_ELEVATED_ALPHA: u32 = 0x73; // Tauri [data-bg-active] --color-theme-bg-elevated: 45%.
 pub(in crate::workspace) const KEYBINDING_BG_ACTIVE_BORDER_ALPHA: u32 = 0xbf; // Tauri [data-bg-active] --color-theme-border: 75%.
-pub(in crate::workspace) const KEYBINDING_HEADER_BG_ALPHA: u32 = 0x80; // Tauri bg-theme-bg-elevated/50.
 pub(in crate::workspace) const KEYBINDING_ROW_DIVIDER_ALPHA: u32 = 0x4d; // Tauri divide-theme-border/30.
 pub(in crate::workspace) const KEYBINDING_KBD_BORDER_ALPHA: u32 = 0x80; // Tauri border-theme-border/50.
 
@@ -105,14 +103,6 @@ impl WorkspaceApp {
             .unwrap_or_else(|| self.i18n.t(&definition.label_key()))
     }
 
-    pub(in crate::workspace) fn keybinding_surface_border(&self) -> gpui::Rgba {
-        oxideterm_gpui_ui::color_for_background(
-            self.tokens.ui.border,
-            self.settings_background_active(),
-            KEYBINDING_BG_ACTIVE_BORDER_ALPHA,
-        )
-    }
-
     pub(in crate::workspace) fn keybinding_row_divider(&self) -> gpui::Rgba {
         // Tauri composes divide-theme-border/30 with the [data-bg-active]
         // border variable, so the slash opacity must scale after the 75% mix.
@@ -121,17 +111,6 @@ impl WorkspaceApp {
             self.settings_background_active(),
             KEYBINDING_ROW_DIVIDER_ALPHA,
             KEYBINDING_BG_ACTIVE_BORDER_ALPHA,
-        )
-    }
-
-    pub(in crate::workspace) fn keybinding_header_background(&self) -> gpui::Rgba {
-        // Source: KeybindingEditorSection `bg-theme-bg-elevated/50`, whose
-        // theme variable becomes 45% opaque under [data-bg-active].
-        oxideterm_gpui_ui::color_with_background_scaled_alpha(
-            self.tokens.ui.bg_elevated,
-            self.settings_background_active(),
-            KEYBINDING_HEADER_BG_ALPHA,
-            KEYBINDING_BG_ACTIVE_ELEVATED_ALPHA,
         )
     }
 
@@ -180,6 +159,9 @@ impl WorkspaceApp {
             let definitions = catalog
                 .iter()
                 .filter(|definition| definition.scope == scope)
+                // 「转到标签页 1-9」是窗口级快捷方式，Ctrl+数字直接按就行，
+                // 列在设置里只是噪音。功能保留，只是不在这儿展示。
+                .filter(|definition| !definition.id.starts_with("app.goToTab"))
                 .filter(|definition| {
                     settings_keybinding_scope_matches(scope_filter, definition.scope)
                 })
@@ -426,69 +408,19 @@ impl WorkspaceApp {
         side: crate::keybindings::KeybindingSide,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let theme = self.tokens.ui;
-        let table_surface = div()
-            .w_full()
-            .min_w(px(0.0))
-            .rounded(px(self.tokens.radii.lg))
-            .border_1()
-            .border_color(self.keybinding_surface_border())
-            .overflow_hidden()
-            .child(
-                div()
-                    .h(px(40.0))
-                    .px(px(self.tokens.spacing.three_half))
-                    .flex()
-                    .items_center()
-                    .justify_between()
-                    // Tauri relies on `overflow-hidden` on the rounded table.
-                    // GPUI can leave child paint visible at the mask edge, so
-                    // round the header explicitly to preserve the browser clip.
-                    .rounded_t(px(rounded_shell_child_radius(self.tokens.radii.lg)))
-                    .bg(self.keybinding_header_background())
-                    .border_b_1()
-                    .border_color(self.keybinding_surface_border())
-                    .child(
-                        div()
-                            .text_size(px(self.tokens.metrics.ui_text_xs))
-                            .font_weight(gpui::FontWeight::SEMIBOLD)
-                            .text_color(rgb(theme.text_muted))
-                            .child(self.render_display_text_with_role(
-                                SelectableTextRole::PlainDocument,
-                                "settings-keybindings-scope",
-                                scope.label_key(),
-                                self.i18n.t(scope.label_key()).to_uppercase(),
-                                theme.text_muted,
-                                cx,
-                            )),
-                    )
-                    .child(
-                        div()
-                            .text_size(px(self.tokens.metrics.ui_text_xs))
-                            .text_color(rgb(theme.text_muted))
-                            .child(self.render_display_text_with_role(
-                                SelectableTextRole::PlainDocument,
-                                "settings-keybindings-column",
-                                "shortcut",
-                                self.i18n.t("settings_view.keybindings.column_shortcut"),
-                                theme.text_muted,
-                                cx,
-                            )),
-                    ),
-            );
-
-        let mut table = self.settings_card_surface(table_surface, theme.bg_card);
-
+        // 和「常规」等页面保持一致：一张卡片、一个 card_title、行之间画分隔线。
+        // 原来的「全大写表头带」去掉了——只有「操作 / 快捷键」两列，看一眼就懂，
+        // 那条 40px 的色带纯属占地方。
+        let mut rows: Vec<AnyElement> = vec![self.card_title(scope.label_key())];
         for (index, definition) in definitions.iter().enumerate() {
-            table = table.child(self.keybinding_action_row(
+            rows.push(self.keybinding_action_row(
                 definition,
                 side,
                 index + 1 == definitions.len(),
                 cx,
             ));
         }
-
-        table.into_any_element()
+        self.plain_settings_card(rows)
     }
 
     pub(in crate::workspace) fn keybinding_action_row(
@@ -528,7 +460,7 @@ impl WorkspaceApp {
         div()
             .w_full()
             .min_w(px(0.0))
-            .px(px(self.tokens.spacing.five))
+            // 卡片已经有 24px 内边距，行内不再补左右留白。
             .py(px(self.tokens.spacing.two))
             .flex()
             .items_center()
@@ -540,13 +472,8 @@ impl WorkspaceApp {
                 row.hover(move |style| style.bg(row_hover_background))
             })
             // Tauri's `divide-y` does not draw a divider after the last row.
-            // Avoid a final border inside the rounded bottom because GPUI's
-            // rounded overflow can otherwise expose the line outside the mask.
             .when(!is_last, |row| {
                 row.border_b_1().border_color(self.keybinding_row_divider())
-            })
-            .when(is_last, |row| {
-                row.rounded_b(px(rounded_shell_child_radius(self.tokens.radii.lg)))
             })
             .when(recording, |row| row.bg(rgba((theme.accent << 8) | 0x0d)))
             .child(
