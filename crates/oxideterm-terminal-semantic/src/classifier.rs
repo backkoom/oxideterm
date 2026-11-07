@@ -316,7 +316,12 @@ pub fn classify_line_with_compiled_scheme_and_shell(
         class == SemanticClass::Keyword || semantic_scheme.contains_rule_class(class)
     }));
     candidates.extend(resources::line_candidates(text, role, |class| {
-        class == SemanticClass::Keyword || semantic_scheme.contains_rule_class(class)
+        // Plain 是 resources 用来「钉回默认色」的标记类，方案里没有产出它的规则，
+        // 走 contains_rule_class 会被判 false 而丢掉，必须显式放行——否则
+        // df 的 Size 列压不住通用的「数字+单位」规则。
+        class == SemanticClass::Keyword
+            || class == SemanticClass::Plain
+            || semantic_scheme.contains_rule_class(class)
     }));
     candidates.extend(network::line_candidates(text, role, |class| {
         class == SemanticClass::Keyword || semantic_scheme.contains_rule_class(class)
