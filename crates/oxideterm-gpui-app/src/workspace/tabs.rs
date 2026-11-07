@@ -26,13 +26,14 @@ pub(in crate::workspace) use entity::{
 };
 
 // The main tab strip keeps a thin visual thumb while exposing a larger drag target.
-const TABBAR_SCROLLBAR_HEIGHT: f32 = 3.0;
+// 3px + 25% 透明度在深色标签栏上几乎看不见，用户反馈「没有滚动条」，这里提一档。
+const TABBAR_SCROLLBAR_HEIGHT: f32 = 4.0;
 const TABBAR_SCROLLBAR_DRAG_HEIGHT: f32 = 10.0;
 const TABBAR_SCROLLBAR_HORIZONTAL_INSET: f32 = 8.0;
 const TABBAR_SCROLLBAR_MIN_THUMB_WIDTH: f32 = 32.0;
 const TABBAR_SCROLLBAR_MAX_THUMB_WIDTH: f32 = 160.0;
 const TABBAR_SCROLLBAR_RADIUS: f32 = 2.0;
-const TABBAR_SCROLLBAR_ALPHA: u32 = 0x40;
+const TABBAR_SCROLLBAR_ALPHA: u32 = 0x66;
 const TABBAR_SCROLLBAR_HOVER_ALPHA: u32 = 0x99;
 
 #[derive(Clone, Copy)]

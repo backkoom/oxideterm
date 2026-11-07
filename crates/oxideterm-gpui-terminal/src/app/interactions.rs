@@ -2453,14 +2453,20 @@ fn terminal_selection_autoscroll_delta_rows(
     bottom: Pixels,
     line_height: Pixels,
 ) -> i32 {
-    let distance = if position_y < top {
-        f32::from(top - position_y)
-    } else if position_y > bottom {
-        -f32::from(position_y - bottom)
+    let line_height = f32::from(line_height).max(1.0);
+    // 进入边缘一行之内就开始滚，而不是等指针完全离开终端区域。
+    // 浏览器里拖选时，指针停在最后一行就会持续向下滚；原来的实现要求
+    // position_y > bottom，也就是必须拖出终端才动，手感像卡住了。
+    let edge = px(line_height);
+    let top_edge = top + edge;
+    let bottom_edge = (bottom - edge).max(top_edge);
+    let distance = if position_y < top_edge {
+        f32::from(top_edge - position_y)
+    } else if position_y > bottom_edge {
+        -f32::from(position_y - bottom_edge)
     } else {
         return 0;
     };
-    let line_height = f32::from(line_height).max(1.0);
     let rows = (distance.abs() / line_height)
         .ceil()
         .max(1.0)
