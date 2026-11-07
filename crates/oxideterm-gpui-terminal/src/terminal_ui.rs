@@ -1317,7 +1317,11 @@ pub(crate) fn terminal_font_with_family_and_cjk(
         "Noto Sans Mono",
         "Liberation Mono",
         "Courier New",
+        // 终端输出里常有 ℹ️ / 🆄 这类 emoji。少了平台 emoji 字体时它们会
+        // fallback 到任意符号字体，方块大小和基线都跟正文对不上。
+        "Segoe UI Emoji",
         "Apple Color Emoji",
+        "Noto Color Emoji",
     ] {
         push_font_fallback(&mut fallback_families, fallback);
     }
