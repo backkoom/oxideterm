@@ -126,8 +126,15 @@ impl LocalPtySession {
             .unwrap_or_else(|| shell_args_for_profile(&shell, local_config.load_profile));
         #[cfg(not(target_os = "windows"))]
         let base_shell_args = shell_args_for_profile(&shell, local_config.load_profile);
+        // 计时：本地终端"打开要等几秒"需要知道时间花在哪一步。
+        let prepare_started = std::time::Instant::now();
         let launch =
             prepare_local_shell_launch(&local_config, &shell, terminal_env, base_shell_args);
+        tracing::info!(
+            elapsed_ms = prepare_started.elapsed().as_millis() as u64,
+            shell = %shell.id,
+            "local shell launch prepared"
+        );
         let shell_args = launch.args;
 
         let (mut listener, event_rx) = local_event_channel();
@@ -163,6 +170,7 @@ impl LocalPtySession {
             };
         #[cfg(not(target_os = "windows"))]
         let working_directory = cwd.clone();
+        let pty_started = std::time::Instant::now();
         let pty = tty::new(
             &tty::Options {
                 shell: Some(Shell::new(shell_program, shell_args)),
@@ -176,6 +184,10 @@ impl LocalPtySession {
             0,
         )
         .context("failed to spawn local shell PTY")?;
+        tracing::info!(
+            elapsed_ms = pty_started.elapsed().as_millis() as u64,
+            "local pty created"
+        );
         #[cfg(target_os = "windows")]
         let shell_pid = windows_shell_pid(&pty);
         #[cfg(not(target_os = "windows"))]
@@ -1538,21 +1550,38 @@ mod incremental_snapshot_tests {
 
     #[test]
     fn snapshot_preserves_powerline_default_background_through_reverse_video() {
-        let size = TerminalSize { cols: 4, rows: 1, cell_width: 0, cell_height: 0 };
+        let size = TerminalSize {
+            cols: 4,
+            rows: 1,
+            cell_width: 0,
+            cell_height: 0,
+        };
         let (listener, _events) = local_event_channel();
         let mut term = Term::new(Config::default(), &size, listener);
         let mut parser = Processor::<StdSyncHandler>::new();
         // Oh My Posh's transparent foreground uses SGR 49 followed by SGR 7.
         // The second cell explicitly requests the same RGB and must remain opaque.
-        parser.advance(&mut term, "\x1b[0m\x1b[36;49m\x1b[7m\u{e0b0}\x1b[0m\x1b[36;48;2;13;15;18m\x1b[7m\u{e0b0}\x1b[27m".as_bytes());
+        parser.advance(
+            &mut term,
+            "\x1b[0m\x1b[36;49m\x1b[7m\u{e0b0}\x1b[0m\x1b[36;48;2;13;15;18m\x1b[7m\u{e0b0}\x1b[27m"
+                .as_bytes(),
+        );
         let snapshot = snapshot_from_term(
-            &term, size, &TerminalGraphicsState::default(), &TerminalPalette::default(),
+            &term,
+            size,
+            &TerminalGraphicsState::default(),
+            &TerminalPalette::default(),
         );
         let cells = &snapshot.lines[0].cells;
         for cell in &cells[..2] {
-            assert_eq!((cell.ch, cell.fg, cell.bg), (
-                '\u{e0b0}', TerminalColor::rgb(13, 15, 18), TerminalColor::rgb(0x56, 0xc7, 0xda),
-            ));
+            assert_eq!(
+                (cell.ch, cell.fg, cell.bg),
+                (
+                    '\u{e0b0}',
+                    TerminalColor::rgb(13, 15, 18),
+                    TerminalColor::rgb(0x56, 0xc7, 0xda),
+                )
+            );
         }
         assert!(cells[0].style_origin.foreground_is_default_background());
         assert!(!cells[1].style_origin.foreground_is_default_background());
