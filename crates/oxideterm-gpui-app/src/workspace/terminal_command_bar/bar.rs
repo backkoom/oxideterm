@@ -93,13 +93,6 @@ impl WorkspaceApp {
         let recording_active = recording_status.state != TerminalRecordingState::Idle;
         let session_log_active =
             self.active_terminal_session_log_status(cx).state != TerminalSessionLogState::Idle;
-        let timestamps_active = self.active_terminal_timestamps_enabled(cx);
-        let highlight_override_active = self.active_terminal_highlight_override(cx);
-        let timestamps_tooltip_title = if timestamps_active {
-            self.i18n.t("terminal.recording.hide_timestamps")
-        } else {
-            self.i18n.t("terminal.recording.show_timestamps")
-        };
         let recording_toggle_tooltip_title = match recording_status.state {
             TerminalRecordingState::Idle => self.i18n.t("terminal.recording.title"),
             TerminalRecordingState::Recording => self.i18n.t("terminal.recording.pause"),
@@ -397,24 +390,6 @@ impl WorkspaceApp {
                                     ))
                                 },
                             )
-                            .when_some(active_pane_id, |actions, pane_id| {
-                                // Capture the visible pane so the shortcut cannot retarget after a tab switch.
-                                actions.child(self.terminal_command_action_button(
-                                    LucideIcon::Activity,
-                                    rgb(theme.text_muted),
-                                    false,
-                                    None,
-                                    "terminal-command-session-triggers",
-                                    self.i18n.t("terminal.command_selection.manage_triggers"),
-                                    move |this, _event, window, cx| {
-                                        this.open_terminal_trigger_settings_for_pane(
-                                            pane_id, window, cx,
-                                        );
-                                        cx.stop_propagation();
-                                    },
-                                    cx,
-                                ))
-                            })
                             .child(select_anchor_probe(
                                 SelectAnchorId::TerminalBroadcastMenu,
                                 self.terminal_command_action_button(
@@ -450,39 +425,6 @@ impl WorkspaceApp {
                                     }
                                 },
                             ))
-                            .child(select_anchor_probe(
-                                SelectAnchorId::TerminalHighlightRuleSet,
-                                self.terminal_command_action_button(
-                                    LucideIcon::Hash,
-                                    if highlight_override_active {
-                                        rgb(theme.accent)
-                                    } else {
-                                        rgb(theme.text_muted)
-                                    },
-                                    false,
-                                    Some(if highlight_override_active {
-                                        rgba((theme.accent << 8) | 0x26)
-                                    } else {
-                                        rgba(0x00000000)
-                                    }),
-                                    "terminal-command-highlight-rules",
-                                    self.i18n.t("terminal.highlight_override.title"),
-                                    |this, _event, _window, cx| {
-                                        this.toggle_terminal_highlight_popover(cx);
-                                        cx.stop_propagation();
-                                    },
-                                    cx,
-                                )
-                                .relative(),
-                                {
-                                    let workspace = workspace.clone();
-                                    move |anchor, _window, cx| {
-                                        let _ = workspace.update(cx, |this, cx| {
-                                            this.update_select_anchor(anchor, cx);
-                                        });
-                                    }
-                                },
-                            ))
                             .child(self.terminal_command_action_button(
                                 LucideIcon::Search,
                                 if self.search_visible(cx) {
@@ -504,27 +446,6 @@ impl WorkspaceApp {
                                     } else {
                                         this.open_search(window, cx);
                                     }
-                                    cx.stop_propagation();
-                                },
-                                cx,
-                            ))
-                            .child(self.terminal_command_action_button(
-                                LucideIcon::Clock,
-                                if timestamps_active {
-                                    rgb(theme.accent)
-                                } else {
-                                    rgb(theme.text_muted)
-                                },
-                                false,
-                                Some(if timestamps_active {
-                                    rgba((theme.accent << 8) | 0x26)
-                                } else {
-                                    rgba(0x00000000)
-                                }),
-                                "terminal-command-timestamps",
-                                timestamps_tooltip_title,
-                                |this, _event, _window, cx| {
-                                    this.toggle_active_terminal_timestamps(cx);
                                     cx.stop_propagation();
                                 },
                                 cx,
