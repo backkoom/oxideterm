@@ -269,7 +269,7 @@ pub fn dialog_content(tokens: &ThemeTokens) -> Div {
     let theme = tokens.ui;
     crate::surface::material_surface(tokens, div(), crate::surface::MaterialRole::Dialog)
         .w(px(tokens.metrics.modal_width))
-        .rounded(px(tokens.radii.md))
+        .rounded(px(tokens.radii.lg))
         .overflow_hidden()
         .border_1()
         .border_color(rgb(theme.border))
@@ -280,7 +280,7 @@ pub fn dialog_content(tokens: &ThemeTokens) -> Div {
             } else {
                 1.0
             },
-            tokens.radii.md,
+            tokens.radii.lg,
         ))
 }
 
