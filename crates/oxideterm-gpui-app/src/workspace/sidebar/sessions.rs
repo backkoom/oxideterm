@@ -3849,6 +3849,9 @@ impl WorkspaceApp {
                 .absolute()
                 .left(px(menu.x))
                 .top(px(menu.y))
+                // 拦住鼠标：不 occlude 的话，鼠标移到菜单上时事件会穿透到
+                // 底下的会话列表和终端，看着像"连底层一起选中"。
+                .occlude()
                 .child(context_menu_event_boundary(
                     div().child(
                         context_menu_content(&self.tokens)
