@@ -129,7 +129,11 @@ impl OnResize for Pty {
 // https://github.com/rust-lang/rust/blob/6707bf0f59485cf054ac1095725df43220e4be20/library/std/src/sys/args/windows.rs#L174
 fn push_escaped_arg(cmd: &mut String, arg: &str) {
     let arg_bytes = arg.as_bytes();
-    let quote = arg_bytes.iter().any(|c| *c == b' ' || *c == b'\t') || arg_bytes.is_empty();
+    // 含引号的参数也必须加外层引号，否则内部的转义反斜杠会被 cmd 当普通字符。
+    let quote = arg_bytes
+        .iter()
+        .any(|c| *c == b' ' || *c == b'\t' || *c == b'"')
+        || arg_bytes.is_empty();
     if quote {
         cmd.push('"');
     }
@@ -200,10 +204,11 @@ mod test {
             ("ab\tc", "\"ab\tc\""),
             // Cases with backslashes only (no spaces, no quotes) - no quotes added
             ("ab\\c", "ab\\c"),
-            // Cases with quotes only (no spaces) - quotes escaped but no outer quotes
-            ("ab\"c", "ab\\\"c"),
-            ("\"", "\\\""),
-            ("a\"b\"c", "a\\\"b\\\"c"),
+            // Cases with quotes only (no spaces) - quotes escaped and wrapped in outer quotes,
+            // otherwise cmd treats the escaped quote as a delimiter.
+            ("ab\"c", "\"ab\\\"c\""),
+            ("\"", "\"\\\"\""),
+            ("a\"b\"c", "\"a\\\"b\\\"c\""),
             // Cases requiring both quotes and escaping (contains spaces)
             ("ab \"c", "\"ab \\\"c\""),
             ("a \"b\" c", "\"a \\\"b\\\" c\""),
