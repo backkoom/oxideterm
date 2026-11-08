@@ -21,18 +21,6 @@ enum TerminalHighlightSection {
 }
 
 impl WorkspaceApp {
-    pub(super) fn active_terminal_highlight_override(&self, cx: &App) -> bool {
-        self.active_pane(cx).is_some_and(|pane| {
-            let pane = pane.read(cx);
-            pane.session_highlight_rule_set_id().is_some()
-                || pane.session_semantic_coloring_overridden()
-                || pane
-                    .preference_overrides_snapshot()
-                    .highlight_rule_set_id
-                    .is_some()
-        })
-    }
-
     fn active_terminal_saved_profile_id(&self, cx: &App) -> Option<String> {
         let session_id = self.active_terminal_session_id(cx)?;
         if let Some(profile_id) = self.telnet_terminal_profile_ids.get(&session_id) {
@@ -146,19 +134,6 @@ impl WorkspaceApp {
             .highlight_rule_set(id)
             .map(|rule_set| rule_set.name.clone())
             .unwrap_or_else(|| id.to_string())
-    }
-
-    pub(super) fn toggle_terminal_highlight_popover(&mut self, cx: &mut Context<Self>) {
-        self.terminal_highlight_popover_open = !self.terminal_highlight_popover_open;
-        if self.terminal_highlight_popover_open {
-            self.blur_terminal_quick_commands_input(cx);
-            self.dismiss_terminal_recording_menu();
-            self.dismiss_terminal_broadcast_menu(cx);
-            self.close_terminal_cwd_picker(cx);
-            self.close_terminal_git_branch_picker(cx);
-            self.close_terminal_project_panel(cx);
-        }
-        cx.notify();
     }
 
     pub(in crate::workspace) fn dismiss_terminal_highlight_popover(&mut self) -> bool {
