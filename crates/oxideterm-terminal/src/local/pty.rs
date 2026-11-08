@@ -186,6 +186,7 @@ impl LocalPtySession {
         .context("failed to spawn local shell PTY")?;
         tracing::info!(
             elapsed_ms = pty_started.elapsed().as_millis() as u64,
+            thread = ?std::thread::current().name(),
             "local pty created"
         );
         #[cfg(target_os = "windows")]
