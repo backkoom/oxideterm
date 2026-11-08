@@ -1,5 +1,9 @@
 use super::*;
 use gpui::{Div, StatefulInteractiveElement, point};
+use oxideterm_gpui_ui::context_menu::{
+    ContextMenuItemKind, context_menu_content, context_menu_event_boundary, context_menu_item,
+    context_menu_separator,
+};
 use oxideterm_remote_desktop::RemoteDesktopSessionStatus;
 use oxideterm_settings::SessionSortOrder;
 use oxideterm_terminal::BleConnectionStatus;
@@ -2457,54 +2461,6 @@ impl WorkspaceApp {
                     listener,
                     cx,
                 ));
-                let listener = cx.listener({
-                    let node_id = node_id.clone();
-                    move |this, _event, window, cx| {
-                        this.open_sftp_tab(node_id.clone(), window, cx);
-                        cx.stop_propagation();
-                    }
-                });
-                children.push(self.render_session_action_item(
-                    depth,
-                    false,
-                    LucideIcon::FolderOpen,
-                    self.i18n.t("sessions.tree.actions.sftp"),
-                    SessionActionVariant::Primary,
-                    listener,
-                    cx,
-                ));
-                let listener = cx.listener({
-                    let node_id = node_id.clone();
-                    move |this, _event, window, cx| {
-                        this.open_ide_folder_picker_tab(node_id.clone(), window, cx);
-                        cx.stop_propagation();
-                    }
-                });
-                children.push(self.render_session_action_item(
-                    depth,
-                    false,
-                    LucideIcon::Code2,
-                    "IDE".to_string(),
-                    SessionActionVariant::Primary,
-                    listener,
-                    cx,
-                ));
-                let listener = cx.listener({
-                    let node_id = node_id.clone();
-                    move |this, _event, window, cx| {
-                        this.open_forwards_tab(node_id.clone(), window, cx);
-                        cx.stop_propagation();
-                    }
-                });
-                children.push(self.render_session_action_item(
-                    depth,
-                    false,
-                    LucideIcon::ArrowLeftRight,
-                    self.i18n.t("sessions.tree.actions.port_forwarding"),
-                    SessionActionVariant::Primary,
-                    listener,
-                    cx,
-                ));
                 if self.can_save_runtime_node_as_connection(node_id, saved_connection_id) {
                     let listener = cx.listener({
                         let node_id = node_id.clone();
@@ -2532,22 +2488,6 @@ impl WorkspaceApp {
                         cx,
                     ));
                 }
-                let listener = cx.listener({
-                    let node_id = node_id.clone();
-                    move |this, _event, window, cx| {
-                        this.open_drill_down_form(node_id.clone(), window, cx);
-                        cx.stop_propagation();
-                    }
-                });
-                children.push(self.render_session_action_item(
-                    depth,
-                    false,
-                    LucideIcon::ArrowDownRight,
-                    self.i18n.t("sessions.tree.actions.drill_in"),
-                    SessionActionVariant::Primary,
-                    listener,
-                    cx,
-                ));
             } else if matches!(node_view.status(), ActiveSessionStatus::Error) {
                 let listener = cx.listener({
                     let node_id = node_id.clone();
@@ -3562,6 +3502,17 @@ impl WorkspaceApp {
                 muted_text,
             ))
         })
+        // 右键菜单：SFTP / IDE / 端口转发 / 钻入。左键保持「展开/折叠」单一语义。
+        .on_mouse_down(
+            MouseButton::Right,
+            cx.listener({
+                let context_node_id = node_id.clone();
+                move |this, event, _window, cx| {
+                    this.open_session_context_menu(context_node_id.clone(), event, cx);
+                    cx.stop_propagation();
+                }
+            }),
+        )
         .on_click(cx.listener(move |this, _event, _window, cx| {
             let expanded = if local_profile_id.is_some() {
                 if !this.expanded_ssh_nodes.insert(node_id.clone()) {
@@ -3868,6 +3819,113 @@ impl WorkspaceApp {
                 ring: false,
             },
         }
+    }
+
+    /// 打开会话行右键菜单。
+    pub(in crate::workspace) fn open_session_context_menu(
+        &mut self,
+        node_id: NodeId,
+        event: &MouseDownEvent,
+        cx: &mut Context<Self>,
+    ) {
+        self.session_context_menu = Some(SessionContextMenu {
+            node_id,
+            x: f32::from(event.position.x),
+            y: f32::from(event.position.y),
+        });
+        cx.notify();
+    }
+
+    pub(in crate::workspace) fn close_session_context_menu(&mut self) -> bool {
+        self.session_context_menu.take().is_some()
+    }
+
+    /// 渲染会话行右键菜单：SFTP / IDE / 端口转发 / 钻入。
+    ///
+    /// 这四项原来和「新建终端 / 终端项 / 断开」一起平铺在展开区，
+    /// 展开一次看到七八个动作，实际每次只用一两个。
+    pub(in crate::workspace) fn render_session_context_menu(
+        &self,
+        cx: &mut Context<Self>,
+    ) -> Option<AnyElement> {
+        let menu = self.session_context_menu.as_ref()?;
+        let sftp_node = menu.node_id.clone();
+        let ide_node = menu.node_id.clone();
+        let forward_node = menu.node_id.clone();
+        let drill_node = menu.node_id.clone();
+        let item = |key: &str| {
+            context_menu_item(
+                &self.tokens,
+                self.i18n.t(key),
+                ContextMenuItemKind::Plain,
+                false,
+                false,
+            )
+        };
+        Some(
+            div()
+                .absolute()
+                .left(px(menu.x))
+                .top(px(menu.y))
+                .child(context_menu_event_boundary(
+                    div().child(
+                        context_menu_content(&self.tokens)
+                            .w(px(190.0))
+                            .id("session-context-menu")
+                            .child(item("sessions.tree.actions.sftp").on_mouse_down(
+                                MouseButton::Left,
+                                cx.listener(move |this, _event, window, cx| {
+                                    this.open_sftp_tab(sftp_node.clone(), window, cx);
+                                    this.close_session_context_menu();
+                                    cx.stop_propagation();
+                                    cx.notify();
+                                }),
+                            ))
+                            .child(
+                                context_menu_item(
+                                    &self.tokens,
+                                    "IDE".to_string(),
+                                    ContextMenuItemKind::Plain,
+                                    false,
+                                    false,
+                                )
+                                .on_mouse_down(
+                                    MouseButton::Left,
+                                    cx.listener(move |this, _event, window, cx| {
+                                        this.open_ide_folder_picker_tab(
+                                            ide_node.clone(),
+                                            window,
+                                            cx,
+                                        );
+                                        this.close_session_context_menu();
+                                        cx.stop_propagation();
+                                        cx.notify();
+                                    }),
+                                ),
+                            )
+                            .child(context_menu_separator(&self.tokens))
+                            .child(item("sessions.tree.actions.port_forwarding").on_mouse_down(
+                                MouseButton::Left,
+                                cx.listener(move |this, _event, window, cx| {
+                                    this.open_forwards_tab(forward_node.clone(), window, cx);
+                                    this.close_session_context_menu();
+                                    cx.stop_propagation();
+                                    cx.notify();
+                                }),
+                            ))
+                            .child(item("sessions.tree.actions.drill_in").on_mouse_down(
+                                MouseButton::Left,
+                                cx.listener(move |this, _event, window, cx| {
+                                    this.open_drill_down_form(drill_node.clone(), window, cx);
+                                    this.close_session_context_menu();
+                                    cx.stop_propagation();
+                                    cx.notify();
+                                }),
+                            )),
+                    ),
+                ))
+                .into_any_element(),
+        )
     }
 }
 

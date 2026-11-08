@@ -531,8 +531,13 @@ impl WorkspaceApp {
         let panel_section = self.effective_sidebar_panel_section();
         if panel_section == SidebarSection::Sessions {
             let sessions = self.render_active_sessions_sidebar_content(cx);
+            // 会话行右键菜单叠在列表之上，需要 relative 容器才能绝对定位。
+            let sessions = div()
+                .relative()
+                .child(sessions)
+                .children(self.render_session_context_menu(cx));
             if self.embedded_sftp_node_id.is_none() {
-                return sessions;
+                return sessions.into_any_element();
             }
             let sftp = self.render_sftp_sidebar_surface(window, cx);
             let session_fraction = self

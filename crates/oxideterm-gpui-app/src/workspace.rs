@@ -703,6 +703,17 @@ struct TabContextMenu {
     y: f32,
 }
 
+/// 会话行的右键菜单。
+///
+/// SFTP / IDE / 端口转发 / 钻入这几个动作从「展开后的子项」移到了右键菜单：
+/// 展开区只留新建终端、终端项和断开，其余按需右键。
+#[derive(Clone, Debug, PartialEq)]
+struct SessionContextMenu {
+    node_id: NodeId,
+    x: f32,
+    y: f32,
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct TabRenameDialog {
     // The dialog edits display metadata for one canonical terminal tab only.
@@ -989,6 +1000,8 @@ pub(crate) struct WorkspaceApp {
     ssh_nodes: HashMap<NodeId, WorkspaceSshNode>,
     saved_ssh_nodes: HashMap<String, NodeId>,
     expanded_ssh_nodes: HashSet<NodeId>,
+    /// 会话行右键菜单（节点 + 屏幕坐标）。
+    session_context_menu: Option<SessionContextMenu>,
     /// Host view disclosure state keyed by synthetic group row ids. Host headers
     /// default to expanded so the grouping is visible immediately; user rows
     /// default to collapsed so their option stacks stay out of the way.
