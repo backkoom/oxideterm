@@ -72,10 +72,9 @@ const fn ai_search_entry(
     }
 }
 
-fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
-    let window_behavior_sections =
-        usize::from(cfg!(any(target_os = "windows", target_os = "macos")));
-    let mut specs = vec![
+/// 设置搜索索引：General 页。
+fn search_specs_general(window_behavior_sections: usize) -> Vec<SettingsSearchEntrySpec> {
+    vec![
         settings_search_entry(
             SettingsTab::General,
             0,
@@ -106,6 +105,12 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
                 "settings_view.general.launch_at_login",
             ],
         ),
+    ]
+}
+
+/// 设置搜索索引：Portable 页。
+fn search_specs_portable() -> Vec<SettingsSearchEntrySpec> {
+    vec![
         settings_search_entry(
             SettingsTab::Portable,
             0,
@@ -124,256 +129,12 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
                 "settings_view.general.portable_migration_portable_hint",
             ],
         ),
-        terminal_search_entry(
-            TerminalSettingsPage::Display,
-            1,
-            "settings_view.terminal.font",
-            &[
-                "settings_view.terminal.font_family",
-                "settings_view.terminal.cjk_font_family",
-                "settings_view.terminal.font_ligatures",
-                "settings_view.terminal.font_size",
-                "settings_view.terminal.line_height",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Display,
-            2,
-            "settings_view.terminal.display_behavior",
-            &[
-                "settings_view.terminal.display_behavior_hint",
-                "settings_view.terminal.padding_horizontal",
-                "settings_view.terminal.padding_vertical",
-                "settings_view.terminal.smooth_scroll",
-                "settings_view.terminal.encoding",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Display,
-            3,
-            "settings_view.terminal.cursor",
-            &[
-                "settings_view.terminal.cursor_style",
-                "settings_view.terminal.cursor_blink",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Display,
-            4,
-            "settings_view.terminal.command_marks",
-            &[
-                "settings_view.terminal.command_marks_hint",
-                "settings_view.terminal.command_folding",
-                "settings_view.terminal.command_folding_hint",
-                "settings_view.terminal.command_marks_hover_actions",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Display,
-            5,
-            "settings_view.terminal.buffer",
-            &[
-                "settings_view.terminal.scrollback",
-                "settings_view.terminal.scrollback_hint",
-                "settings_view.terminal.highlight_tab_on_new_output",
-                "settings_view.terminal.highlight_tab_on_new_output_hint",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Input,
-            1,
-            "settings_view.terminal.input_clipboard",
-            &[
-                "settings_view.terminal.paste_protection",
-                "settings_view.terminal.paste_protection_hint",
-                "settings_view.terminal.osc52_clipboard",
-                "settings_view.terminal.osc52_clipboard_hint",
-                "settings_view.terminal.osc52_clipboard_read",
-                "settings_view.terminal.osc52_clipboard_read_hint",
-                "settings_view.terminal.copy_on_select",
-                "settings_view.terminal.copy_on_select_hint",
-                "settings_view.terminal.middle_click_paste",
-                "settings_view.terminal.middle_click_paste_hint",
-                "settings_view.terminal.right_click_paste",
-                "settings_view.terminal.right_click_paste_hint",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Input,
-            2,
-            "settings_view.terminal.input_mouse_links",
-            &[
-                "settings_view.terminal.selection_requires_shift",
-                "settings_view.terminal.selection_requires_shift_hint",
-                "settings_view.terminal.open_links_with_modifier",
-                "settings_view.terminal.open_links_with_modifier_hint",
-                "settings_view.terminal.detect_file_paths_as_links",
-                "settings_view.terminal.detect_file_paths_as_links_hint",
-                "settings_view.terminal.timestamp_hover",
-                "settings_view.terminal.timestamp_hover_hint",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Input,
-            3,
-            "settings_view.terminal.input_keyboard",
-            &[
-                "settings_view.terminal.free_type_mode",
-                "settings_view.terminal.free_type_mode_hint",
-                "settings_view.terminal.autosuggest_enabled",
-                "settings_view.terminal.autosuggest_enabled_hint",
-                "settings_view.terminal.backspace_sequence",
-                "settings_view.terminal.backspace_sequence_hint",
-                "settings_view.terminal.delete_sequence",
-                "settings_view.terminal.delete_sequence_hint",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Local,
-            1,
-            "settings_view.local_terminal.shell",
-            &[
-                "settings_view.local_terminal.default_shell",
-                "settings_view.local_terminal.default_cwd",
-                "settings_view.local_terminal.shell_path",
-                "settings_view.local_terminal.shell_scheme",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Local,
-            2,
-            "settings_view.local_terminal.shell_profile",
-            &["settings_view.local_terminal.load_shell_profile"],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Local,
-            3,
-            "settings_view.local_terminal.privilege_credentials",
-            &["settings_view.local_terminal.privilege_credentials_hint"],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::CommandBar,
-            1,
-            "settings_view.terminal.command_bar",
-            &[
-                "settings_view.terminal.command_bar_git_status",
-                "settings_view.terminal.command_bar_project_tasks",
-                "settings_view.terminal.command_bar_ssh_latency",
-                "settings_view.terminal.command_bar_ssh_latency_hint",
-                "settings_view.terminal.ssh_latency_interval",
-                "settings_view.terminal.ssh_latency_interval_hint",
-                "settings_view.terminal.command_bar_current_directory_awareness",
-                "settings_view.terminal.autosuggest_local_history",
-                "settings_view.terminal.autosuggest_local_history_hint",
-                "terminal.history.save",
-                "terminal.history.save_hint",
-                "terminal.history.retention",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::CommandBar,
-            2,
-            "settings_view.terminal.command_bar_focus_handoff",
-            &["settings_view.terminal.command_bar_focus_handoff_hint"],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::CommandBar,
-            3,
-            "settings_view.terminal.quick_commands",
-            &[
-                "settings_view.terminal.quick_bar",
-                "settings_view.terminal.quick_commands_confirm",
-                "settings_view.terminal.quick_commands_toast",
-                "settings_view.terminal.command_specs",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Awareness,
-            1,
-            "settings_view.terminal.awareness_title",
-            &[
-                "settings_view.terminal.awareness_enabled",
-                "settings_view.connections.shell_integration.mode_label",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Awareness,
-            2,
-            "settings_view.connections.shell_integration.title",
-            &[
-                "settings_view.connections.shell_integration.description",
-                "settings_view.connections.shell_integration.status",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Awareness,
-            3,
-            "settings_view.terminal.triggers.title",
-            &[
-                "settings_view.terminal.triggers.description",
-                "settings_view.terminal.triggers.shell_execution",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Transfer,
-            1,
-            "settings_view.terminal.in_band_transfer.title",
-            &[
-                "settings_view.terminal.in_band_transfer.enabled",
-                "settings_view.terminal.in_band_transfer.allow_directory",
-                "settings_view.terminal.in_band_transfer.max_chunk_bytes",
-                "settings_view.terminal.in_band_transfer.max_file_count",
-                "settings_view.terminal.in_band_transfer.max_total_bytes",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Transfer,
-            2,
-            "settings_view.terminal.xmodem.title",
-            &[
-                "settings_view.terminal.xmodem.block_size",
-                "settings_view.terminal.xmodem.block_size_hint",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Logging,
-            1,
-            "settings_view.terminal.session_log_title",
-            &[
-                "settings_view.terminal.session_log_automatic",
-                "settings_view.terminal.session_log_file_name_template",
-                "settings_view.terminal.session_log_file_mode",
-                "settings_view.terminal.session_log_content_template",
-                "settings_view.terminal.session_log_control_sequences",
-                "settings_view.terminal.session_log_retention_days",
-                "settings_view.terminal.session_log_max_file_size",
-                "settings_view.terminal.session_log_directory",
-                "settings_view.terminal.session_log_directory_template",
-            ],
-        ),
-        terminal_search_entry(
-            TerminalSettingsPage::Highlight,
-            1,
-            "settings_view.terminal.highlight_rules.title",
-            &[
-                "settings_view.terminal.highlight_rules.description",
-                "settings_view.terminal.highlight_rules.rule_set",
-                "settings_view.terminal.highlight_rules.rule_set_hint",
-                "terminal.highlight_override.selection_matches",
-                "terminal.highlight_override.selection_matches_default_hint",
-                "settings_view.terminal.highlight_rules.semantic_coloring",
-                "settings_view.terminal.highlight_rules.semantic_coloring_hint",
-                "settings_view.terminal.highlight_rules.semantic_scheme",
-                "settings_view.terminal.highlight_rules.semantic_scheme_hint",
-                "settings_view.terminal.highlight_rules.semantic_scheme_balanced",
-                "settings_view.terminal.highlight_rules.semantic_scheme_conservative",
-                "settings_view.terminal.highlight_rules.pattern",
-                "settings_view.terminal.highlight_rules.foreground",
-                "settings_view.terminal.highlight_rules.background",
-                "settings_view.terminal.highlight_rules.match_scope",
-                "settings_view.terminal.highlight_rules.preserve_background",
-            ],
-        ),
+    ]
+}
+
+/// 设置搜索索引：Appearance 页。
+fn search_specs_appearance() -> Vec<SettingsSearchEntrySpec> {
+    vec![
         settings_search_entry(
             SettingsTab::Appearance,
             0,
@@ -450,6 +211,12 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
                 "settings_view.terminal.bg_day_cycle",
             ],
         ),
+    ]
+}
+
+/// 设置搜索索引：Connections 页。
+fn search_specs_connections() -> Vec<SettingsSearchEntrySpec> {
+    vec![
         settings_search_entry(
             SettingsTab::Connections,
             3,
@@ -506,12 +273,22 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
                 "settings_view.connections.importers.duplicate",
             ],
         ),
-        settings_search_entry(
-            SettingsTab::Privilege,
-            0,
-            "settings_view.privilege_credentials.title",
-            &["settings_view.privilege_credentials.description"],
-        ),
+    ]
+}
+
+/// 设置搜索索引：Privilege 页。
+fn search_specs_privilege() -> Vec<SettingsSearchEntrySpec> {
+    vec![settings_search_entry(
+        SettingsTab::Privilege,
+        0,
+        "settings_view.privilege_credentials.title",
+        &["settings_view.privilege_credentials.description"],
+    )]
+}
+
+/// 设置搜索索引：Network 页。
+fn search_specs_network() -> Vec<SettingsSearchEntrySpec> {
+    vec![
         settings_search_entry(
             SettingsTab::Network,
             0,
@@ -553,6 +330,12 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
                 "settings_view.network.pending_approvals",
             ],
         ),
+    ]
+}
+
+/// 设置搜索索引：Sftp 页。
+fn search_specs_sftp() -> Vec<SettingsSearchEntrySpec> {
+    vec![
         settings_search_entry(
             SettingsTab::Sftp,
             0,
@@ -582,6 +365,12 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
             "settings_view.sftp.conflict",
             &["settings_view.sftp.conflict_hint"],
         ),
+    ]
+}
+
+/// 设置搜索索引：Ide 页。
+fn search_specs_ide() -> Vec<SettingsSearchEntrySpec> {
+    vec![
         settings_search_entry(
             SettingsTab::Ide,
             0,
@@ -605,12 +394,6 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
                 "settings_view.ide.line_height",
             ],
         ),
-        ai_search_entry(
-            AiSettingsPage::Tools,
-            1,
-            "settings_view.ide.agent_mode_label",
-            &["settings_view.ide.agent_mode_hint"],
-        ),
         settings_search_entry(
             SettingsTab::Ide,
             2,
@@ -626,6 +409,18 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
                 "settings_view.ide.agent_privacy_label",
                 "settings_view.ide.agent_lifecycle_label",
             ],
+        ),
+    ]
+}
+
+/// 设置搜索索引：Ai 页。
+fn search_specs_ai() -> Vec<SettingsSearchEntrySpec> {
+    vec![
+        ai_search_entry(
+            AiSettingsPage::Tools,
+            1,
+            "settings_view.ide.agent_mode_label",
+            &["settings_view.ide.agent_mode_hint"],
         ),
         ai_search_entry(
             AiSettingsPage::General,
@@ -719,6 +514,12 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
             "settings_view.mcp.title",
             &["settings_view.mcp.description"],
         ),
+    ]
+}
+
+/// 设置搜索索引：Knowledge 页。
+fn search_specs_knowledge() -> Vec<SettingsSearchEntrySpec> {
+    vec![
         settings_search_entry(
             SettingsTab::Knowledge,
             0,
@@ -746,15 +547,25 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
                 "settings_view.knowledge.reindex",
             ],
         ),
-        settings_search_entry(
-            SettingsTab::Keybindings,
-            0,
-            "settings_view.keybindings.title",
-            &[
-                "settings_view.keybindings.description",
-                "settings_view.keybindings.search_placeholder",
-            ],
-        ),
+    ]
+}
+
+/// 设置搜索索引：Keybindings 页。
+fn search_specs_keybindings() -> Vec<SettingsSearchEntrySpec> {
+    vec![settings_search_entry(
+        SettingsTab::Keybindings,
+        0,
+        "settings_view.keybindings.title",
+        &[
+            "settings_view.keybindings.description",
+            "settings_view.keybindings.search_placeholder",
+        ],
+    )]
+}
+
+/// 设置搜索索引：Help 页。
+fn search_specs_help() -> Vec<SettingsSearchEntrySpec> {
+    vec![
         settings_search_entry(
             SettingsTab::Help,
             0,
@@ -777,7 +588,6 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
                 "settings_view.help.open_logs",
             ],
         ),
-        settings_search_entry(SettingsTab::Help, 2, "settings_view.help.tech_stack", &[]),
         settings_search_entry(
             SettingsTab::Help,
             3,
@@ -810,7 +620,25 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
                 "settings_view.help.license",
             ],
         ),
-    ];
+    ]
+}
+
+fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
+    let window_behavior_sections =
+        usize::from(cfg!(any(target_os = "windows", target_os = "macos")));
+    let mut specs = Vec::new();
+    specs.extend(search_specs_general(window_behavior_sections));
+    specs.extend(search_specs_portable());
+    specs.extend(search_specs_appearance());
+    specs.extend(search_specs_connections());
+    specs.extend(search_specs_privilege());
+    specs.extend(search_specs_network());
+    specs.extend(search_specs_sftp());
+    specs.extend(search_specs_ide());
+    specs.extend(search_specs_ai());
+    specs.extend(search_specs_knowledge());
+    specs.extend(search_specs_keybindings());
+    specs.extend(search_specs_help());
 
     #[cfg(any(target_os = "windows", target_os = "macos"))]
     specs.push(settings_search_entry(
