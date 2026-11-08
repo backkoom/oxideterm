@@ -662,10 +662,39 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
         1,
         "settings_view.terminal.input_clipboard",
         &[
+            "settings_view.terminal.paste_protection",
+            "settings_view.terminal.paste_protection_hint",
+            "settings_view.terminal.osc52_clipboard",
+            "settings_view.terminal.osc52_clipboard_hint",
+            "settings_view.terminal.osc52_clipboard_read",
+            "settings_view.terminal.osc52_clipboard_read_hint",
+            "settings_view.terminal.copy_on_select",
+            "settings_view.terminal.copy_on_select_hint",
+            "settings_view.terminal.middle_click_paste",
+            "settings_view.terminal.middle_click_paste_hint",
+            "settings_view.terminal.right_click_paste",
+            "settings_view.terminal.right_click_paste_hint",
             "settings_view.terminal.smart_copy",
             "settings_view.terminal.smart_copy_hint",
         ],
     ));
+
+    specs.push(terminal_search_entry(
+        TerminalSettingsPage::Input,
+        3,
+        "settings_view.terminal.input_keyboard",
+        &[
+            "settings_view.terminal.free_type_mode",
+            "settings_view.terminal.free_type_mode_hint",
+            "settings_view.terminal.autosuggest_enabled",
+            "settings_view.terminal.autosuggest_enabled_hint",
+            "settings_view.terminal.backspace_sequence",
+            "settings_view.terminal.backspace_sequence_hint",
+            "settings_view.terminal.delete_sequence",
+            "settings_view.terminal.delete_sequence_hint",
+        ],
+    ));
+
     #[cfg(target_os = "windows")]
     specs.push(terminal_search_entry(
         TerminalSettingsPage::Local,
