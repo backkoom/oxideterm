@@ -787,6 +787,7 @@ impl WorkspaceApp {
             .route_snapshot()
             .terminal_page;
         match (terminal_page, section_index - 1) {
+            // 字体：族、字重、预览、连字、字号、行高
             (TerminalSettingsPage::Display, 0) => {
                 let custom_cjk = self.settings_workspace.read(cx).terminal_cjk_font_custom
                     || cjk_font_is_custom(&settings.terminal.cjk_font_family);
@@ -874,6 +875,7 @@ impl WorkspaceApp {
                     rows,
                 )
             }
+            // 显示：内边距、光标
             (TerminalSettingsPage::Display, 1) => self.settings_card(
                 "settings_view.terminal.display_behavior",
                 "settings_view.terminal.display_behavior_hint",
@@ -928,6 +930,7 @@ impl WorkspaceApp {
                     ),
                 ],
             ),
+            // 显示：滚动
             (TerminalSettingsPage::Display, 2) => self.settings_card(
                 "settings_view.terminal.cursor",
                 "",
@@ -950,6 +953,7 @@ impl WorkspaceApp {
                     ),
                 ],
             ),
+            // 显示：渲染器
             (TerminalSettingsPage::Display, 3) => self.settings_card(
                 "settings_view.terminal.command_marks",
                 "",
@@ -979,6 +983,7 @@ impl WorkspaceApp {
                     ),
                 ],
             ),
+            // 显示：编码、退格
             (TerminalSettingsPage::Display, 4) => self.settings_card(
                 "settings_view.terminal.buffer",
                 "",
@@ -1006,6 +1011,7 @@ impl WorkspaceApp {
             (TerminalSettingsPage::Local, local_section_index) => {
                 self.settings_local_section(local_section_index, cx)
             }
+            // 命令栏：基础
             (TerminalSettingsPage::CommandBar, 0) => self.settings_card(
                 "settings_view.terminal.command_bar",
                 "",
@@ -1090,11 +1096,13 @@ impl WorkspaceApp {
                         .into_any_element(),
                 ],
             ),
+            // 命令栏：补全
             (TerminalSettingsPage::CommandBar, 1) => self.settings_card(
                 "settings_view.terminal.command_bar_focus_handoff",
                 "settings_view.terminal.command_bar_focus_handoff_hint",
                 vec![self.focus_handoff_commands_row(settings, cx)],
             ),
+            // 命令栏：历史
             (TerminalSettingsPage::CommandBar, 2) => self.settings_card(
                 "settings_view.terminal.quick_commands",
                 "",
@@ -1137,6 +1145,7 @@ impl WorkspaceApp {
                     self.terminal_command_specs_editor_row(cx),
                 ],
             ),
+            // 目录感知
             (TerminalSettingsPage::Awareness, 0) => self.settings_card(
                 "settings_view.terminal.awareness_title",
                 "settings_view.terminal.awareness_description",
@@ -1164,6 +1173,7 @@ impl WorkspaceApp {
             ),
             (TerminalSettingsPage::Awareness, 1) => self.remote_shell_integration_card(cx),
             (TerminalSettingsPage::Awareness, 2) => self.terminal_triggers_settings_card(cx),
+            // 传输：ZMODEM
             (TerminalSettingsPage::Transfer, 0) => self.settings_card(
                 "settings_view.terminal.in_band_transfer.title",
                 "",
@@ -1213,6 +1223,7 @@ impl WorkspaceApp {
                     self.in_band_transfer_runtime_note(),
                 ],
             ),
+            // 传输：会话日志
             (TerminalSettingsPage::Transfer, 1) => self.settings_card(
                 "settings_view.terminal.xmodem.title",
                 "",
