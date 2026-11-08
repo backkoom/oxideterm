@@ -1,5 +1,6 @@
 use super::super::overlay::WorkspaceOverlayConfirmSnapshot;
 use super::super::*;
+use gpui::{Div, Stateful};
 
 impl Focusable for WorkspaceApp {
     fn focus_handle(&self, _: &App) -> FocusHandle {
@@ -333,758 +334,768 @@ impl WorkspaceApp {
             key_context.add(oxideterm_gpui_ui::modal::MODAL_KEY_CONTEXT);
         }
 
-        div()
-            .id("workspace-root")
-            .size_full()
-            .relative()
-            .flex()
-            .flex_col()
-            .bg(workspace_background(
-                &self.tokens,
-                vibrancy_mode,
-                has_window_background,
-            ))
-            .text_color(rgb(self.tokens.ui.text))
-            .font_family(settings_ui_font_family(
-                &self.settings_store.settings().appearance.ui_font_family,
-            ))
-            .when(sidebar_resize_cursor_active, |root| {
-                root.cursor(CursorStyle::ResizeColumn)
-            })
-            .when(embedded_sftp_resize_cursor_active, |root| {
-                root.cursor(CursorStyle::ResizeRow)
-            })
-            .track_focus(&self.focus_handle)
-            .key_context(key_context)
-            // Host Tools actions bubble here from both sidebar pages and portaled dialogs.
-            .on_action(
-                cx.listener(|this, request: &HostToolsWindowRequest, window, cx| {
-                    this.handle_host_tools_window_request(request, window, cx);
-                    cx.stop_propagation();
-                }),
-            )
-            .on_action(cx.listener(|this, _: &Quit, _window, cx| {
-                this.request_application_quit(cx);
-                cx.stop_propagation();
-            }))
-            .on_mouse_down(
-                MouseButton::Left,
-                cx.listener(|this, _event: &MouseDownEvent, _window, cx| {
-                    // Popovers inside the command bar stop propagation. Any
-                    // remaining workspace click is outside those overlays and
-                    // should dismiss them without stealing the original click.
-                    this.close_terminal_command_overlays(cx);
-                }),
-            )
-            .capture_any_mouse_down(cx.listener(|this, event: &MouseDownEvent, _window, cx| {
-                let Some(target) = this.active_ime_target(cx) else {
-                    return;
-                };
-                let owns_selection = matches!(
-                    target,
-                    ime::WorkspaceImeTarget::ActiveSessionSearch
-                        | ime::WorkspaceImeTarget::KnowledgeSearch
-                );
-                if owns_selection
-                    && this
-                        .text_input_anchors
-                        .get(target.anchor_id())
-                        .is_none_or(|anchor| !anchor.bounds.contains(&event.position))
-                {
-                    this.clear_ime_selection();
-                    cx.notify();
-                }
-            }))
-            .capture_key_down(cx.listener(|this, event: &KeyDownEvent, window, cx| {
-                this.handle_workspace_capture_key_down(event, window, cx);
-            }))
-            .on_key_down(cx.listener(|this, event: &KeyDownEvent, window, cx| {
-                this.handle_workspace_key(event, window, cx);
-            }))
-            .on_key_up(cx.listener(|this, event: &KeyUpEvent, _window, cx| {
-                if this.forward_remote_desktop_key_up(event, cx) {
-                    cx.stop_propagation();
-                }
-            }))
-            .on_modifiers_changed(cx.listener(
-                |this, event: &ModifiersChangedEvent, _window, cx| {
-                    let _ = this.forward_remote_desktop_modifiers_changed(event, cx);
-                },
-            ))
-            .on_mouse_move(cx.listener(|this, event: &MouseMoveEvent, window, cx| {
-                this.update_sidebar_resize(event, window, cx);
-                this.update_file_manager_bookmarks_resize(event, window, cx);
-                this.update_knowledge_resize(event, window, cx);
-                this.update_embedded_sftp_sidebar_resize(event, window, cx);
-                this.update_ai_sidebar_resize(event, window, cx);
-                this.update_sftp_pane_resize(event, window, cx);
-                this.update_sftp_queue_resize(event, window, cx);
-                this.update_terminal_command_sender_resize(event, window, cx);
-                this.update_terminal_quick_commands_resize(event, cx);
-                this.update_split_drag(event, window, cx);
-                this.update_settings_slider_drag(event, cx);
-                this.update_terminal_cast_seek_drag(event, cx);
-                // Continue scrollbar dragging after the pointer leaves its thin hit target.
-                this.update_tabbar_scrollbar_drag(event, window, cx);
-                if this.read_only_selection_drag_active() && !event.dragging() {
-                    // A platform capture loss can omit the matching mouse-up. The
-                    // next buttonless move must release the logical text drag so
-                    // it cannot keep swallowing unrelated workspace input.
-                    this.finish_ime_selection_drag(cx);
-                    this.stop_selectable_text_autoscroll();
-                }
-                this.update_ime_selection_drag(event.position, window, cx);
-                if this.read_only_selection_drag_active() {
-                    this.update_selectable_text_autoscroll(event.position, cx);
-                    cx.stop_propagation();
-                }
-                this.update_sftp_drag_capture(event.position, cx);
-                this.update_tab_drag(event, window, cx);
-                if let Some(drag) = this.detached_tab_return_drag {
-                    this.update_detached_tab_return_drag(drag.tab_id, event, window, cx);
-                }
-                if this.browser_pointer_capture_owner(cx).is_some() {
-                    cx.stop_propagation();
-                }
-            }))
-            .on_mouse_down(
-                MouseButton::Left,
-                cx.listener(|this, _event: &MouseDownEvent, window, cx| {
-                    this.release_active_remote_desktop_inputs(cx);
-                    this.dismiss_transient_workspace_overlays_from_outside_pointer(window, cx);
-                    this.blur_text_inputs(cx);
-                    this.clear_read_only_ime_selection(cx);
-                }),
-            )
-            .on_mouse_down(
-                MouseButton::Right,
-                cx.listener(|this, _event: &MouseDownEvent, window, cx| {
-                    this.release_active_remote_desktop_inputs(cx);
-                    // Browser context menus and Radix popovers both treat
-                    // outside pointer activity as a transient-layer dismiss.
-                    // Right-click keeps input focus alone but must not leave an
-                    // old menu/select open behind the next context action.
-                    let _ =
-                        this.dismiss_transient_workspace_overlays_from_outside_pointer(window, cx);
-                }),
-            )
-            .on_scroll_wheel(cx.listener(|this, _event: &ScrollWheelEvent, _window, cx| {
-                // Portal backdrops already occlude wheel input. This catches
-                // inline select/popover states that have no full-window layer,
-                // closing them before the same wheel event scrolls the page or
-                // terminal underneath.
-                if this.dismiss_transient_workspace_overlays(cx) {
-                    cx.stop_propagation();
-                    cx.notify();
-                }
-            }))
-            .on_mouse_up_all(move |event, phase, _hitbox, _window, cx| {
-                if phase == gpui::DispatchPhase::Capture && event.button == MouseButton::Left {
-                    read_only_selection_workspace.update(cx, |this, cx| {
-                        if this.read_only_selection_drag_active() {
-                            // This listener deliberately ignores hit testing: a
-                            // release outside the window or behind an occluding
-                            // surface still owns the active text selection drag.
-                            this.finish_ime_selection_drag(cx);
-                            this.stop_selectable_text_autoscroll();
-                        }
-                    });
-                }
-                if phase == gpui::DispatchPhase::Bubble && event.button == MouseButton::Left {
-                    // File lists finish valid drops first. A release outside their hitboxes
-                    // must still retire the SFTP drag, including releases outside the root.
-                    read_only_selection_workspace.update(cx, |this, cx| {
-                        if this.cancel_sftp_drag_capture(cx) {
-                            cx.notify();
-                        }
-                    });
-                }
-            })
-            .capture_any_mouse_up(cx.listener(|this, event: &MouseUpEvent, window, cx| {
-                if event.button == MouseButton::Left
-                    && this.browser_pointer_capture_owner(cx).is_some_and(|owner| {
-                        // SFTP drop targets consume mouse-up during bubbling, after capture.
-                        owner != browser_behavior::BrowserPointerCaptureOwner::SftpFileDrag
-                    })
-                {
-                    this.finish_workspace_pointer_captures(event, window, cx);
-                }
-            }))
-            .on_mouse_up(
-                MouseButton::Left,
-                cx.listener(|this, event: &MouseUpEvent, window, cx| {
-                    this.finish_workspace_pointer_captures(event, window, cx);
-                }),
-            )
-            .on_action(cx.listener(|this, _: &NewTerminal, window, cx| {
-                let _ = this.create_local_terminal_tab(window, cx);
-            }))
-            .on_action(cx.listener(
-                |this, action: &oxideterm_gpui_editor::ManageLanguagePlugin, window, cx| {
-                    this.open_language_plugin(&action.plugin_id, window, cx);
-                },
-            ))
-            .on_action(cx.listener(|this, _: &ShellLauncher, _window, cx| {
-                this.open_local_shell_launcher(cx);
-            }))
-            .on_action(cx.listener(|this, _: &CloseTab, window, cx| {
-                this.request_close_active_tab(window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &CloseOtherTabs, window, cx| {
-                this.request_close_other_tabs_or_active_pane(window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &NewConnection, window, cx| {
-                this.open_new_connection_form(window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &ToggleSidebar, _window, cx| {
-                this.toggle_sidebar(cx);
-            }))
-            .on_action(cx.listener(|this, _: &CommandPalette, window, cx| {
-                this.open_command_palette(window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &ZenMode, _window, cx| {
-                this.toggle_zen_mode(cx);
-            }))
-            .on_action(cx.listener(|_this, _: &ToggleFullscreen, window, cx| {
-                // Full-screen transitions stay owned by the native window and
-                // must not fall through as terminal input.
-                window.toggle_fullscreen();
-                cx.stop_propagation();
-            }))
-            .on_action(cx.listener(|this, _: &NextTab, window, cx| {
-                this.next_tab(true, window, cx);
-                // GPUI dispatches the action before the raw key event. Stop here so the
-                // workspace keybinding capture does not advance the tab a second time.
-                cx.stop_propagation();
-            }))
-            .on_action(cx.listener(|this, _: &PrevTab, window, cx| {
-                this.next_tab(false, window, cx);
-                // Keep previous-tab navigation on the same single-dispatch path.
-                cx.stop_propagation();
-            }))
-            .on_action(cx.listener(|this, _: &SplitHorizontal, window, cx| {
-                this.split_active_pane(SplitDirection::Horizontal, window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &SplitVertical, window, cx| {
-                this.split_active_pane(SplitDirection::Vertical, window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &ClosePane, window, cx| {
-                this.close_active_pane(window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &SplitNavLeft, window, cx| {
-                this.focus_adjacent_pane(false, window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &SplitNavRight, window, cx| {
-                this.focus_adjacent_pane(true, window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &Copy, window, cx| {
-                if this.handle_ide_modal_edit_action("c", window, cx) {
-                    return;
-                }
-                if this.copy_active_text_input(cx) {
-                    return;
-                }
-                if this.copy_active_ide_selection(cx) {
-                    return;
-                }
-                if this.connection_form_state(cx).form.is_none() {
-                    this.copy(cx);
-                }
-            }))
-            .on_action(cx.listener(|this, _: &Cut, window, cx| {
-                if this.handle_ide_modal_edit_action("x", window, cx) {
-                    return;
-                }
-                if this.cut_active_text_input(cx) {
-                    return;
-                }
-                if this.cut_active_ide_selection(cx) {
-                    return;
-                }
-                if this.connection_form_state(cx).form.is_none() {
-                    let _ = this.cut(cx);
-                }
-            }))
-            .on_action(cx.listener(|this, _: &Paste, window, cx| {
-                if this.handle_ide_modal_edit_action("v", window, cx) {
-                    return;
-                }
-                if this.paste_active_text_input(cx) {
-                    return;
-                }
-                if this.paste_into_active_ide_editor(cx) {
-                    return;
-                }
-                if this.connection_form_state(cx).form.is_some() {
-                    this.paste_into_new_connection_field(cx);
-                } else {
-                    this.paste(cx);
-                }
-            }))
-            .on_action(cx.listener(|this, _: &Find, window, cx| {
-                if this.open_active_ide_search(cx) {
-                    return;
-                }
-                this.open_search(window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &FindNext, _window, cx| {
-                if this.select_next_active_ide_search_match(cx) {
-                    return;
-                }
-                this.search_next(true, cx);
-            }))
-            .on_action(cx.listener(|this, _: &FindPrev, _window, cx| {
-                if this.select_previous_active_ide_search_match(cx) {
-                    return;
-                }
-                this.search_next(false, cx);
-            }))
-            .on_action(cx.listener(|this, _: &CloseSearch, window, cx| {
-                this.close_search(window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &OpenSettings, window, cx| {
-                this.open_settings(window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &FontIncrease, _window, cx| {
-                this.adjust_terminal_font_size(1, cx);
-            }))
-            .on_action(cx.listener(|this, _: &FontDecrease, _window, cx| {
-                this.adjust_terminal_font_size(-1, cx);
-            }))
-            .on_action(cx.listener(|this, _: &FontReset, _window, cx| {
-                this.reset_terminal_font_size(cx);
-            }))
-            .on_action(cx.listener(|this, _: &ShowShortcuts, _window, cx| {
-                this.open_shortcuts_modal(cx);
-            }))
-            .on_action(cx.listener(|this, _: &TerminalAiPanel, _window, cx| {
-                this.toggle_terminal_ai_inline_panel(_window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &TerminalClearScreen, _window, cx| {
-                this.clear_active_terminal_screen(cx);
-            }))
-            .on_action(cx.listener(|this, _: &TerminalRecording, _window, cx| {
-                this.toggle_active_terminal_recording(cx);
-            }))
-            .on_action(cx.listener(|this, _: &TerminalFreeTypeMode, _window, cx| {
-                this.toggle_free_type_mode(cx);
-            }))
-            .on_action(cx.listener(|this, _: &PaletteEventLog, window, cx| {
-                this.open_notification_center_tab(window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &PaletteAiSidebar, _window, cx| {
-                let _ = this.toggle_ai_sidebar(cx);
-            }))
-            .on_action(cx.listener(|this, _: &PaletteBroadcast, _window, cx| {
-                this.toggle_terminal_broadcast(cx);
-            }))
-            .on_action(cx.listener(|this, _: &PaletteDisconnectAll, window, cx| {
-                this.disconnect_all_ssh_nodes_from_palette(window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &PaletteReconnectAll, _window, cx| {
-                this.reconnect_all_link_down_nodes_from_palette(cx);
-            }))
-            .on_action(
-                cx.listener(|this, _: &PaletteCancelReconnect, _window, cx| {
-                    this.cancel_all_reconnects_from_palette(cx);
-                }),
-            )
-            .on_action(cx.listener(|this, _: &PaletteHealthCheck, _window, cx| {
-                this.run_connection_health_check_from_palette(cx);
-            }))
-            .on_action(cx.listener(|this, _: &PaletteResetPanes, window, cx| {
-                this.reset_active_tab_to_single_pane(window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &PaletteDetachTerminal, window, cx| {
-                this.detach_active_local_terminal_from_palette(window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &PaletteCleanupDead, _window, cx| {
-                this.cleanup_dead_local_terminal_sessions_from_palette(cx);
-            }))
-            .on_action(cx.listener(|this, _: &SwitchLocaleEnglish, _window, cx| {
-                this.switch_locale(Locale::En, cx);
-            }))
-            .on_action(cx.listener(|this, _: &SwitchLocaleChinese, _window, cx| {
-                this.switch_locale(Locale::ZhCn, cx);
-            }))
-            .on_action(
-                cx.listener(|this, _: &SwitchLocaleTraditionalChinese, _window, cx| {
-                    this.switch_locale(Locale::ZhTw, cx);
-                }),
-            )
-            .on_action(cx.listener(|this, _: &SwitchLocaleGerman, _window, cx| {
-                this.switch_locale(Locale::De, cx);
-            }))
-            .on_action(cx.listener(|this, _: &SwitchLocaleSpanish, _window, cx| {
-                this.switch_locale(Locale::EsEs, cx);
-            }))
-            .on_action(cx.listener(|this, _: &SwitchLocaleFrench, _window, cx| {
-                this.switch_locale(Locale::FrFr, cx);
-            }))
-            .on_action(cx.listener(|this, _: &SwitchLocaleItalian, _window, cx| {
-                this.switch_locale(Locale::It, cx);
-            }))
-            .on_action(cx.listener(|this, _: &SwitchLocaleJapanese, _window, cx| {
-                this.switch_locale(Locale::Ja, cx);
-            }))
-            .on_action(cx.listener(|this, _: &SwitchLocaleKorean, _window, cx| {
-                this.switch_locale(Locale::Ko, cx);
-            }))
-            .on_action(
-                cx.listener(|this, _: &SwitchLocalePortugueseBrazil, _window, cx| {
-                    this.switch_locale(Locale::PtBr, cx);
-                }),
-            )
-            .on_action(
-                cx.listener(|this, _: &SwitchLocaleVietnamese, _window, cx| {
-                    this.switch_locale(Locale::Vi, cx);
-                }),
-            )
-            .on_action(cx.listener(|this, _: &GoToTab1, window, cx| {
-                this.go_to_tab(0, window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &GoToTab2, window, cx| {
-                this.go_to_tab(1, window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &GoToTab3, window, cx| {
-                this.go_to_tab(2, window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &GoToTab4, window, cx| {
-                this.go_to_tab(3, window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &GoToTab5, window, cx| {
-                this.go_to_tab(4, window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &GoToTab6, window, cx| {
-                this.go_to_tab(5, window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &GoToTab7, window, cx| {
-                this.go_to_tab(6, window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &GoToTab8, window, cx| {
-                this.go_to_tab(7, window, cx);
-            }))
-            .on_action(cx.listener(|this, _: &GoToTab9, window, cx| {
-                this.go_to_tab(8, window, cx);
-            }))
-            .when_some(window_background_layer, |root, background| {
-                // Window scope paints exactly one absolute image behind all persistent chrome.
-                root.child(background)
-            })
-            .when(titlebar_visible, |root| {
-                root.child(self.render_title_bar(window, cx))
-            })
-            .child(
-                div()
-                    .flex_1()
-                    .flex()
-                    .flex_row()
-                    .overflow_hidden()
-                    .when(!zen_mode, |layout| {
-                        layout.child(self.render_activity_bar(cx))
-                    })
-                    .when(!zen_mode && self.sidebar_rendered, |layout| {
-                        layout.child(self.render_animated_sidebar_region(window, cx))
-                    })
-                    .child(
-                        div()
-                            .flex_1()
-                            .flex()
-                            .flex_col()
-                            .min_w(px(self.tokens.metrics.min_main_width))
-                            .overflow_hidden()
-                            .when(!zen_mode, |main| {
-                                main.child(self.render_tab_bar(window, cx))
-                            })
-                            .child(
-                                div().flex_1().relative().overflow_hidden().child(
-                                    div()
-                                        .absolute()
-                                        .top_0()
-                                        .left_0()
-                                        .right_0()
-                                        .bottom_0()
-                                        .child(content),
-                                ),
-                            ),
-                    )
-                    .when(!zen_mode && self.context_sidebar_rendered, |layout| {
-                        // Keep the right sidebar as one root child. Splitting
-                        // the gutter and content here makes resize hit-testing
-                        // easy to regress on scroll-heavy Host Tools pages.
-                        layout.child(self.render_animated_context_sidebar_frame(cx))
-                    })
-                    .when(!zen_mode, |layout| {
-                        layout.child(self.render_context_activity_bar(window, cx))
-                    }),
-            )
-            .when(!zen_mode && !self.sidebar_collapsed, |root| {
-                root.child(self.render_left_sidebar_resize_hotzone(effective_titlebar_height, cx))
-            })
-            .when(!zen_mode && self.context_sidebar_visible(), |root| {
-                root.child(
-                    self.render_context_right_sidebar_resize_hotzone(effective_titlebar_height, cx),
-                )
-            })
-            .when(sidebar_resize_cursor_active, |root| {
-                root.child(
-                    canvas(
-                        |_, _, _| (),
-                        |_, _, window, _| {
-                            // A window-level override keeps the resize cursor active above
-                            // blocking terminal and virtual-list hitboxes.
-                            window.set_window_cursor_style(CursorStyle::ResizeColumn);
-                        },
-                    )
-                    .absolute(),
-                )
-            })
-            .when(embedded_sftp_resize_cursor_active, |root| {
-                root.child(
-                    canvas(
-                        |_, _, _| (),
-                        |_, _, window, _| {
-                            // Keep the row-resize cursor stable while the
-                            // pointer crosses either virtualized sidebar list.
-                            window.set_window_cursor_style(CursorStyle::ResizeRow);
-                        },
-                    )
-                    .absolute(),
-                )
-            })
-            .when(
-                self.file_manager_bookmarks_resize_active(window.window_handle().window_id(), cx)
-                    || self
-                        .browser_pointer_capture_owner(cx)
-                        .is_some_and(browser_behavior::pointer_capture_needs_workspace_overlay),
-                |root| root.child(self.render_workspace_pointer_capture_overlay(cx)),
-            )
-            .when_some(self.render_session_sort_menu(cx), |root, menu| {
-                root.child(menu)
-            })
-            .when_some(self.render_context_tools_menu(window, cx), |root, menu| {
-                root.child(menu)
-            })
-            .when(
-                self.connection_form_state(cx).form.is_some() && self.ssh_tunnels.form.is_none(),
-                |root| root.child(self.render_new_connection_modal(window, cx)),
-            )
-            .when_some(self.render_ssh_tunnel_form(window, cx), |root, dialog| {
-                root.child(dialog)
-            })
-            .when_some(
-                self.render_plugin_connection_form(window, cx),
-                |root, form| root.child(form),
-            )
-            .when_some(self.render_ssh_algorithm_context_menu(cx), |root, menu| {
-                root.child(menu)
-            })
-            .when_some(self.render_sftp_presentation_dialog(cx), |root, dialog| {
-                root.child(dialog)
-            })
-            .when(self.local_shell_launcher_open, |root| {
-                root.child(self.render_local_shell_launcher(window, cx))
-            })
-            .when(
-                self.connection_form_state(cx)
-                    .form
-                    .as_ref()
-                    .is_some_and(|form| form.jump_server_form.is_some()),
-                |root| root.child(self.render_add_jump_server_modal(window, cx)),
-            )
-            .when_some(
-                self.render_new_connection_select_overlay(window, cx),
-                |root, overlay| root.child(overlay),
-            )
-            .when(
-                self.connection_flow.read(cx).has_host_key_challenge(),
-                |root| root.child(self.render_host_key_dialog(cx)),
-            )
-            .when(
-                self.connection_flow
-                    .read(cx)
-                    .has_keyboard_interactive_challenge(),
-                |root| root.child(self.render_keyboard_interactive_dialog(cx)),
-            )
-            .when(
-                self.ai_entity.read(cx).settings_confirm_is_enable(),
-                |root| root.child(self.render_ai_enable_confirm_dialog(cx)),
-            )
-            .when(
-                self.ai_entity
-                    .read(cx)
-                    .settings_confirm_is_provider_key_remove(),
-                |root| root.child(self.render_ai_provider_key_remove_confirm_dialog(cx)),
-            )
-            .when(
-                self.ai_entity
-                    .read(cx)
-                    .settings_confirm_provider_name()
-                    .is_some(),
-                |root| root.child(self.render_ai_provider_remove_confirm_dialog(cx)),
-            )
-            .when(
-                self.ai_entity.read(cx).chat_ui().safety_confirm_open,
-                |root| root.child(self.render_ai_safety_confirm_dialog(cx)),
-            )
-            .when(
-                self.ai_entity.read(cx).chat_ui().summarize_confirm_open,
-                |root| root.child(self.render_ai_summarize_confirm_dialog(cx)),
-            )
-            .when(
-                ai_chat_confirm_snapshot.as_ref().is_some_and(|snapshot| {
-                    matches!(&snapshot.kind, ai_state::AiChatConfirmKind::ClearAll)
-                }),
-                |root| root.child(self.render_ai_clear_all_confirm_dialog(cx)),
-            )
-            .when(
-                ai_chat_confirm_snapshot.as_ref().is_some_and(|snapshot| {
-                    matches!(
-                        &snapshot.kind,
-                        ai_state::AiChatConfirmKind::DeleteMessage { .. }
-                    )
-                }),
-                |root| root.child(self.render_ai_delete_message_confirm_dialog(cx)),
-            )
-            .when(
-                overlay_confirm_snapshot.as_ref().is_some_and(|snapshot| {
-                    matches!(
-                        &snapshot.kind,
-                        WorkspaceOverlayConfirmKind::SettingsReset
-                            | WorkspaceOverlayConfirmKind::CommandHistoryClear { .. }
-                    )
-                }),
-                |root| root.child(self.render_settings_reset_confirm_dialog(cx)),
-            )
-            .when_some(
-                self.render_settings_data_directory_confirm_dialog(cx),
-                |root, dialog| root.child(dialog),
-            )
-            .when_some(
-                self.render_remote_shell_integration_confirm(cx),
-                |root, dialog| root.child(dialog),
-            )
-            .when_some(
-                self.render_terminal_trigger_quick_command_confirm(cx),
-                |root, dialog| root.child(dialog),
-            )
-            .when(cloud_sync_confirm_open, |root| {
-                root.child(self.render_cloud_sync_confirm_dialog(cx))
-            })
-            .when(
-                matches!(
-                    overlay_confirm_snapshot
-                        .as_ref()
-                        .map(|snapshot| &snapshot.kind),
-                    Some(WorkspaceOverlayConfirmKind::NodeDisconnect { .. })
-                ),
-                |root| root.child(self.render_node_disconnect_confirm_dialog(cx)),
-            )
-            .when(tab_close_confirm_open, |root| {
-                root.child(self.render_tab_close_confirm_dialog(cx))
-            })
-            .when_some(
-                self.render_host_process_confirm_dialog(cx),
-                |root, dialog| root.child(dialog),
-            )
-            .when_some(
-                self.render_host_package_confirm_dialog(cx),
-                |root, dialog| root.child(dialog),
-            )
-            .when_some(
-                self.render_host_docker_confirm_dialog(cx),
-                |root, dialog| root.child(dialog),
-            )
-            .when_some(self.render_host_docker_logs_dialog(cx), |root, dialog| {
-                root.child(dialog)
-            })
-            .when_some(
-                self.render_host_service_confirm_dialog(cx),
-                |root, dialog| root.child(dialog),
-            )
-            .when_some(self.render_host_service_logs_dialog(cx), |root, dialog| {
-                root.child(dialog)
-            })
-            .when_some(self.render_host_tmux_confirm_dialog(cx), |root, dialog| {
-                root.child(dialog)
-            })
-            .when_some(self.render_host_tmux_input_dialog(cx), |root, dialog| {
-                root.child(dialog)
-            })
-            .when_some(self.render_host_mux_confirm_dialog(cx), |root, dialog| {
-                root.child(dialog)
-            })
-            .when_some(self.render_host_mux_input_dialog(cx), |root, dialog| {
-                root.child(dialog)
-            })
-            .when_some(self.render_host_mux_read_dialog(cx), |root, dialog| {
-                root.child(dialog)
-            })
-            .when_some(
-                self.render_host_schedule_confirm_dialog(cx),
-                |root, dialog| root.child(dialog),
-            )
-            .when_some(self.render_host_schedule_logs_dialog(cx), |root, dialog| {
-                root.child(dialog)
-            })
-            .when_some(
-                self.render_native_plugin_confirm_dialog(cx),
-                |root, dialog| root.child(dialog),
-            )
-            // Tab renaming is a main-window portal and never remounts the terminal tab.
-            .when_some(self.render_tab_rename_dialog(cx), |root, dialog| {
-                root.child(dialog)
-            })
-            .when_some(self.render_archive_command(window, cx), |root, dialog| {
-                root.child(dialog)
-            })
-            // Tab-owned dialogs are portaled here so their backdrops cover all window chrome.
-            .children(active_tab_window_modals)
-            .when_some(settings_select_overlay, |root, overlay| root.child(overlay))
-            .when_some(
-                self.render_native_plugin_select_overlay(window, cx),
-                |root, overlay| root.child(overlay),
-            )
-            .when_some(
-                self.render_ai_sidebar_floating_overlay(window, cx),
-                |root, overlay| root.child(overlay),
-            )
-            .when(self.terminal.read(cx).broadcast_menu_open(), |root| {
-                let placement = if self.settings_store.settings().terminal.command_bar.enabled {
-                    actions::TerminalBroadcastMenuPlacement::Bottom(62.0)
-                } else {
-                    actions::TerminalBroadcastMenuPlacement::Top(
-                        effective_titlebar_height + self.tokens.metrics.tabbar_height + 6.0,
-                    )
-                };
-                root.child(self.workspace_context_menu_backdrop(
-                    self.render_terminal_broadcast_menu(placement, cx),
-                    cx,
+        self.register_workspace_actions(
+            div()
+                .id("workspace-root")
+                .size_full()
+                .relative()
+                .flex()
+                .flex_col()
+                .bg(workspace_background(
+                    &self.tokens,
+                    vibrancy_mode,
+                    has_window_background,
                 ))
-            })
-            .when_some(
-                self.render_detached_tab_return_handoff(window, cx),
-                |root, handoff| root.child(handoff),
+                .text_color(rgb(self.tokens.ui.text))
+                .font_family(settings_ui_font_family(
+                    &self.settings_store.settings().appearance.ui_font_family,
+                ))
+                .when(sidebar_resize_cursor_active, |root| {
+                    root.cursor(CursorStyle::ResizeColumn)
+                })
+                .when(embedded_sftp_resize_cursor_active, |root| {
+                    root.cursor(CursorStyle::ResizeRow)
+                })
+                .track_focus(&self.focus_handle)
+                .key_context(key_context)
+                // Host Tools actions bubble here from both sidebar pages and portaled dialogs.
+                .on_action(
+                    cx.listener(|this, request: &HostToolsWindowRequest, window, cx| {
+                        this.handle_host_tools_window_request(request, window, cx);
+                        cx.stop_propagation();
+                    }),
+                )
+                .on_action(cx.listener(|this, _: &Quit, _window, cx| {
+                    this.request_application_quit(cx);
+                    cx.stop_propagation();
+                }))
+                .on_mouse_down(
+                    MouseButton::Left,
+                    cx.listener(|this, _event: &MouseDownEvent, _window, cx| {
+                        // Popovers inside the command bar stop propagation. Any
+                        // remaining workspace click is outside those overlays and
+                        // should dismiss them without stealing the original click.
+                        this.close_terminal_command_overlays(cx);
+                    }),
+                )
+                .capture_any_mouse_down(cx.listener(|this, event: &MouseDownEvent, _window, cx| {
+                    let Some(target) = this.active_ime_target(cx) else {
+                        return;
+                    };
+                    let owns_selection = matches!(
+                        target,
+                        ime::WorkspaceImeTarget::ActiveSessionSearch
+                            | ime::WorkspaceImeTarget::KnowledgeSearch
+                    );
+                    if owns_selection
+                        && this
+                            .text_input_anchors
+                            .get(target.anchor_id())
+                            .is_none_or(|anchor| !anchor.bounds.contains(&event.position))
+                    {
+                        this.clear_ime_selection();
+                        cx.notify();
+                    }
+                }))
+                .capture_key_down(cx.listener(|this, event: &KeyDownEvent, window, cx| {
+                    this.handle_workspace_capture_key_down(event, window, cx);
+                }))
+                .on_key_down(cx.listener(|this, event: &KeyDownEvent, window, cx| {
+                    this.handle_workspace_key(event, window, cx);
+                }))
+                .on_key_up(cx.listener(|this, event: &KeyUpEvent, _window, cx| {
+                    if this.forward_remote_desktop_key_up(event, cx) {
+                        cx.stop_propagation();
+                    }
+                }))
+                .on_modifiers_changed(cx.listener(
+                    |this, event: &ModifiersChangedEvent, _window, cx| {
+                        let _ = this.forward_remote_desktop_modifiers_changed(event, cx);
+                    },
+                ))
+                .on_mouse_move(cx.listener(|this, event: &MouseMoveEvent, window, cx| {
+                    this.update_sidebar_resize(event, window, cx);
+                    this.update_file_manager_bookmarks_resize(event, window, cx);
+                    this.update_knowledge_resize(event, window, cx);
+                    this.update_embedded_sftp_sidebar_resize(event, window, cx);
+                    this.update_ai_sidebar_resize(event, window, cx);
+                    this.update_sftp_pane_resize(event, window, cx);
+                    this.update_sftp_queue_resize(event, window, cx);
+                    this.update_terminal_command_sender_resize(event, window, cx);
+                    this.update_terminal_quick_commands_resize(event, cx);
+                    this.update_split_drag(event, window, cx);
+                    this.update_settings_slider_drag(event, cx);
+                    this.update_terminal_cast_seek_drag(event, cx);
+                    // Continue scrollbar dragging after the pointer leaves its thin hit target.
+                    this.update_tabbar_scrollbar_drag(event, window, cx);
+                    if this.read_only_selection_drag_active() && !event.dragging() {
+                        // A platform capture loss can omit the matching mouse-up. The
+                        // next buttonless move must release the logical text drag so
+                        // it cannot keep swallowing unrelated workspace input.
+                        this.finish_ime_selection_drag(cx);
+                        this.stop_selectable_text_autoscroll();
+                    }
+                    this.update_ime_selection_drag(event.position, window, cx);
+                    if this.read_only_selection_drag_active() {
+                        this.update_selectable_text_autoscroll(event.position, cx);
+                        cx.stop_propagation();
+                    }
+                    this.update_sftp_drag_capture(event.position, cx);
+                    this.update_tab_drag(event, window, cx);
+                    if let Some(drag) = this.detached_tab_return_drag {
+                        this.update_detached_tab_return_drag(drag.tab_id, event, window, cx);
+                    }
+                    if this.browser_pointer_capture_owner(cx).is_some() {
+                        cx.stop_propagation();
+                    }
+                }))
+                .on_mouse_down(
+                    MouseButton::Left,
+                    cx.listener(|this, _event: &MouseDownEvent, window, cx| {
+                        this.release_active_remote_desktop_inputs(cx);
+                        this.dismiss_transient_workspace_overlays_from_outside_pointer(window, cx);
+                        this.blur_text_inputs(cx);
+                        this.clear_read_only_ime_selection(cx);
+                    }),
+                )
+                .on_mouse_down(
+                    MouseButton::Right,
+                    cx.listener(|this, _event: &MouseDownEvent, window, cx| {
+                        this.release_active_remote_desktop_inputs(cx);
+                        // Browser context menus and Radix popovers both treat
+                        // outside pointer activity as a transient-layer dismiss.
+                        // Right-click keeps input focus alone but must not leave an
+                        // old menu/select open behind the next context action.
+                        let _ = this
+                            .dismiss_transient_workspace_overlays_from_outside_pointer(window, cx);
+                    }),
+                )
+                .on_scroll_wheel(cx.listener(|this, _event: &ScrollWheelEvent, _window, cx| {
+                    // Portal backdrops already occlude wheel input. This catches
+                    // inline select/popover states that have no full-window layer,
+                    // closing them before the same wheel event scrolls the page or
+                    // terminal underneath.
+                    if this.dismiss_transient_workspace_overlays(cx) {
+                        cx.stop_propagation();
+                        cx.notify();
+                    }
+                }))
+                .on_mouse_up_all(move |event, phase, _hitbox, _window, cx| {
+                    if phase == gpui::DispatchPhase::Capture && event.button == MouseButton::Left {
+                        read_only_selection_workspace.update(cx, |this, cx| {
+                            if this.read_only_selection_drag_active() {
+                                // This listener deliberately ignores hit testing: a
+                                // release outside the window or behind an occluding
+                                // surface still owns the active text selection drag.
+                                this.finish_ime_selection_drag(cx);
+                                this.stop_selectable_text_autoscroll();
+                            }
+                        });
+                    }
+                    if phase == gpui::DispatchPhase::Bubble && event.button == MouseButton::Left {
+                        // File lists finish valid drops first. A release outside their hitboxes
+                        // must still retire the SFTP drag, including releases outside the root.
+                        read_only_selection_workspace.update(cx, |this, cx| {
+                            if this.cancel_sftp_drag_capture(cx) {
+                                cx.notify();
+                            }
+                        });
+                    }
+                })
+                .capture_any_mouse_up(cx.listener(|this, event: &MouseUpEvent, window, cx| {
+                    if event.button == MouseButton::Left
+                        && this.browser_pointer_capture_owner(cx).is_some_and(|owner| {
+                            // SFTP drop targets consume mouse-up during bubbling, after capture.
+                            owner != browser_behavior::BrowserPointerCaptureOwner::SftpFileDrag
+                        })
+                    {
+                        this.finish_workspace_pointer_captures(event, window, cx);
+                    }
+                }))
+                .on_mouse_up(
+                    MouseButton::Left,
+                    cx.listener(|this, event: &MouseUpEvent, window, cx| {
+                        this.finish_workspace_pointer_captures(event, window, cx);
+                    }),
+                ),
+            cx,
+        )
+        .when_some(window_background_layer, |root, background| {
+            // Window scope paints exactly one absolute image behind all persistent chrome.
+            root.child(background)
+        })
+        .when(titlebar_visible, |root| {
+            root.child(self.render_title_bar(window, cx))
+        })
+        .child(
+            div()
+                .flex_1()
+                .flex()
+                .flex_row()
+                .overflow_hidden()
+                .when(!zen_mode, |layout| {
+                    layout.child(self.render_activity_bar(cx))
+                })
+                .when(!zen_mode && self.sidebar_rendered, |layout| {
+                    layout.child(self.render_animated_sidebar_region(window, cx))
+                })
+                .child(
+                    div()
+                        .flex_1()
+                        .flex()
+                        .flex_col()
+                        .min_w(px(self.tokens.metrics.min_main_width))
+                        .overflow_hidden()
+                        .when(!zen_mode, |main| {
+                            main.child(self.render_tab_bar(window, cx))
+                        })
+                        .child(
+                            div().flex_1().relative().overflow_hidden().child(
+                                div()
+                                    .absolute()
+                                    .top_0()
+                                    .left_0()
+                                    .right_0()
+                                    .bottom_0()
+                                    .child(content),
+                            ),
+                        ),
+                )
+                .when(!zen_mode && self.context_sidebar_rendered, |layout| {
+                    // Keep the right sidebar as one root child. Splitting
+                    // the gutter and content here makes resize hit-testing
+                    // easy to regress on scroll-heavy Host Tools pages.
+                    layout.child(self.render_animated_context_sidebar_frame(cx))
+                })
+                .when(!zen_mode, |layout| {
+                    layout.child(self.render_context_activity_bar(window, cx))
+                }),
+        )
+        .when(!zen_mode && !self.sidebar_collapsed, |root| {
+            root.child(self.render_left_sidebar_resize_hotzone(effective_titlebar_height, cx))
+        })
+        .when(!zen_mode && self.context_sidebar_visible(), |root| {
+            root.child(
+                self.render_context_right_sidebar_resize_hotzone(effective_titlebar_height, cx),
             )
-            .children(self.render_main_window_overlays(
-                overlay_confirm_snapshot.as_ref(),
-                window,
+        })
+        .when(sidebar_resize_cursor_active, |root| {
+            root.child(
+                canvas(
+                    |_, _, _| (),
+                    |_, _, window, _| {
+                        // A window-level override keeps the resize cursor active above
+                        // blocking terminal and virtual-list hitboxes.
+                        window.set_window_cursor_style(CursorStyle::ResizeColumn);
+                    },
+                )
+                .absolute(),
+            )
+        })
+        .when(embedded_sftp_resize_cursor_active, |root| {
+            root.child(
+                canvas(
+                    |_, _, _| (),
+                    |_, _, window, _| {
+                        // Keep the row-resize cursor stable while the
+                        // pointer crosses either virtualized sidebar list.
+                        window.set_window_cursor_style(CursorStyle::ResizeRow);
+                    },
+                )
+                .absolute(),
+            )
+        })
+        .when(
+            self.file_manager_bookmarks_resize_active(window.window_handle().window_id(), cx)
+                || self
+                    .browser_pointer_capture_owner(cx)
+                    .is_some_and(browser_behavior::pointer_capture_needs_workspace_overlay),
+            |root| root.child(self.render_workspace_pointer_capture_overlay(cx)),
+        )
+        .when_some(self.render_session_sort_menu(cx), |root, menu| {
+            root.child(menu)
+        })
+        .when_some(self.render_context_tools_menu(window, cx), |root, menu| {
+            root.child(menu)
+        })
+        .when(
+            self.connection_form_state(cx).form.is_some() && self.ssh_tunnels.form.is_none(),
+            |root| root.child(self.render_new_connection_modal(window, cx)),
+        )
+        .when_some(self.render_ssh_tunnel_form(window, cx), |root, dialog| {
+            root.child(dialog)
+        })
+        .when_some(
+            self.render_plugin_connection_form(window, cx),
+            |root, form| root.child(form),
+        )
+        .when_some(self.render_ssh_algorithm_context_menu(cx), |root, menu| {
+            root.child(menu)
+        })
+        .when_some(self.render_sftp_presentation_dialog(cx), |root, dialog| {
+            root.child(dialog)
+        })
+        .when(self.local_shell_launcher_open, |root| {
+            root.child(self.render_local_shell_launcher(window, cx))
+        })
+        .when(
+            self.connection_form_state(cx)
+                .form
+                .as_ref()
+                .is_some_and(|form| form.jump_server_form.is_some()),
+            |root| root.child(self.render_add_jump_server_modal(window, cx)),
+        )
+        .when_some(
+            self.render_new_connection_select_overlay(window, cx),
+            |root, overlay| root.child(overlay),
+        )
+        .when(
+            self.connection_flow.read(cx).has_host_key_challenge(),
+            |root| root.child(self.render_host_key_dialog(cx)),
+        )
+        .when(
+            self.connection_flow
+                .read(cx)
+                .has_keyboard_interactive_challenge(),
+            |root| root.child(self.render_keyboard_interactive_dialog(cx)),
+        )
+        .when(
+            self.ai_entity.read(cx).settings_confirm_is_enable(),
+            |root| root.child(self.render_ai_enable_confirm_dialog(cx)),
+        )
+        .when(
+            self.ai_entity
+                .read(cx)
+                .settings_confirm_is_provider_key_remove(),
+            |root| root.child(self.render_ai_provider_key_remove_confirm_dialog(cx)),
+        )
+        .when(
+            self.ai_entity
+                .read(cx)
+                .settings_confirm_provider_name()
+                .is_some(),
+            |root| root.child(self.render_ai_provider_remove_confirm_dialog(cx)),
+        )
+        .when(
+            self.ai_entity.read(cx).chat_ui().safety_confirm_open,
+            |root| root.child(self.render_ai_safety_confirm_dialog(cx)),
+        )
+        .when(
+            self.ai_entity.read(cx).chat_ui().summarize_confirm_open,
+            |root| root.child(self.render_ai_summarize_confirm_dialog(cx)),
+        )
+        .when(
+            ai_chat_confirm_snapshot.as_ref().is_some_and(|snapshot| {
+                matches!(&snapshot.kind, ai_state::AiChatConfirmKind::ClearAll)
+            }),
+            |root| root.child(self.render_ai_clear_all_confirm_dialog(cx)),
+        )
+        .when(
+            ai_chat_confirm_snapshot.as_ref().is_some_and(|snapshot| {
+                matches!(
+                    &snapshot.kind,
+                    ai_state::AiChatConfirmKind::DeleteMessage { .. }
+                )
+            }),
+            |root| root.child(self.render_ai_delete_message_confirm_dialog(cx)),
+        )
+        .when(
+            overlay_confirm_snapshot.as_ref().is_some_and(|snapshot| {
+                matches!(
+                    &snapshot.kind,
+                    WorkspaceOverlayConfirmKind::SettingsReset
+                        | WorkspaceOverlayConfirmKind::CommandHistoryClear { .. }
+                )
+            }),
+            |root| root.child(self.render_settings_reset_confirm_dialog(cx)),
+        )
+        .when_some(
+            self.render_settings_data_directory_confirm_dialog(cx),
+            |root, dialog| root.child(dialog),
+        )
+        .when_some(
+            self.render_remote_shell_integration_confirm(cx),
+            |root, dialog| root.child(dialog),
+        )
+        .when_some(
+            self.render_terminal_trigger_quick_command_confirm(cx),
+            |root, dialog| root.child(dialog),
+        )
+        .when(cloud_sync_confirm_open, |root| {
+            root.child(self.render_cloud_sync_confirm_dialog(cx))
+        })
+        .when(
+            matches!(
+                overlay_confirm_snapshot
+                    .as_ref()
+                    .map(|snapshot| &snapshot.kind),
+                Some(WorkspaceOverlayConfirmKind::NodeDisconnect { .. })
+            ),
+            |root| root.child(self.render_node_disconnect_confirm_dialog(cx)),
+        )
+        .when(tab_close_confirm_open, |root| {
+            root.child(self.render_tab_close_confirm_dialog(cx))
+        })
+        .when_some(
+            self.render_host_process_confirm_dialog(cx),
+            |root, dialog| root.child(dialog),
+        )
+        .when_some(
+            self.render_host_package_confirm_dialog(cx),
+            |root, dialog| root.child(dialog),
+        )
+        .when_some(
+            self.render_host_docker_confirm_dialog(cx),
+            |root, dialog| root.child(dialog),
+        )
+        .when_some(self.render_host_docker_logs_dialog(cx), |root, dialog| {
+            root.child(dialog)
+        })
+        .when_some(
+            self.render_host_service_confirm_dialog(cx),
+            |root, dialog| root.child(dialog),
+        )
+        .when_some(self.render_host_service_logs_dialog(cx), |root, dialog| {
+            root.child(dialog)
+        })
+        .when_some(self.render_host_tmux_confirm_dialog(cx), |root, dialog| {
+            root.child(dialog)
+        })
+        .when_some(self.render_host_tmux_input_dialog(cx), |root, dialog| {
+            root.child(dialog)
+        })
+        .when_some(self.render_host_mux_confirm_dialog(cx), |root, dialog| {
+            root.child(dialog)
+        })
+        .when_some(self.render_host_mux_input_dialog(cx), |root, dialog| {
+            root.child(dialog)
+        })
+        .when_some(self.render_host_mux_read_dialog(cx), |root, dialog| {
+            root.child(dialog)
+        })
+        .when_some(
+            self.render_host_schedule_confirm_dialog(cx),
+            |root, dialog| root.child(dialog),
+        )
+        .when_some(self.render_host_schedule_logs_dialog(cx), |root, dialog| {
+            root.child(dialog)
+        })
+        .when_some(
+            self.render_native_plugin_confirm_dialog(cx),
+            |root, dialog| root.child(dialog),
+        )
+        // Tab renaming is a main-window portal and never remounts the terminal tab.
+        .when_some(self.render_tab_rename_dialog(cx), |root, dialog| {
+            root.child(dialog)
+        })
+        .when_some(self.render_archive_command(window, cx), |root, dialog| {
+            root.child(dialog)
+        })
+        // Tab-owned dialogs are portaled here so their backdrops cover all window chrome.
+        .children(active_tab_window_modals)
+        .when_some(settings_select_overlay, |root, overlay| root.child(overlay))
+        .when_some(
+            self.render_native_plugin_select_overlay(window, cx),
+            |root, overlay| root.child(overlay),
+        )
+        .when_some(
+            self.render_ai_sidebar_floating_overlay(window, cx),
+            |root, overlay| root.child(overlay),
+        )
+        .when(self.terminal.read(cx).broadcast_menu_open(), |root| {
+            let placement = if self.settings_store.settings().terminal.command_bar.enabled {
+                actions::TerminalBroadcastMenuPlacement::Bottom(62.0)
+            } else {
+                actions::TerminalBroadcastMenuPlacement::Top(
+                    effective_titlebar_height + self.tokens.metrics.tabbar_height + 6.0,
+                )
+            };
+            root.child(self.workspace_context_menu_backdrop(
+                self.render_terminal_broadcast_menu(placement, cx),
                 cx,
             ))
-            .children(overlay_layers)
-            // 会话行右键菜单挂在窗口根层：菜单坐标是窗口坐标，
-            // 挂进侧栏会带上侧栏自身的偏移，看起来就"飘"了。
-            .children(self.render_session_context_menu(cx))
-            .child(WorkspaceImeElement::new(
-                cx.entity(),
-                self.focus_handle.clone(),
-                window.window_handle().window_id(),
-            ))
-            .into_any_element()
+        })
+        .when_some(
+            self.render_detached_tab_return_handoff(window, cx),
+            |root, handoff| root.child(handoff),
+        )
+        .children(self.render_main_window_overlays(overlay_confirm_snapshot.as_ref(), window, cx))
+        .children(overlay_layers)
+        // 会话行右键菜单挂在窗口根层：菜单坐标是窗口坐标，
+        // 挂进侧栏会带上侧栏自身的偏移，看起来就"飘"了。
+        .children(self.render_session_context_menu(cx))
+        .child(WorkspaceImeElement::new(
+            cx.entity(),
+            self.focus_handle.clone(),
+            window.window_handle().window_id(),
+        ))
+        .into_any_element()
     }
     /// 主窗口的内容区：按活动标签的类型分派到对应 surface。
     ///
     /// 分屏拖放区域和内容背景都要包在最外层，所以连包裹一起在这里完成。
+    /// 工作区根节点上的动作绑定。
+    ///
+    /// 250 行纯 on_action，每个都是「快捷键 → 一次方法调用」。
+    /// 只依赖 self 和 cx，跟布局无关；混在布局链里会把结构淹没。
+    fn register_workspace_actions(
+        &self,
+        root: Stateful<Div>,
+        cx: &mut Context<Self>,
+    ) -> Stateful<Div> {
+        root.on_action(cx.listener(|this, _: &NewTerminal, window, cx| {
+            let _ = this.create_local_terminal_tab(window, cx);
+        }))
+        .on_action(cx.listener(
+            |this, action: &oxideterm_gpui_editor::ManageLanguagePlugin, window, cx| {
+                this.open_language_plugin(&action.plugin_id, window, cx);
+            },
+        ))
+        .on_action(cx.listener(|this, _: &ShellLauncher, _window, cx| {
+            this.open_local_shell_launcher(cx);
+        }))
+        .on_action(cx.listener(|this, _: &CloseTab, window, cx| {
+            this.request_close_active_tab(window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &CloseOtherTabs, window, cx| {
+            this.request_close_other_tabs_or_active_pane(window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &NewConnection, window, cx| {
+            this.open_new_connection_form(window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &ToggleSidebar, _window, cx| {
+            this.toggle_sidebar(cx);
+        }))
+        .on_action(cx.listener(|this, _: &CommandPalette, window, cx| {
+            this.open_command_palette(window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &ZenMode, _window, cx| {
+            this.toggle_zen_mode(cx);
+        }))
+        .on_action(cx.listener(|_this, _: &ToggleFullscreen, window, cx| {
+            // Full-screen transitions stay owned by the native window and
+            // must not fall through as terminal input.
+            window.toggle_fullscreen();
+            cx.stop_propagation();
+        }))
+        .on_action(cx.listener(|this, _: &NextTab, window, cx| {
+            this.next_tab(true, window, cx);
+            // GPUI dispatches the action before the raw key event. Stop here so the
+            // workspace keybinding capture does not advance the tab a second time.
+            cx.stop_propagation();
+        }))
+        .on_action(cx.listener(|this, _: &PrevTab, window, cx| {
+            this.next_tab(false, window, cx);
+            // Keep previous-tab navigation on the same single-dispatch path.
+            cx.stop_propagation();
+        }))
+        .on_action(cx.listener(|this, _: &SplitHorizontal, window, cx| {
+            this.split_active_pane(SplitDirection::Horizontal, window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &SplitVertical, window, cx| {
+            this.split_active_pane(SplitDirection::Vertical, window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &ClosePane, window, cx| {
+            this.close_active_pane(window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &SplitNavLeft, window, cx| {
+            this.focus_adjacent_pane(false, window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &SplitNavRight, window, cx| {
+            this.focus_adjacent_pane(true, window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &Copy, window, cx| {
+            if this.handle_ide_modal_edit_action("c", window, cx) {
+                return;
+            }
+            if this.copy_active_text_input(cx) {
+                return;
+            }
+            if this.copy_active_ide_selection(cx) {
+                return;
+            }
+            if this.connection_form_state(cx).form.is_none() {
+                this.copy(cx);
+            }
+        }))
+        .on_action(cx.listener(|this, _: &Cut, window, cx| {
+            if this.handle_ide_modal_edit_action("x", window, cx) {
+                return;
+            }
+            if this.cut_active_text_input(cx) {
+                return;
+            }
+            if this.cut_active_ide_selection(cx) {
+                return;
+            }
+            if this.connection_form_state(cx).form.is_none() {
+                let _ = this.cut(cx);
+            }
+        }))
+        .on_action(cx.listener(|this, _: &Paste, window, cx| {
+            if this.handle_ide_modal_edit_action("v", window, cx) {
+                return;
+            }
+            if this.paste_active_text_input(cx) {
+                return;
+            }
+            if this.paste_into_active_ide_editor(cx) {
+                return;
+            }
+            if this.connection_form_state(cx).form.is_some() {
+                this.paste_into_new_connection_field(cx);
+            } else {
+                this.paste(cx);
+            }
+        }))
+        .on_action(cx.listener(|this, _: &Find, window, cx| {
+            if this.open_active_ide_search(cx) {
+                return;
+            }
+            this.open_search(window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &FindNext, _window, cx| {
+            if this.select_next_active_ide_search_match(cx) {
+                return;
+            }
+            this.search_next(true, cx);
+        }))
+        .on_action(cx.listener(|this, _: &FindPrev, _window, cx| {
+            if this.select_previous_active_ide_search_match(cx) {
+                return;
+            }
+            this.search_next(false, cx);
+        }))
+        .on_action(cx.listener(|this, _: &CloseSearch, window, cx| {
+            this.close_search(window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &OpenSettings, window, cx| {
+            this.open_settings(window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &FontIncrease, _window, cx| {
+            this.adjust_terminal_font_size(1, cx);
+        }))
+        .on_action(cx.listener(|this, _: &FontDecrease, _window, cx| {
+            this.adjust_terminal_font_size(-1, cx);
+        }))
+        .on_action(cx.listener(|this, _: &FontReset, _window, cx| {
+            this.reset_terminal_font_size(cx);
+        }))
+        .on_action(cx.listener(|this, _: &ShowShortcuts, _window, cx| {
+            this.open_shortcuts_modal(cx);
+        }))
+        .on_action(cx.listener(|this, _: &TerminalAiPanel, _window, cx| {
+            this.toggle_terminal_ai_inline_panel(_window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &TerminalClearScreen, _window, cx| {
+            this.clear_active_terminal_screen(cx);
+        }))
+        .on_action(cx.listener(|this, _: &TerminalRecording, _window, cx| {
+            this.toggle_active_terminal_recording(cx);
+        }))
+        .on_action(cx.listener(|this, _: &TerminalFreeTypeMode, _window, cx| {
+            this.toggle_free_type_mode(cx);
+        }))
+        .on_action(cx.listener(|this, _: &PaletteEventLog, window, cx| {
+            this.open_notification_center_tab(window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &PaletteAiSidebar, _window, cx| {
+            let _ = this.toggle_ai_sidebar(cx);
+        }))
+        .on_action(cx.listener(|this, _: &PaletteBroadcast, _window, cx| {
+            this.toggle_terminal_broadcast(cx);
+        }))
+        .on_action(cx.listener(|this, _: &PaletteDisconnectAll, window, cx| {
+            this.disconnect_all_ssh_nodes_from_palette(window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &PaletteReconnectAll, _window, cx| {
+            this.reconnect_all_link_down_nodes_from_palette(cx);
+        }))
+        .on_action(
+            cx.listener(|this, _: &PaletteCancelReconnect, _window, cx| {
+                this.cancel_all_reconnects_from_palette(cx);
+            }),
+        )
+        .on_action(cx.listener(|this, _: &PaletteHealthCheck, _window, cx| {
+            this.run_connection_health_check_from_palette(cx);
+        }))
+        .on_action(cx.listener(|this, _: &PaletteResetPanes, window, cx| {
+            this.reset_active_tab_to_single_pane(window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &PaletteDetachTerminal, window, cx| {
+            this.detach_active_local_terminal_from_palette(window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &PaletteCleanupDead, _window, cx| {
+            this.cleanup_dead_local_terminal_sessions_from_palette(cx);
+        }))
+        .on_action(cx.listener(|this, _: &SwitchLocaleEnglish, _window, cx| {
+            this.switch_locale(Locale::En, cx);
+        }))
+        .on_action(cx.listener(|this, _: &SwitchLocaleChinese, _window, cx| {
+            this.switch_locale(Locale::ZhCn, cx);
+        }))
+        .on_action(
+            cx.listener(|this, _: &SwitchLocaleTraditionalChinese, _window, cx| {
+                this.switch_locale(Locale::ZhTw, cx);
+            }),
+        )
+        .on_action(cx.listener(|this, _: &SwitchLocaleGerman, _window, cx| {
+            this.switch_locale(Locale::De, cx);
+        }))
+        .on_action(cx.listener(|this, _: &SwitchLocaleSpanish, _window, cx| {
+            this.switch_locale(Locale::EsEs, cx);
+        }))
+        .on_action(cx.listener(|this, _: &SwitchLocaleFrench, _window, cx| {
+            this.switch_locale(Locale::FrFr, cx);
+        }))
+        .on_action(cx.listener(|this, _: &SwitchLocaleItalian, _window, cx| {
+            this.switch_locale(Locale::It, cx);
+        }))
+        .on_action(cx.listener(|this, _: &SwitchLocaleJapanese, _window, cx| {
+            this.switch_locale(Locale::Ja, cx);
+        }))
+        .on_action(cx.listener(|this, _: &SwitchLocaleKorean, _window, cx| {
+            this.switch_locale(Locale::Ko, cx);
+        }))
+        .on_action(
+            cx.listener(|this, _: &SwitchLocalePortugueseBrazil, _window, cx| {
+                this.switch_locale(Locale::PtBr, cx);
+            }),
+        )
+        .on_action(
+            cx.listener(|this, _: &SwitchLocaleVietnamese, _window, cx| {
+                this.switch_locale(Locale::Vi, cx);
+            }),
+        )
+        .on_action(cx.listener(|this, _: &GoToTab1, window, cx| {
+            this.go_to_tab(0, window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &GoToTab2, window, cx| {
+            this.go_to_tab(1, window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &GoToTab3, window, cx| {
+            this.go_to_tab(2, window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &GoToTab4, window, cx| {
+            this.go_to_tab(3, window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &GoToTab5, window, cx| {
+            this.go_to_tab(4, window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &GoToTab6, window, cx| {
+            this.go_to_tab(5, window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &GoToTab7, window, cx| {
+            this.go_to_tab(6, window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &GoToTab8, window, cx| {
+            this.go_to_tab(7, window, cx);
+        }))
+        .on_action(cx.listener(|this, _: &GoToTab9, window, cx| {
+            this.go_to_tab(8, window, cx);
+        }))
+    }
+
     fn render_main_window_content(
         &mut self,
         active_tab_projection: Option<&(TabId, TabKind, Option<PaneNode>)>,
