@@ -771,24 +771,16 @@ impl WorkspaceApp {
         )
     }
 
-    pub(in crate::workspace) fn settings_terminal_section(
+    /// 终端设置 → 显示页：字体、内边距与光标、滚动、渲染器、编码与退格。
+    pub(in crate::workspace) fn settings_terminal_display_section(
         &self,
         section_index: usize,
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let settings = self.settings_store.settings();
-        if section_index == 0 {
-            return self.terminal_page_switcher(cx);
-        }
-
-        let terminal_page = self
-            .settings_workspace
-            .read(cx)
-            .route_snapshot()
-            .terminal_page;
-        match (terminal_page, section_index - 1) {
+        match section_index {
             // 字体：族、字重、预览、连字、字号、行高
-            (TerminalSettingsPage::Display, 0) => {
+            0 => {
                 let custom_cjk = self.settings_workspace.read(cx).terminal_cjk_font_custom
                     || cjk_font_is_custom(&settings.terminal.cjk_font_family);
                 let mut rows = vec![self.select_setting_row(
@@ -876,7 +868,7 @@ impl WorkspaceApp {
                 )
             }
             // 显示：内边距、光标
-            (TerminalSettingsPage::Display, 1) => self.settings_card(
+            1 => self.settings_card(
                 "settings_view.terminal.display_behavior",
                 "settings_view.terminal.display_behavior_hint",
                 vec![
@@ -931,7 +923,7 @@ impl WorkspaceApp {
                 ],
             ),
             // 显示：滚动
-            (TerminalSettingsPage::Display, 2) => self.settings_card(
+            2 => self.settings_card(
                 "settings_view.terminal.cursor",
                 "",
                 vec![
@@ -954,7 +946,7 @@ impl WorkspaceApp {
                 ],
             ),
             // 显示：渲染器
-            (TerminalSettingsPage::Display, 3) => self.settings_card(
+            3 => self.settings_card(
                 "settings_view.terminal.command_marks",
                 "",
                 vec![
@@ -984,7 +976,7 @@ impl WorkspaceApp {
                 ],
             ),
             // 显示：编码、退格
-            (TerminalSettingsPage::Display, 4) => self.settings_card(
+            4 => self.settings_card(
                 "settings_view.terminal.buffer",
                 "",
                 vec![
@@ -1005,14 +997,20 @@ impl WorkspaceApp {
                     ),
                 ],
             ),
-            (TerminalSettingsPage::Input, index) => {
-                self.terminal_input_settings_card(index, settings, cx)
-            }
-            (TerminalSettingsPage::Local, local_section_index) => {
-                self.settings_local_section(local_section_index, cx)
-            }
+            _ => div().into_any_element(),
+        }
+    }
+
+    /// 终端设置 → 命令栏页：显示开关、补全、历史。
+    pub(in crate::workspace) fn settings_terminal_command_bar_section(
+        &self,
+        section_index: usize,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let settings = self.settings_store.settings();
+        match section_index {
             // 命令栏：基础
-            (TerminalSettingsPage::CommandBar, 0) => self.settings_card(
+            0 => self.settings_card(
                 "settings_view.terminal.command_bar",
                 "",
                 vec![
@@ -1118,13 +1116,13 @@ impl WorkspaceApp {
                 ],
             ),
             // 命令栏：补全
-            (TerminalSettingsPage::CommandBar, 1) => self.settings_card(
+            1 => self.settings_card(
                 "settings_view.terminal.command_bar_focus_handoff",
                 "settings_view.terminal.command_bar_focus_handoff_hint",
                 vec![self.focus_handoff_commands_row(settings, cx)],
             ),
             // 命令栏：历史
-            (TerminalSettingsPage::CommandBar, 2) => self.settings_card(
+            2 => self.settings_card(
                 "settings_view.terminal.quick_commands",
                 "",
                 vec![
@@ -1166,8 +1164,20 @@ impl WorkspaceApp {
                     self.terminal_command_specs_editor_row(cx),
                 ],
             ),
+            _ => div().into_any_element(),
+        }
+    }
+
+    /// 终端设置 → 目录感知页：开关、Shell 集成、触发器。
+    pub(in crate::workspace) fn settings_terminal_awareness_section(
+        &self,
+        section_index: usize,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let settings = self.settings_store.settings();
+        match section_index {
             // 目录感知
-            (TerminalSettingsPage::Awareness, 0) => self.settings_card(
+            0 => self.settings_card(
                 "settings_view.terminal.awareness_title",
                 "settings_view.terminal.awareness_description",
                 vec![
@@ -1192,10 +1202,22 @@ impl WorkspaceApp {
                     ),
                 ],
             ),
-            (TerminalSettingsPage::Awareness, 1) => self.remote_shell_integration_card(cx),
-            (TerminalSettingsPage::Awareness, 2) => self.terminal_triggers_settings_card(cx),
+            1 => self.remote_shell_integration_card(cx),
+            2 => self.terminal_triggers_settings_card(cx),
+            _ => div().into_any_element(),
+        }
+    }
+
+    /// 终端设置 → 传输页：ZMODEM、会话日志。
+    pub(in crate::workspace) fn settings_terminal_transfer_section(
+        &self,
+        section_index: usize,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let settings = self.settings_store.settings();
+        match section_index {
             // 传输：ZMODEM
-            (TerminalSettingsPage::Transfer, 0) => self.settings_card(
+            0 => self.settings_card(
                 "settings_view.terminal.in_band_transfer.title",
                 "",
                 vec![
@@ -1245,7 +1267,7 @@ impl WorkspaceApp {
                 ],
             ),
             // 传输：会话日志
-            (TerminalSettingsPage::Transfer, 1) => self.settings_card(
+            1 => self.settings_card(
                 "settings_view.terminal.xmodem.title",
                 "",
                 vec![self.select_setting_row(
@@ -1257,7 +1279,19 @@ impl WorkspaceApp {
                     cx,
                 )],
             ),
-            (TerminalSettingsPage::Logging, 0) => {
+            _ => div().into_any_element(),
+        }
+    }
+
+    /// 终端设置 → 日志页：会话日志的自动记录、目录、大小上限。
+    pub(in crate::workspace) fn settings_terminal_logging_section(
+        &self,
+        section_index: usize,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let settings = self.settings_store.settings();
+        match section_index {
+            0 => {
                 let default_directory =
                     settings::terminal_session_log_root_directory(self.settings_store.path(), None);
                 let configured_directory = settings
@@ -1378,6 +1412,47 @@ impl WorkspaceApp {
                         ),
                     ],
                 )
+            }
+            _ => div().into_any_element(),
+        }
+    }
+
+    pub(in crate::workspace) fn settings_terminal_section(
+        &self,
+        section_index: usize,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let settings = self.settings_store.settings();
+        if section_index == 0 {
+            return self.terminal_page_switcher(cx);
+        }
+
+        let terminal_page = self
+            .settings_workspace
+            .read(cx)
+            .route_snapshot()
+            .terminal_page;
+        match (terminal_page, section_index - 1) {
+            (TerminalSettingsPage::Display, index) => {
+                self.settings_terminal_display_section(index, cx)
+            }
+            (TerminalSettingsPage::Input, index) => {
+                self.terminal_input_settings_card(index, settings, cx)
+            }
+            (TerminalSettingsPage::Local, local_section_index) => {
+                self.settings_local_section(local_section_index, cx)
+            }
+            (TerminalSettingsPage::CommandBar, index) => {
+                self.settings_terminal_command_bar_section(index, cx)
+            }
+            (TerminalSettingsPage::Awareness, index) => {
+                self.settings_terminal_awareness_section(index, cx)
+            }
+            (TerminalSettingsPage::Transfer, index) => {
+                self.settings_terminal_transfer_section(index, cx)
+            }
+            (TerminalSettingsPage::Logging, index) => {
+                self.settings_terminal_logging_section(index, cx)
             }
             (TerminalSettingsPage::Highlight, 0) => self.highlight_rules_card(settings, cx),
             _ => div().into_any_element(),
