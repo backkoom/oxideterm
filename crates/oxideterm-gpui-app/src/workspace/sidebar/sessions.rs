@@ -931,7 +931,6 @@ impl WorkspaceApp {
                     })
                 },
             ))
-            .children(self.render_session_context_menu(cx))
             .into_any_element()
     }
 
@@ -2520,27 +2519,6 @@ impl WorkspaceApp {
                     cx,
                 ));
             }
-        }
-
-        if saved_connection_id.is_some()
-            && !matches!(
-                node_view.status(),
-                ActiveSessionStatus::Active | ActiveSessionStatus::Connected
-            )
-        {
-            let forward_node = node_id.clone();
-            children.push(self.render_session_action_item(
-                depth,
-                false,
-                LucideIcon::ArrowLeftRight,
-                self.i18n.t("sessions.tree.actions.port_forwarding"),
-                SessionActionVariant::Primary,
-                cx.listener(move |this, _, window, cx| {
-                    this.open_forwards_tab(forward_node.clone(), window, cx);
-                    cx.stop_propagation();
-                }),
-                cx,
-            ));
         }
 
         children.extend(self.render_session_node_lifecycle_items(

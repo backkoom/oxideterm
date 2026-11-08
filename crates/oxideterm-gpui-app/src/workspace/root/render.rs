@@ -1197,6 +1197,9 @@ impl WorkspaceApp {
                 root.child(self.render_mermaid_zoom_modal(window, cx))
             })
             .children(overlay_layers)
+            // 会话行右键菜单挂在窗口根层：菜单坐标是窗口坐标，
+            // 挂进侧栏会带上侧栏自身的偏移，看起来就"飘"了。
+            .children(self.render_session_context_menu(cx))
             .child(WorkspaceImeElement::new(
                 cx.entity(),
                 self.focus_handle.clone(),
