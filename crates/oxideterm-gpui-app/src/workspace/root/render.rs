@@ -263,64 +263,9 @@ impl WorkspaceApp {
         }
 
         self.split_drop_regions.borrow_mut().clear();
-        let content = if let Some((tab_id, tab_kind, root_pane)) = &active_tab_projection {
-            match (tab_kind, root_pane) {
-                (TabKind::Settings, _) => self.render_settings_surface(cx),
-                (TabKind::FileManager, _) => self.render_file_manager_surface(window, cx),
-                (TabKind::Graphics, _) => self.render_graphics_surface(window, cx),
-                (TabKind::Runtime, _) => self.render_connection_runtime_surface(cx),
-                (TabKind::ConnectionPool, _) => {
-                    // Old workspaces may restore the retired connection-pool tab.
-                    // Keep it readable by showing the runtime overview instead.
-                    self.host_tools.update(cx, |host_tools, _cx| {
-                        host_tools.reset_runtime_section();
-                    });
-                    self.render_connection_runtime_surface(cx)
-                }
-                (TabKind::Topology, _) => self.render_topology_surface(cx),
-                (TabKind::NotificationCenter, _) => self.render_notification_center_surface(cx),
-                (TabKind::Sftp, _) => self.render_sftp_surface(window, cx),
-                (TabKind::Ide, _) => self.render_ide_surface(cx),
-                (TabKind::Forwards, _) => self.render_forwards_surface(window, cx),
-                (TabKind::SessionManager, _) => self.render_session_manager_surface(window, cx),
-                (TabKind::PluginManager, _) => self.render_plugin_manager_surface(cx),
-                (TabKind::Plugin { plugin_id, tab_id }, _) => {
-                    let plugin_id = plugin_id.clone();
-                    let tab_id = tab_id.clone();
-                    self.render_native_plugin_tab_surface(&plugin_id, &tab_id, cx)
-                }
-                (TabKind::CloudSync, _) => self.render_cloud_sync_surface(cx),
-                (TabKind::Knowledge, _) => self.render_knowledge_workspace_surface(
-                    KnowledgeWorkspaceLayout::MainWindow,
-                    window,
-                    cx,
-                ),
-                (TabKind::RemoteDesktop, _) => {
-                    self.render_remote_desktop_surface(*tab_id, window, cx)
-                }
-                (_, Some(root_pane)) => self.render_terminal_surface(root_pane, window, cx),
-                _ => {
-                    let available_width = self.welcome_main_content_width(window, cx);
-                    self.render_empty_workspace(available_width, cx)
-                }
-            }
-        } else if *self.tab_host.read(cx).scope() != tabs::TabScope::All {
-            self.render_empty_tab_scope(cx)
-        } else {
-            let available_width = self.welcome_main_content_width(window, cx);
-            self.render_empty_workspace(available_width, cx)
-        };
-        let content = if let Some((tab, _, _)) = &active_tab_projection {
-            self.wrap_split_drop_region(*tab, None, content, window, cx)
-        } else {
-            content
-        };
-        let content = self.wrap_content_background(
+        let content = self.render_main_window_content(
+            active_tab_projection.as_ref(),
             window_background,
-            content,
-            active_tab_projection
-                .as_ref()
-                .map(|(_, kind, _)| tab_background_key(kind)),
             window,
             cx,
         );
@@ -1115,6 +1060,77 @@ impl WorkspaceApp {
             ))
             .into_any_element()
     }
+    /// 主窗口的内容区：按活动标签的类型分派到对应 surface。
+    ///
+    /// 分屏拖放区域和内容背景都要包在最外层，所以连包裹一起在这里完成。
+    fn render_main_window_content(
+        &mut self,
+        active_tab_projection: Option<&(TabId, TabKind, Option<PaneNode>)>,
+        window_background: &Entity<window_shell::WorkspaceWindowBackgroundEntity>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
+        let content = if let Some((tab_id, tab_kind, root_pane)) = active_tab_projection {
+            match (tab_kind, root_pane) {
+                (TabKind::Settings, _) => self.render_settings_surface(cx),
+                (TabKind::FileManager, _) => self.render_file_manager_surface(window, cx),
+                (TabKind::Graphics, _) => self.render_graphics_surface(window, cx),
+                (TabKind::Runtime, _) => self.render_connection_runtime_surface(cx),
+                (TabKind::ConnectionPool, _) => {
+                    // Old workspaces may restore the retired connection-pool tab.
+                    // Keep it readable by showing the runtime overview instead.
+                    self.host_tools.update(cx, |host_tools, _cx| {
+                        host_tools.reset_runtime_section();
+                    });
+                    self.render_connection_runtime_surface(cx)
+                }
+                (TabKind::Topology, _) => self.render_topology_surface(cx),
+                (TabKind::NotificationCenter, _) => self.render_notification_center_surface(cx),
+                (TabKind::Sftp, _) => self.render_sftp_surface(window, cx),
+                (TabKind::Ide, _) => self.render_ide_surface(cx),
+                (TabKind::Forwards, _) => self.render_forwards_surface(window, cx),
+                (TabKind::SessionManager, _) => self.render_session_manager_surface(window, cx),
+                (TabKind::PluginManager, _) => self.render_plugin_manager_surface(cx),
+                (TabKind::Plugin { plugin_id, tab_id }, _) => {
+                    let plugin_id = plugin_id.clone();
+                    let tab_id = tab_id.clone();
+                    self.render_native_plugin_tab_surface(&plugin_id, &tab_id, cx)
+                }
+                (TabKind::CloudSync, _) => self.render_cloud_sync_surface(cx),
+                (TabKind::Knowledge, _) => self.render_knowledge_workspace_surface(
+                    KnowledgeWorkspaceLayout::MainWindow,
+                    window,
+                    cx,
+                ),
+                (TabKind::RemoteDesktop, _) => {
+                    self.render_remote_desktop_surface(*tab_id, window, cx)
+                }
+                (_, Some(root_pane)) => self.render_terminal_surface(root_pane, window, cx),
+                _ => {
+                    let available_width = self.welcome_main_content_width(window, cx);
+                    self.render_empty_workspace(available_width, cx)
+                }
+            }
+        } else if *self.tab_host.read(cx).scope() != tabs::TabScope::All {
+            self.render_empty_tab_scope(cx)
+        } else {
+            let available_width = self.welcome_main_content_width(window, cx);
+            self.render_empty_workspace(available_width, cx)
+        };
+        let content = if let Some((tab, _, _)) = active_tab_projection {
+            self.wrap_split_drop_region(*tab, None, content, window, cx)
+        } else {
+            content
+        };
+        self.wrap_content_background(
+            window_background,
+            content,
+            active_tab_projection.map(|(_, kind, _)| tab_background_key(kind)),
+            window,
+            cx,
+        )
+    }
+
     /// 主窗口的覆盖层：对话框、菜单、拖拽预览。
     ///
     /// 这些层必须挂在窗口根上——它们的背景要盖住活动栏、侧栏、标签栏、
