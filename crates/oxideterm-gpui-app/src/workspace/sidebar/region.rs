@@ -532,8 +532,10 @@ impl WorkspaceApp {
         if panel_section == SidebarSection::Sessions {
             let sessions = self.render_active_sessions_sidebar_content(cx);
             // 会话行右键菜单叠在列表之上，需要 relative 容器才能绝对定位。
+            // size_full 不能省：只给 relative 的话容器没有高度，列表会塌成 0。
             let sessions = div()
                 .relative()
+                .size_full()
                 .child(sessions)
                 .children(self.render_session_context_menu(cx));
             if self.embedded_sftp_node_id.is_none() {
