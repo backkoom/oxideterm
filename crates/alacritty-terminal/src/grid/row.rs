@@ -629,8 +629,8 @@ mod tests {
         assert_eq!(row.cell(Column(0)).c, '界');
         assert_eq!(row.cell(Column(1)).flags, Flags::WIDE_CHAR_SPACER);
         assert_eq!(row.cell(Column(2)).zerowidth(), Some(&['\u{301}'][..]));
-        assert!(row.iter().skip(3).all(|cell| cell == &tail));
-        assert!(row.iter().rev().take(117).all(|cell| cell == &tail));
+        assert!(row.iter().skip(3).all(|cell| cell == tail));
+        assert!(row.iter().rev().take(117).all(|cell| cell == tail));
         assert_eq!(row.inner.len(), 4, "reading must not expand history");
         row.cell_mut(Column(118)).flags.insert(Flags::UNDERLINE);
         assert_eq!(row.cell(Column(117)), tail);
@@ -656,13 +656,13 @@ mod tests {
             assert_eq!(row.shrink(80), colored.then(|| vec![tail.clone(); 40]));
             row.grow(240);
             assert_eq!(row.cell(Column(0)).c, 'x');
-            assert!(row.iter().skip(1).take(79).all(|cell| cell == &tail));
+            assert!(row.iter().skip(1).take(79).all(|cell| cell == tail));
             assert!(row.iter().skip(80).all(|cell| cell == &Cell::default()));
             drop(row.compact());
             assert_eq!(row.shrink(80), None);
             drop(row.compact());
             assert_eq!(row.inner.len(), 2);
-            assert!(row.iter().skip(1).all(|cell| cell == &tail));
+            assert!(row.iter().skip(1).all(|cell| cell == tail));
         }
     }
 

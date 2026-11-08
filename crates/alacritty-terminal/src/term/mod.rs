@@ -428,8 +428,7 @@ pub enum Osc52 {
 
 impl<T> Term<T> {
     pub fn graphics_events(&mut self) -> graphics::GraphicsGridEvents {
-        let events = self.graphics_events.get_or_insert_with(Default::default).clone();
-        events
+        self.graphics_events.get_or_insert_with(Default::default).clone()
     }
 
     /// Advance raster output without writing text or invoking newline-mode carriage returns.

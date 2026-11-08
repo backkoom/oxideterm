@@ -148,6 +148,7 @@ impl<T: GridCell> Storage<T> {
         self.inner.swap(a, b);
     }
 
+    #[allow(clippy::incompatible_msrv)] // get_disjoint_mut 稳定于 1.86，本项目工具链固定 1.97
     pub fn compact_history<D>(&mut self, history: Line, screen: Line, template: &T)
     where T: crate::term::cell::ResetDiscriminant<D>, D: PartialEq {
         let indices = [self.compute_index(history), self.compute_index(screen)];

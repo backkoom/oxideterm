@@ -5,6 +5,7 @@ use oxideterm_ai::{
 };
 use std::time::Instant;
 
+#[cfg(unix)]
 fn peak_rss_bytes() -> u64 {
     let mut usage: libc::rusage = unsafe { std::mem::zeroed() };
     if unsafe { libc::getrusage(libc::RUSAGE_SELF, &mut usage) } != 0 {
@@ -16,6 +17,12 @@ fn peak_rss_bytes() -> u64 {
     } else {
         value.saturating_mul(1024)
     }
+}
+
+#[cfg(not(unix))]
+fn peak_rss_bytes() -> u64 {
+    // Windows 没有 getrusage，基准测试不统计峰值内存。
+    0
 }
 
 fn main() -> anyhow::Result<()> {

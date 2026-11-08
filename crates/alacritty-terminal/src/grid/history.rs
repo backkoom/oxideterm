@@ -38,6 +38,9 @@ pub trait HistoryStorage<T: GridCell>: Clone + Debug {
     fn encode(cells: &[T], reuse: Option<Self>) -> Option<Self>;
     fn iter_cells(&self) -> Self::Iter<'_>;
     fn len(&self) -> usize;
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
     fn bytes(&self) -> usize;
     fn cell(&self, index: usize) -> T::View<'_>;
     fn cell_with_cursor(&self, index: usize, _: &mut HistoryCursor) -> T::View<'_> {

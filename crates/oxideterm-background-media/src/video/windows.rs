@@ -344,7 +344,7 @@ impl VideoDecoder {
                     && desc.Height == self.raw_height
                     && desc.BindFlags & D3D11_BIND_SHADER_RESOURCE.0 as u32 != 0
                 {
-                    source.clone()
+                    source
                 } else {
                     // Decoder arrays need not permit sampling. Keep this conversion entirely on the GPU.
                     desc.Width = self.raw_width;

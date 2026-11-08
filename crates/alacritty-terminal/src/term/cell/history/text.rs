@@ -272,7 +272,7 @@ impl TextHistory {
             .take(len - run_start)
             .take_while(|c| *c == tail)
             .count();
-        if repeated - 1 >= (len / 4).max(4) {
+        if repeated > (len / 4).max(4) {
             self.text
                 .truncate(self.text.len() - (repeated - 1) * tail.len_utf8());
             self.len -= repeated - 1;

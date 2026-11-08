@@ -1337,7 +1337,7 @@ mod tests {
             [second.id.as_str(), first.id.as_str()].into()
         );
 
-        selection.selected_remote_desktop_profile_ids = [second.id.clone()].into();
+        selection.selected_remote_desktop_profile_ids = [second.id].into();
         let CloudSyncPendingPreview::Structured(mut preview) = unfiltered_preview else {
             unreachable!()
         };
