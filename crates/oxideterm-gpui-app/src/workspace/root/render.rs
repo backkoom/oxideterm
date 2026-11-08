@@ -1,3 +1,4 @@
+use super::super::overlay::WorkspaceOverlayConfirmSnapshot;
 use super::super::*;
 
 impl Focusable for WorkspaceApp {
@@ -1098,104 +1099,11 @@ impl WorkspaceApp {
                 self.render_detached_tab_return_handoff(window, cx),
                 |root, handoff| root.child(handoff),
             )
-            .when_some(
-                self.render_tab_detach_drag_preview(window, cx),
-                |root, preview| root.child(preview),
-            )
-            .when_some(self.render_split_drop_preview(window), |root, preview| {
-                root.child(preview)
-            })
-            .when_some(self.render_tab_context_menu(window, cx), |root, menu| {
-                root.child(menu)
-            })
-            .when_some(self.render_terminal_cast_player(cx), |root, player| {
-                root.child(player)
-            })
-            .when_some(self.render_theme_editor_modal(cx), |root, modal| {
-                // Theme editing is a workspace modal, not a settings-pane overlay.
-                // Mount it here so the backdrop covers every persistent chrome region.
-                root.child(modal)
-            })
-            .when_some(
-                self.render_settings_ssh_config_import_dialog(cx),
-                |root, modal| {
-                    // Both Settings and Connections launch the same workspace
-                    // import flow, so its modal cannot be owned by either page.
-                    root.child(modal)
-                },
-            )
-            .when(self.terminal_command_specs_editor_open, |root| {
-                // Structured command specs use the same workspace-wide modal
-                // ownership so the settings list never contains a nested editor.
-                root.child(self.render_terminal_command_specs_editor_modal(cx))
-            })
-            .when(
-                self.terminal.read(cx).quick_commands.manager_open(),
-                |root| {
-                    // Quick command editing is independent from the compact
-                    // command-bar launcher and must cover all workspace chrome.
-                    root.child(self.render_quick_commands_manager_modal(cx))
-                },
-            )
-            .when(self.ai_text_editor_dialog.is_some(), |root| {
-                // Long AI documents use workspace-wide modal ownership so the
-                // settings list keeps compact, independently measured cards.
-                root.child(self.render_ai_text_editor_modal(cx))
-            })
-            .when(
-                self.session_manager.read(cx).oxide_import_dialog.is_some(),
-                |root| {
-                    // .oxide dialogs are application-level import flows. Portal
-                    // them beside the command palette so their backdrop covers
-                    // activity, session, tab, content, and companion sidebars.
-                    root.child(self.render_oxide_import_dialog(cx))
-                },
-            )
-            .when(
-                self.session_manager.read(cx).oxide_export_dialog.is_some(),
-                |root| {
-                    // Export uses the same workspace-wide modal ownership as import.
-                    root.child(self.render_oxide_export_dialog(cx))
-                },
-            )
-            .when(self.command_palette.read(cx).is_open(), |root| {
-                root.child(self.render_command_palette(window, cx))
-            })
-            .when(self.version_migration.open, |root| {
-                root.child(self.render_version_migration_modal(window, cx))
-            })
-            .when(
-                self.onboarding.open && !self.version_migration.open,
-                |root| root.child(self.render_onboarding_modal(window, cx)),
-            )
-            .when(
-                overlay_confirm_snapshot.as_ref().is_some_and(|snapshot| {
-                    matches!(
-                        &snapshot.kind,
-                        WorkspaceOverlayConfirmKind::LegalNotice
-                            | WorkspaceOverlayConfirmKind::ThirdPartyNotices
-                    )
-                }),
-                |root| root.child(self.render_help_legal_notice_dialog(cx)),
-            )
-            .when(
-                overlay_confirm_snapshot.as_ref().is_some_and(|snapshot| {
-                    matches!(
-                        &snapshot.kind,
-                        WorkspaceOverlayConfirmKind::NativeUpdateReleaseNotes
-                    )
-                }),
-                |root| root.child(self.render_native_update_release_notes_dialog(cx)),
-            )
-            .when(self.shortcuts_modal.open, |root| {
-                root.child(self.render_shortcuts_modal(cx))
-            })
-            .when_some(self.render_app_lock_dialog(cx), |root, dialog| {
-                root.child(dialog)
-            })
-            .when(self.mermaid_zoom.is_some(), |root| {
-                root.child(self.render_mermaid_zoom_modal(window, cx))
-            })
+            .children(self.render_main_window_overlays(
+                overlay_confirm_snapshot.as_ref(),
+                window,
+                cx,
+            ))
             .children(overlay_layers)
             // 会话行右键菜单挂在窗口根层：菜单坐标是窗口坐标，
             // 挂进侧栏会带上侧栏自身的偏移，看起来就"飘"了。
@@ -1207,6 +1115,88 @@ impl WorkspaceApp {
             ))
             .into_any_element()
     }
+    /// 主窗口的覆盖层：对话框、菜单、拖拽预览。
+    ///
+    /// 这些层必须挂在窗口根上——它们的背景要盖住活动栏、侧栏、标签栏、
+    /// 内容区和命令栏。按需返回，返回顺序即层级顺序（后加的在上）。
+    fn render_main_window_overlays(
+        &mut self,
+        overlay_confirm_snapshot: Option<&WorkspaceOverlayConfirmSnapshot>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Vec<AnyElement> {
+        let mut layers = Vec::new();
+        if let Some(preview) = self.render_tab_detach_drag_preview(window, cx) {
+            layers.push(preview);
+        }
+        if let Some(preview) = self.render_split_drop_preview(window) {
+            layers.push(preview);
+        }
+        if let Some(menu) = self.render_tab_context_menu(window, cx) {
+            layers.push(menu);
+        }
+        if let Some(player) = self.render_terminal_cast_player(cx) {
+            layers.push(player);
+        }
+        if let Some(modal) = self.render_theme_editor_modal(cx) {
+            layers.push(modal);
+        }
+        if let Some(modal) = self.render_settings_ssh_config_import_dialog(cx) {
+            layers.push(modal);
+        }
+        if self.terminal_command_specs_editor_open {
+            layers.push(self.render_terminal_command_specs_editor_modal(cx));
+        }
+        if self.terminal.read(cx).quick_commands.manager_open() {
+            layers.push(self.render_quick_commands_manager_modal(cx));
+        }
+        if self.ai_text_editor_dialog.is_some() {
+            layers.push(self.render_ai_text_editor_modal(cx));
+        }
+        if self.session_manager.read(cx).oxide_import_dialog.is_some() {
+            layers.push(self.render_oxide_import_dialog(cx));
+        }
+        if self.session_manager.read(cx).oxide_export_dialog.is_some() {
+            layers.push(self.render_oxide_export_dialog(cx));
+        }
+        if self.command_palette.read(cx).is_open() {
+            layers.push(self.render_command_palette(window, cx));
+        }
+        if self.version_migration.open {
+            layers.push(self.render_version_migration_modal(window, cx));
+        }
+        if self.onboarding.open && !self.version_migration.open {
+            layers.push(self.render_onboarding_modal(window, cx));
+        }
+        if overlay_confirm_snapshot.is_some_and(|snapshot| {
+            matches!(
+                &snapshot.kind,
+                WorkspaceOverlayConfirmKind::LegalNotice
+                    | WorkspaceOverlayConfirmKind::ThirdPartyNotices
+            )
+        }) {
+            layers.push(self.render_help_legal_notice_dialog(cx));
+        }
+        if overlay_confirm_snapshot.is_some_and(|snapshot| {
+            matches!(
+                &snapshot.kind,
+                WorkspaceOverlayConfirmKind::NativeUpdateReleaseNotes
+            )
+        }) {
+            layers.push(self.render_native_update_release_notes_dialog(cx));
+        }
+        if self.shortcuts_modal.open {
+            layers.push(self.render_shortcuts_modal(cx));
+        }
+        if let Some(dialog) = self.render_app_lock_dialog(cx) {
+            layers.push(dialog);
+        }
+        if self.mermaid_zoom.is_some() {
+            layers.push(self.render_mermaid_zoom_modal(window, cx));
+        }
+        layers
+    }
+
     /// 工作区的按键捕获路由。
     ///
     /// 从 `render_main_window` 的元素树里整段搬出来：这 300 行是纯粹的按键分派，
