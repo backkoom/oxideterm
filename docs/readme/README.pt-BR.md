@@ -17,7 +17,8 @@ Sem conta. Sem assinatura. Sem telemetria. Sem Electron.
 [**Baixar**](https://github.com/AnalyseDeCircuit/oxideterm/releases/latest) ·
 [**Documentação**](https://oxideterm.app) ·
 [**Histórico de alterações**](../../.github/release-notes/stable-changelog.md) ·
-[**Relatar um problema**](https://github.com/AnalyseDeCircuit/oxideterm/issues)
+[**Relatar um problema**](https://github.com/AnalyseDeCircuit/oxideterm/issues) ·
+[**Grupo no WeChat**](https://github.com/AnalyseDeCircuit/oxideterm/issues/752)
 
 [English](../../README.md) | [简体中文](README.zh-Hans.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Italiano](README.it.md) | [Português](README.pt-BR.md) | [Tiếng Việt](README.vi.md)
 
@@ -347,3 +348,13 @@ Obrigado a todos que ajudam a tornar o OxideTerm melhor.
 **GPL-3.0-only.** As atribuições das dependências estão em [`THIRD_PARTY_NOTICES.md`](../../THIRD_PARTY_NOTICES.md), com avisos adicionais em [`NOTICE`](../../NOTICE).
 
 **Feito com:** [russh](https://github.com/warp-tech/russh) · [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui) · [alacritty_terminal](https://github.com/alacritty/alacritty) · [portable-pty](https://github.com/wez/wezterm/tree/main/pty) · [wasmtime](https://wasmtime.dev/) · [tree-sitter](https://tree-sitter.github.io/)
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=AnalyseDeCircuit%2Foxideterm&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=AnalyseDeCircuit/oxideterm&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=AnalyseDeCircuit/oxideterm&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=AnalyseDeCircuit/oxideterm&type=date&legend=top-left" />
+ </picture>
+</a>

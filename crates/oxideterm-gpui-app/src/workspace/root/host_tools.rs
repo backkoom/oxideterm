@@ -1,5 +1,80 @@
 use super::super::*;
-use crate::workspace::connection_monitor::{HostToolsNotice, ScheduleActionNoticeKind};
+use crate::workspace::connection_monitor::{
+    HostToolsNotice, LOCAL_HOST_CONNECTION_ID, ScheduleActionNoticeKind,
+};
+
+/// Pane identity herdr exports into every process of a managed pane.
+const HERDR_PANE_ENV_VARS: [&str; 5] = [
+    "HERDR_ENV",
+    "HERDR_PANE_ID",
+    "HERDR_TAB_ID",
+    "HERDR_WORKSPACE_ID",
+    "HERDR_SOCKET_PATH",
+];
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn host_tool_terminal_runs_native_command_without_loading_preferred_shell() {
+        let line = if cfg!(windows) {
+            "echo oxide-host-tool&exit 7"
+        } else {
+            "printf oxide-host-tool; exit 7"
+        };
+        let config = local_host_tool_terminal_config(line, "Host tool");
+        let shell = config.shell.unwrap();
+        let args = shell.args.clone();
+        let mut process = std::process::Command::new(&shell.path);
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            assert!(shell.path.ends_with(r"System32\cmd.exe"));
+            // ConPTY passes the shell's command tail without CRT escaping.
+            for arg in args {
+                process.raw_arg(arg);
+            }
+        }
+        #[cfg(unix)]
+        {
+            assert_eq!(shell.path, std::path::Path::new("/bin/sh"));
+            process.args(args);
+        }
+        let output = process.output().unwrap();
+        assert_eq!(
+            String::from_utf8(output.stdout).unwrap().trim(),
+            "oxide-host-tool"
+        );
+        assert_eq!(output.status.code(), Some(7));
+    }
+}
+
+fn local_host_tool_terminal_config(command: &str, title: &str) -> LocalPtyConfig {
+    // Match the native host used by captures, not the user's preferred WSL or custom shell.
+    #[cfg(windows)]
+    let shell = {
+        let root = std::env::var_os("SystemRoot").unwrap_or_else(|| r"C:\Windows".into());
+        oxideterm_terminal::ShellInfo::new(
+            "host-tool",
+            title,
+            std::path::PathBuf::from(root).join(r"System32\cmd.exe"),
+        )
+        .with_args(vec!["/D".into(), "/K".into(), command.into()])
+    };
+    #[cfg(not(windows))]
+    let shell = oxideterm_terminal::ShellInfo::new("host-tool", title, "/bin/sh")
+        .with_args(vec!["-c".into(), format!("{command}\nexec /bin/sh -i")]);
+    LocalPtyConfig {
+        shell: Some(shell),
+        load_profile: false,
+        remove_env: HERDR_PANE_ENV_VARS
+            .iter()
+            .map(|name| (*name).to_owned())
+            .collect(),
+        ..Default::default()
+    }
+}
 
 impl WorkspaceApp {
     /// Handles the one-shot window work that must remain with workspace-owned nodes and tabs.
@@ -13,6 +88,63 @@ impl WorkspaceApp {
             return;
         };
         match intent {
+            HostToolsWindowIntent::OpenLocalMultiplexer {
+                command,
+                title,
+                opened_notice,
+                missing_notice,
+            } => {
+                // The inventory belongs to the native host, even if the preferred terminal starts WSL.
+                #[cfg(windows)]
+                let shell = {
+                    let root =
+                        std::env::var_os("SystemRoot").unwrap_or_else(|| r"C:\Windows".into());
+                    oxideterm_terminal::ShellInfo::new(
+                        "host-multiplexer",
+                        &title,
+                        std::path::PathBuf::from(root).join(r"System32\cmd.exe"),
+                    )
+                    .with_args(vec!["/D".into(), "/C".into(), command])
+                };
+                #[cfg(not(windows))]
+                let shell =
+                    oxideterm_terminal::ShellInfo::new("host-multiplexer", &title, "/bin/sh")
+                        .with_args(vec!["-c".into(), command]);
+                let config = LocalPtyConfig {
+                    shell: Some(shell),
+                    remove_env: HERDR_PANE_ENV_VARS
+                        .iter()
+                        .copied()
+                        .chain([
+                            "HERDR_SESSION",
+                            "ZELLIJ",
+                            "ZELLIJ_SESSION_NAME",
+                            "ZELLIJ_PANE_ID",
+                        ])
+                        .map(str::to_owned)
+                        .collect(),
+                    ..Default::default()
+                };
+                let opened = self
+                    .create_local_terminal_tab_with_config(config, title, window, cx)
+                    .is_ok();
+                // The copy is earned by the tab, not by the click: reporting
+                // the open before the terminal exists would cover a failed
+                // launch with a success notice the user cannot act on.
+                self.push_host_tools_window_notice(
+                    if opened {
+                        opened_notice
+                    } else {
+                        missing_notice
+                    },
+                    if opened {
+                        TerminalNoticeVariant::Success
+                    } else {
+                        TerminalNoticeVariant::Error
+                    },
+                    cx,
+                );
+            }
             HostToolsWindowIntent::OpenExistingNodeTerminal {
                 connection_id,
                 command,
@@ -20,6 +152,18 @@ impl WorkspaceApp {
                 opened_notice,
                 missing_notice,
             } => {
+                if connection_id == LOCAL_HOST_CONNECTION_ID {
+                    self.open_local_host_tool_terminal(
+                        &command,
+                        title,
+                        opened_notice,
+                        missing_notice,
+                        window,
+                        cx,
+                    );
+                    cx.notify();
+                    return;
+                }
                 let Some(node_id) = self.node_router.node_id_for_connection(&connection_id) else {
                     self.push_host_tools_window_notice(
                         missing_notice,
@@ -62,8 +206,8 @@ impl WorkspaceApp {
             }
             HostToolsWindowIntent::BeginPlainTextImeSelection { input, event } => {
                 let Some(target) = workspace_ime_target_for_plain_host_tools_input(input) else {
-                    // Secret-bearing tmux dialog input never crosses this
-                    // plain-text frame boundary.
+                    // Secret-bearing dialog input never crosses this plain-text
+                    // frame boundary.
                     return;
                 };
                 self.ime_marked_text = None;
@@ -83,9 +227,42 @@ impl WorkspaceApp {
                 self.reset_standard_confirm_focus();
                 cx.notify();
             }
+            HostToolsWindowIntent::PrepareMuxInputDialog => {
+                // Only focus state crosses this boundary; the zeroizing input stays in the Entity.
+                self.ime_marked_text = None;
+                self.clear_ime_selection();
+                self.show_active_input_caret(cx);
+                window.focus(&self.focus_handle, cx);
+                cx.notify();
+            }
+            HostToolsWindowIntent::PrepareMuxConfirm => {
+                self.reset_standard_confirm_focus();
+                cx.notify();
+            }
             HostToolsWindowIntent::SetMonitoringEnabled { tool, enabled } => {
                 self.set_host_tool_monitoring_enabled(tool, enabled, cx);
             }
+        }
+    }
+
+    /// Diagnostic output stays in a native-host shell after the command finishes.
+    fn open_local_host_tool_terminal(
+        &mut self,
+        command: &str,
+        title: String,
+        opened_notice: String,
+        missing_notice: String,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let config = local_host_tool_terminal_config(command, &title);
+        let opened = self
+            .create_local_terminal_tab_with_config(config, title, window, cx)
+            .is_ok();
+        if opened {
+            self.push_host_tools_window_notice(opened_notice, TerminalNoticeVariant::Success, cx);
+        } else {
+            self.push_host_tools_window_notice(missing_notice, TerminalNoticeVariant::Error, cx);
         }
     }
 
@@ -302,6 +479,40 @@ impl WorkspaceApp {
                     )
                 }
             }
+            HostToolsNotice::MuxSnapshotAlreadyRunning => (
+                self.i18n
+                    .t("sidebar.multiplexer.toast.snapshot_already_running"),
+                TerminalNoticeVariant::Warning,
+            ),
+            HostToolsNotice::MuxConnectionMissing => (
+                self.i18n.t("sidebar.multiplexer.toast.connection_missing"),
+                TerminalNoticeVariant::Error,
+            ),
+            HostToolsNotice::MuxActionAlreadyRunning => (
+                self.i18n
+                    .t("sidebar.multiplexer.toast.action_already_running"),
+                TerminalNoticeVariant::Warning,
+            ),
+            HostToolsNotice::MuxActionFailed => (
+                self.i18n.t("sidebar.multiplexer.toast.action_failed"),
+                TerminalNoticeVariant::Error,
+            ),
+            HostToolsNotice::MuxReadAlreadyRunning => (
+                self.i18n
+                    .t("sidebar.multiplexer.toast.read_already_running"),
+                TerminalNoticeVariant::Warning,
+            ),
+            HostToolsNotice::MuxReadFailed => (
+                self.i18n.t("sidebar.multiplexer.toast.read_failed"),
+                TerminalNoticeVariant::Error,
+            ),
+            HostToolsNotice::MuxActionSucceeded { target_label } => (
+                self.i18n_replace(
+                    "sidebar.multiplexer.toast.action_succeeded",
+                    &[("target", target_label)],
+                ),
+                TerminalNoticeVariant::Success,
+            ),
             HostToolsNotice::LogSnapshotAlreadyRunning => (
                 self.i18n
                     .t("sidebar.host_logs.toast.snapshot_already_running"),
@@ -375,6 +586,13 @@ impl WorkspaceApp {
                     )],
                 ),
                 TerminalNoticeVariant::Error,
+            ),
+            HostToolsNotice::PortKillCommandCopied { command } => (
+                self.i18n_replace(
+                    "sidebar.host_ports.toast.kill_command_copied",
+                    &[("command", command)],
+                ),
+                TerminalNoticeVariant::Success,
             ),
             HostToolsNotice::PortEndpointCopied { endpoint } => (
                 self.i18n_replace(
@@ -479,6 +697,27 @@ impl WorkspaceApp {
                     &[("name", package_name)],
                 ),
                 TerminalNoticeVariant::Success,
+            ),
+            HostToolsNotice::PackageIdCopied { package_id } => (
+                self.i18n_replace(
+                    "sidebar.host_packages.toast.copied_id",
+                    &[("id", package_id)],
+                ),
+                TerminalNoticeVariant::Success,
+            ),
+            HostToolsNotice::PackageUninstallUnsupported { manager } => (
+                self.i18n_replace(
+                    "sidebar.host_packages.toast.uninstall_unsupported",
+                    &[("manager", manager)],
+                ),
+                TerminalNoticeVariant::Warning,
+            ),
+            HostToolsNotice::PackageUpgradeUnsupported { manager } => (
+                self.i18n_replace(
+                    "sidebar.host_packages.toast.upgrade_unsupported",
+                    &[("manager", manager)],
+                ),
+                TerminalNoticeVariant::Error,
             ),
             HostToolsNotice::ScheduleSnapshotAlreadyRunning => (
                 self.i18n

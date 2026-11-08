@@ -22,7 +22,7 @@ Primary areas:
 
 - Sessions: saved connections, active SSH nodes, and terminal sessions.
 - Connection pool: reusable connection/runtime state.
-- Connection monitor and Host Tools: health, reconnect status, processes, Docker, services, tmux, packages, logs, ports, filesystems, and metrics.
+- Connection monitor and Host Tools: health, reconnect status, processes, Docker, services, terminal multiplexers, packages, logs, ports, filesystems, and metrics.
 - Connection matrix: a broader connection overview.
 - File manager and SFTP: browse, preview, upload, download, and edit remote files.
 - Graphics/VNC: open a saved RDP/VNC profile, or open node-launched graphics when a connected SSH node provides it.
@@ -78,7 +78,7 @@ From the Sessions area, select a saved connection and open it. The app creates r
 
 If a host disconnects, use the connection pool or monitor to understand whether the runtime is reconnecting, stale, or unavailable. Reconnect from the app state instead of recreating the saved profile.
 
-Host Tools belong to the connected node. A graphics/VNC session may instead belong to a saved RDP/VNC profile; node-launched graphics use the SSH node as their runtime owner. Opening or closing these views should not rewrite saved profiles, and stale state should be refreshed through the owning profile or node.
+Host Tools belong to the connected node. The local machine is also a Host Tools target: tools run the same generated commands locally, and sampling views use one-shot local captures. A graphics/VNC session may instead belong to a saved RDP/VNC profile; node-launched graphics use the SSH node as their runtime owner. Opening or closing these views should not rewrite saved profiles, and stale state should be refreshed through the owning profile or node.
 
 ## SFTP and Remote Files
 
@@ -102,7 +102,7 @@ Before overwriting important remote files, confirm the path and keep a backup. R
 
 Use the IDE surface when you need a project-style remote file workflow. Open an IDE workspace for a connected node, choose a remote folder, and work with project files in tabs.
 
-Choose **SFTP** or **SSH** file access. SSH offers **Pure Shell commands** or an agent installed, updated, or reused on demand. Pure Shell access uses the selected environment's Linux utilities without installing an agent; agent access adds watching and symbol services. From an idle terminal, **Convert to IDE** keeps the current user, container, and working directory. Terminal input pauses during conversion, and you can return to the original terminal.
+Choose **SFTP** or **SSH** file access. SSH offers **Pure Shell commands** or an agent installed, updated, or reused on demand. Pure Shell access uses the selected environment's Linux utilities without installing an agent; agent access provides symbol services and directory watching when supported. Watching is unavailable for terminal-converted IDEs. From an idle terminal, **Convert to IDE** keeps the current user, container, and working directory. Terminal input pauses during conversion, and you can return to the original terminal.
 
 IDE and SFTP editing share the same search and replacement controls: case sensitivity, regular expressions, multiline paste, explicit newline insertion, capture-group replacement, and replace all. Each input has its own undo history. Dragging a text selection beyond the editor's top or bottom edge scrolls the document.
 
@@ -124,7 +124,9 @@ For forwarding without a terminal, use [Standalone SSH Tunnels](connections-and-
 
 ## Host Tools and Graphics
 
-Use Host Tools from the connected-node context when you need a read-oriented view of processes, containers, services, tmux, packages, logs, ports, filesystems, scheduled tasks, or host metrics. Actions that change host state should be reviewed in the app confirmation flow before execution.
+Use Host Tools from the connected-node context when you need a read-oriented view of processes, containers, services, terminal multiplexers, packages, logs, ports, filesystems, scheduled tasks, or host metrics. Actions that change host state should be reviewed in the app confirmation flow before execution.
+
+Under **Terminal multiplexers**, select the host and switch between tmux, Zellij, and Herdr. Expanding a running session loads its tree: Zellij shows tabs and panes, Herdr shows workspaces, tabs and panes. A pane row shows the label you or the program set, otherwise its terminal title, and only then the agent running inside it; a separate chip names the agent state when the server reports a known one. Use the controls beside an object to focus, create, split, rename, run a command in a pane, read a pane's recent output, or close it where supported. Closing an object, stopping a session and deleting a stopped session each ask for confirmation. Attach opens a terminal on the selected host, and **Attach to session** reopens an exited or stopped one. Herdr also offers **Attach to agent**, on a pane the server reports as an unlinked agent.
 
 For remote desktops, first install and enable **RDP** or **VNC** in **Plugin Manager → Marketplace**, then open the connection from New Connection or Session Manager. OxideTerm owns the profiles, SSH gateway settings, and native viewer; the plugin supplies the protocol engine. See [Graphics and VNC](connections-and-forwards.md#graphics-and-vnc). Windows WSL Graphics uses a separate built-in viewer and does not require these remote-desktop plugins.
 
@@ -249,3 +251,25 @@ Use the CLI companion when the work is headless, repeatable, or diagnostic:
 - CI checks for exported configuration.
 
 For normal daily work, start in the desktop app. The CLI should support the desktop workflow, not replace it.
+
+### Open a local terminal from another tool
+
+Install the CLI companion from Settings, then open a new tab in a project directory:
+
+```sh
+oxideterm terminal --cwd ~/project
+oxideterm terminal --cwd ~/project -- claude --resume SESSION_ID
+oxideterm terminal --cwd ~/project -- codex resume SESSION_ID
+```
+
+OxideTerm starts if necessary; otherwise the existing instance opens a new tab. This command targets the application's active data directory, so it does not accept the CLI's isolated `--config-dir` or `--profile` options.
+
+Without a program, the tab uses your configured shell. With a program, OxideTerm resolves it using the caller's `PATH` and passes each argument literally. Quote paths with spaces. Relative working directories are resolved from the caller's directory; relative executable paths are resolved inside the selected working directory. On Windows, invoke batch files through an explicit `cmd.exe /c` command.
+
+Shell expressions require an explicit shell:
+
+```sh
+oxideterm terminal --cwd ~/project -- /bin/zsh -lc 'echo hello; exec zsh'
+```
+
+Launch arguments travel through a one-shot pipe and authenticated local IPC, not a temporary file. The request limit is 60 KiB. Exit status zero means the launch was dispatched, not that the child program finished successfully. Split panes use the configured shell rather than replaying the launch command.

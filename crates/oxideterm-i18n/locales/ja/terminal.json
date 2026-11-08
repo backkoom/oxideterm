@@ -1,6 +1,14 @@
 {
   "terminal": {
     "connecting": "接続中…",
+    "ssh_latency": {
+      "measured": "SSH 往復遅延：{{millis}} ms。ネットワークとサーバーの応答時間を含みます。{{seconds}} 秒前に更新。",
+      "pending": "SSH の遅延を測定中…",
+      "timeout": "{{seconds}} 秒以内に応答がありません。引き続き待機しています。セッションの切断を示すものではありません。",
+      "unavailable": "SSH 接続を利用できません",
+      "unsupported": "このデバイスの互換モードでは遅延を測定できません。",
+      "stale": "遅延データが古くなっています"
+    },
     "archive": {
       "title": "アーカイブを展開",
       "command": "展開コマンド",
@@ -584,6 +592,9 @@
       "error_busy": "送信先は別の送信タスクで使用中です"
     },
     "broadcast": {
+      "tile_selected": "選択したターミナルを並べる",
+      "tile_selection_hint": "メインウィンドウのターミナルを2～{{max}}個選択してください。",
+      "tiled_title": "並べたターミナル",
       "members_hint": "対象の端末を選択して同期を有効にします。新しい端末は自動参加しません。別のグループに移す前に現在のグループから外してください。",
       "isolate_member": "一時的に分離",
       "resume_member": "同期を再開",

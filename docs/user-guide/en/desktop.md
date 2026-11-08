@@ -35,7 +35,7 @@ For example, keep a terminal beside SFTP while uploading files:
 4. To separate a page again, use **Move to new tab** in its pane header, or the header's action for moving it to a new window.
 5. To remove a page, use its pane close action. If it has unsaved work or a running process, handle the close prompt. When one page remains, the extra pane header disappears and the main tab takes that page's name.
 
-A combined tab holds up to four panes. Terminals, SFTP, IDE, port forwards, notes, settings, cloud sync, audit, remote desktops, and plugin pages can share a layout. Opening a single-instance page, such as Settings, again focuses its existing pane. Moving the whole combined tab to another window preserves its live sessions and layout.
+A combined tab holds up to 16 panes. Terminals, SFTP, IDE, port forwards, notes, settings, cloud sync, audit, remote desktops, and plugin pages can share a layout. Opening a single-instance page, such as Settings, again focuses its existing pane. Moving the whole combined tab to another window preserves its live sessions and layout.
 
 For long-running jobs, keep the owning connection visible in the connection pool or monitor. Reconnect behavior is tied to the connection/runtime state, not only to the visible terminal tab.
 
@@ -47,6 +47,20 @@ Common pane patterns:
 - Close only the pane or tab you no longer need; keep the saved connection profile intact.
 
 Use the terminal context menu and command bar for explicit pane actions such as copy, paste, search, command selection, and terminal-native file transfers. Background images and terminal image placements are visual/rendering state; if a full-screen TUI leaves stale image content behind, clear or reopen the pane rather than editing saved connection data.
+
+### Tile existing terminals
+
+Open **Broadcast targets**, select 2–16 terminals in the main window, and click
+**Tile selected terminals**. The selected terminals move into one tab in a balanced
+grid. Their connections, running programs, and output remain in the existing
+sessions; unselected panes stay where they are. Terminals in detached windows
+must be returned to the main window first.
+
+Tiling preserves the current broadcast settings. If synchronization is paused,
+use **Enable sync** when you are ready to send input to the selected group.
+To inspect one terminal, use **Enlarge pane** or double-click its pane header;
+repeat to restore the split layout. **Move to new tab** separates that terminal
+again without reconnecting it.
 
 ### Images in terminals
 
@@ -245,9 +259,13 @@ Use **Export summaries as JSON** or **Export summaries as CSV** for the selected
 
 ## IDE Workspace
 
-Use the IDE workspace for project-style remote editing. Open it from a connected node, choose a remote folder, then work with file tabs inside the IDE surface.
+Open IDE from a connected node and choose a remote folder. Select SFTP, Pure Shell commands or Agent file access. From an idle terminal, **Convert to IDE** instead uses the current Shell's user, container and directory; choose Commands or Agent for that environment. See [IDE access and language support](app.md#ide-workspace).
 
-Before saving important changes, confirm the connection is still healthy. Dirty editor buffers belong to the IDE workspace, so do not close the IDE tab until you have saved, discarded, or intentionally kept the edits.
+Directory watching requires a supported Agent backend and is unavailable in a terminal-converted IDE. Language highlighting runs on this device and can require a language plugin; installing the remote Agent does not install those grammars.
+
+Save reports conflicts or write errors while retaining your edits. If you keep typing during a save, the later edits remain unsaved. When autosave is enabled, switching away from a dirty editor tab triggers a save; check the result before closing the project.
+
+Node IDE recovery can restore the project, open files and unsaved text, but does not write those edits to remote files. A terminal-converted IDE follows its source Shell's lifetime and is excluded from node IDE recovery. Before returning to the terminal or leaving a project, handle the save, discard or cancel decision.
 
 ## AI Sidebar
 

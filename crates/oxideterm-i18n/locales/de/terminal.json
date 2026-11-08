@@ -1,6 +1,14 @@
 {
   "terminal": {
     "connecting": "Verbinden…",
+    "ssh_latency": {
+      "measured": "SSH-Rundlaufzeit: {{millis}} ms, einschließlich Netzwerk und Serverantwort. Vor {{seconds}} s aktualisiert.",
+      "pending": "SSH-Latenz wird gemessen…",
+      "timeout": "Seit {{seconds}} s keine Antwort. Es wird weiter gewartet; die Sitzung gilt dadurch nicht als getrennt.",
+      "unavailable": "SSH-Verbindung nicht verfügbar",
+      "unsupported": "Latenzmessung ist im Kompatibilitätsmodus dieses Geräts deaktiviert.",
+      "stale": "Latenzwert ist veraltet"
+    },
     "archive": {
       "title": "Archiv entpacken",
       "command": "Entpackbefehl",
@@ -584,6 +592,9 @@
       "error_busy": "Ein Ziel wird von einem anderen Sender verwendet"
     },
     "broadcast": {
+      "tile_selected": "Ausgewählte Terminals anordnen",
+      "tile_selection_hint": "Wählen Sie 2–{{max}} Terminals im Hauptfenster.",
+      "tiled_title": "Angeordnete Terminals",
       "members_hint": "Einzelne Terminals auswählen und dann die Synchronisation aktivieren. Neue Terminals treten nicht automatisch bei. Vor dem Wechsel ein Terminal aus seiner bisherigen Gruppe entfernen.",
       "isolate_member": "Isolieren",
       "resume_member": "Fortsetzen",

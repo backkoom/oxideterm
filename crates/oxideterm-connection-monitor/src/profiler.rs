@@ -23,7 +23,10 @@ use crate::{
 };
 
 pub const RESOURCE_SAMPLE_INTERVAL: Duration = Duration::from_secs(10);
-pub const RESOURCE_SAMPLE_TIMEOUT: Duration = Duration::from_secs(5);
+// A full Windows sample measures around eight seconds (CIM system info,
+// formatted GPU counter classes, two process passes); the timeout only bounds
+// hung reads, so it needs headroom for cold-start CIM schema loads.
+pub const RESOURCE_SAMPLE_TIMEOUT: Duration = Duration::from_secs(15);
 pub const RESOURCE_CHANNEL_OPEN_TIMEOUT: Duration = Duration::from_secs(10);
 // Host Tools samples include process and Docker tables. Keep enough room for
 // normal inventories so SSH capture truncation does not look like a parser failure.
@@ -111,6 +114,12 @@ const METRICS_COMMAND_LINUX_GPU: &str = concat!(
     "if command -v intel_gpu_top >/dev/null 2>&1 && command -v timeout >/dev/null 2>&1; then ",
     "timeout 3 intel_gpu_top -J -s 1000 -n 2 -o - 2>/dev/null || true; ",
     "fi"
+);
+const METRICS_COMMAND_MACOS_DISK_IO: &str = concat!(
+    "echo '===DISK_IO==='; ",
+    "ioreg -r -c IOBlockStorageDriver -d 1 -l -w 0 2>/dev/null | awk '",
+    "/^\\+-o/ {id=$0; sub(/^.* id /,\"\",id); sub(/,.*/,\"\",id)} ",
+    "/\"Statistics\" = / {read=\"\"; written=\"\"; n=split($0,fields,\",\"); for(i=1;i<=n;i++) {v=fields[i]; sub(/^.*=/,\"\",v); gsub(/[^0-9]/,\"\",v); if(fields[i] ~ /\"Bytes \\(Read\\)\"=/)read=v; if(fields[i] ~ /\"Bytes \\(Write\\)\"=/)written=v} if(id!=\"\" && read!=\"\" && written!=\"\")printf \"%s\\t%s\\t%s\\n\",id,read,written}'"
 );
 const METRICS_COMMAND_MACOS_SYSTEM: &str = "echo '===CPU_DIRECT==='; cpuline=$(top -l 1 -s 0 -n 0 2>/dev/null | grep 'CPU usage:' | head -1); echo \"$cpuline\" | awk '{for(i=1;i<=NF;i++){if($(i+1)~/^idle/){v=$i;gsub(/%/,\"\",v);printf \"%.1f\\n\",100-v}}}'; echo '===MEMINFO==='; pagesize=$(sysctl -n hw.pagesize 2>/dev/null || echo 4096); memtotal=$(sysctl -n hw.memsize 2>/dev/null | awk '{printf \"%d\",$1/1024}'); vm_stat 2>/dev/null | awk -v ps=\"$pagesize\" -v total=\"$memtotal\" 'BEGIN{free=0;spec=0;inactive=0;purgeable=0} /^Pages free:/{gsub(/[^0-9]/,\"\",$NF);free=$NF} /^Pages speculative:/{gsub(/[^0-9]/,\"\",$NF);spec=$NF} /^Pages inactive:/{gsub(/[^0-9]/,\"\",$NF);inactive=$NF} /^Pages purgeable:/{gsub(/[^0-9]/,\"\",$NF);purgeable=$NF} END{avail=int((free+spec+inactive+purgeable)*ps/1024); printf \"MemTotal: %d kB\\nMemAvailable: %d kB\\n\",total,avail}'; sysctl vm.swapusage 2>/dev/null | awk '{for(i=1;i<=NF;i++){if($i==\"total\"&&$(i+1)==\"=\"){v=$(i+2);m=1024;if(v~/G/)m=1048576;gsub(/[MmGg]/,\"\",v);total=v*m} if($i==\"used\"&&$(i+1)==\"=\"){v=$(i+2);m=1024;if(v~/G/)m=1048576;gsub(/[MmGg]/,\"\",v);used=v*m}} printf \"SwapTotal: %.0f kB\\nSwapFree: %.0f kB\\n\",total,total-used}'; echo '===LOADAVG==='; sysctl -n vm.loadavg 2>/dev/null | tr -d '{}'; echo '===NETDEV==='; netstat -ib 2>/dev/null | awk '/^[a-z]/&&$3~/Link/&&$1!~/^lo/{if($4~/:/){rx=$7;tx=$10}else{rx=$6;tx=$9};if((rx+0)>0){gsub(/[\\*]/,\"\",$1);printf \"%s: %s 0 0 0 0 0 0 0 %s\\n\",$1,rx,tx}}'; echo '===NPROC==='; sysctl -n hw.logicalcpu 2>/dev/null; echo '===DISKS==='; df -P -k 2>/dev/null | awk 'NR>1 && $1 ~ /^\\/dev/ && ($6==\"/\" || $6 ~ /^\\/Volumes\\//) {p=$5; gsub(/%/,\"\",p); printf \"%s\\t%d\\t%d\\t%s\\n\", $6, $3*1024, $2*1024, p}'";
 const METRICS_COMMAND_MACOS_PROCESSES: &str = "echo '===TOPPROCS==='; ps axww -o pid=,ppid=,user=,stat=,pcpu=,pmem=,rss=,vsz=,etime=,comm=,command= 2>/dev/null | sort -k6 -rn | awk 'NR<=200 {pid=$1;ppid=$2;user=$3;stat=$4;cpu=$5;mem=$6;rss=$7;vsz=$8;etime=$9;comm=$10;$1=$2=$3=$4=$5=$6=$7=$8=$9=$10=\"\";sub(/^ +/,\"\");gsub(/\\t/,\" \");printf \"%s\\t%s\\t%s\\t%s\\t%.1f\\t%.1f\\t%s\\t%s\\t%s\\t%s\\t%s\\n\",pid,ppid,user,stat,cpu,mem,rss,vsz,etime,comm,$0}'";
@@ -588,6 +597,9 @@ fn build_sample_command_with_system_info(
             _ => METRICS_COMMAND_UNSUPPORTED,
         };
         commands.push(metrics.to_string());
+        if matches!(os_type, "macOS" | "macos" | "Darwin") {
+            commands.push(METRICS_COMMAND_MACOS_DISK_IO.to_string());
+        }
     }
     if config.gpu
         && matches!(
@@ -616,11 +628,33 @@ fn build_sample_command_with_system_info(
     format!("{}\n", commands.join("; "))
 }
 
+// Total CPU rate from the raw PerfOS counters. `Win32_Processor.LoadPercentage`
+// costs about 1.2s per call; the raw `_Total` instance is ~10x cheaper and the
+// measurement window is borrowed from the process pass's own 300ms sleep when
+// process sampling is enabled. `PercentProcessorTime` is a 100ns inverse timer,
+// so busy% = (1 - Δraw / Δtime) × 100.
+const WINDOWS_CPU_RATE_READ_FIRST: &str = "$cpuRaw1=Get-CimInstance Win32_PerfRawData_PerfOS_Processor -Filter \"Name='_Total'\" -Property PercentProcessorTime,Timestamp_Sys100NS;";
+const WINDOWS_CPU_RATE_READ_SECOND: &str = "$cpuRaw2=Get-CimInstance Win32_PerfRawData_PerfOS_Processor -Filter \"Name='_Total'\" -Property PercentProcessorTime,Timestamp_Sys100NS;";
+const WINDOWS_CPU_RATE_EMIT: &str = concat!(
+    "$cpuPct=$null;",
+    "if($cpuRaw1 -and $cpuRaw2){",
+    "$cpuDt=[double]($cpuRaw2.Timestamp_Sys100NS-$cpuRaw1.Timestamp_Sys100NS);",
+    "$cpuDr=[double]($cpuRaw2.PercentProcessorTime-$cpuRaw1.PercentProcessorTime);",
+    "if($cpuDt -gt 0){$cpuPct=[Math]::Max(0,[Math]::Min(100,[Math]::Round((1-$cpuDr/$cpuDt)*100,1)))};",
+    "};",
+    "Write-Output '===CPU_DIRECT===';",
+    "if($cpuPct -ne $null){$cpuPct};"
+);
+
 fn build_windows_sample_command(
     config: ResourceSamplingConfig,
     include_system_info: bool,
 ) -> String {
-    let mut script = String::from("$ErrorActionPreference='SilentlyContinue';");
+    let mut script = String::from(
+        // Metric text (OS name, process names) is localized; the capture and
+        // the SSH channel decode UTF-8, so the console writer must emit UTF-8.
+        "[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;$OutputEncoding=[System.Text.Encoding]::UTF8;$ErrorActionPreference='SilentlyContinue';",
+    );
     if config.system {
         script.push_str("$os=Get-CimInstance Win32_OperatingSystem -Property TotalVisibleMemorySize,FreePhysicalMemory,TotalVirtualMemorySize,FreeVirtualMemory");
         if include_system_info {
@@ -648,10 +682,6 @@ fn build_windows_sample_command(
     }
     if config.system {
         script.push_str(concat!(
-            "Write-Output '===CPU_DIRECT===';",
-            "$cpuInfo=Get-CimInstance Win32_Processor -Property LoadPercentage,NumberOfLogicalProcessors;",
-            "$cpu=($cpuInfo|Measure-Object -Property LoadPercentage -Average).Average;",
-            "if($cpu -ne $null){[Math]::Round($cpu,1)};",
             "Write-Output '===MEMINFO===';",
             "if($os){",
             "Write-Output ('MemTotal: '+$os.TotalVisibleMemorySize+' kB');",
@@ -662,7 +692,7 @@ fn build_windows_sample_command(
             "Write-Output ('SwapFree: '+$sf+' kB');",
             "};",
             "Write-Output '===NPROC===';",
-            "$cores=($cpuInfo|Measure-Object -Property NumberOfLogicalProcessors -Sum).Sum;",
+            "$cores=[int]$env:NUMBER_OF_PROCESSORS;",
             "if($cores){$cores};",
             "Write-Output '===DISKS===';",
             "Get-CimInstance Win32_LogicalDisk -Property DeviceID,Size,FreeSpace -Filter 'DriveType=3'|ForEach-Object{",
@@ -671,32 +701,43 @@ fn build_windows_sample_command(
             "Write-Output ($_.DeviceID+[char]9+$used+[char]9+$total+[char]9+$pct)",
             "};",
             "Write-Output '===NETDEV===';",
-            "Get-NetAdapterStatistics|ForEach-Object{",
-            "Write-Output ($_.Name+': '+$_.ReceivedBytes+' 0 0 0 0 0 0 0 '+$_.SentBytes)",
+            // Raw perf counters are cumulative totals like /proc/net/dev, so
+            // the existing delta-based rate parser stays unchanged. The raw
+            // class also avoids the ~5s cold provider activation that
+            // Get-NetAdapterStatistics pays on every new shell.
+            "Get-CimInstance Win32_PerfRawData_Tcpip_NetworkInterface -Property Name,BytesReceivedPersec,BytesSentPersec|ForEach-Object{",
+            "Write-Output ($_.Name+': '+$_.BytesReceivedPersec+' 0 0 0 0 0 0 0 '+$_.BytesSentPersec)",
             "};"
         ));
+    }
+    if config.system && !config.processes {
+        // No process pass to borrow a measurement window from, so the total
+        // CPU rate takes its own two raw reads around a short sleep.
+        script.push_str(WINDOWS_CPU_RATE_READ_FIRST);
+        script.push_str("Start-Sleep -Milliseconds 300;");
+        script.push_str(WINDOWS_CPU_RATE_READ_SECOND);
+        script.push_str(WINDOWS_CPU_RATE_EMIT);
     }
     if config.gpu {
         script.push_str(concat!(
             "Write-Output '===GPUS===';",
             "$gpuControllers=@(Get-CimInstance Win32_VideoController -Property Name,AdapterRAM);",
-            "$gpuUtil=@{};$gpuMem=@{};",
+            "$gpuMem=@{};$gpuUtil=@{};",
+            // Missing or unsupported counters stay absent, rather than reporting an idle GPU.
             "try{",
-            "$samples=(Get-Counter '\\GPU Engine(*)\\Utilization Percentage').CounterSamples;",
+            "$samples=(Get-Counter '\\GPU Engine(*)\\Utilization Percentage' -ErrorAction Stop).CounterSamples;",
             "foreach($sample in $samples){",
-            "$instance=$sample.InstanceName;",
             "$phys=0;",
-            "if($instance -match 'phys_([0-9]+)'){$phys=[int]$matches[1]};",
+            "if($sample.InstanceName -match 'phys_([0-9]+)'){$phys=[int]$matches[1]};",
             "$gpuUtil[$phys]=[double]($gpuUtil[$phys])+[double]$sample.CookedValue",
             "}",
             "}catch{};",
             "try{",
-            "$memSamples=(Get-Counter '\\GPU Adapter Memory(*)\\Dedicated Usage').CounterSamples;",
-            "foreach($sample in $memSamples){",
-            "$instance=$sample.InstanceName;",
+            "$memories=@(Get-CimInstance Win32_PerfFormattedData_GPUPerformanceCounters_GPUAdapterMemory -Property Name,DedicatedUsage);",
+            "foreach($sample in $memories){",
             "$phys=0;",
-            "if($instance -match 'phys_([0-9]+)'){$phys=[int]$matches[1]};",
-            "$gpuMem[$phys]=[double]($gpuMem[$phys])+[double]$sample.CookedValue",
+            "if($sample.Name -match 'phys_([0-9]+)'){$phys=[int]$matches[1]};",
+            "$gpuMem[$phys]=[double]($gpuMem[$phys])+[double]$sample.DedicatedUsage",
             "}",
             "}catch{};",
             "for($i=0;$i -lt $gpuControllers.Count;$i++){",
@@ -704,21 +745,60 @@ fn build_windows_sample_command(
             "$name=($gpu.Name -replace ',', ' ');",
             "$total=if($gpu.AdapterRAM){[Math]::Round(([double]$gpu.AdapterRAM)/1MB)}else{''};",
             "$used=if($gpuMem.ContainsKey($i)){[Math]::Round(([double]$gpuMem[$i])/1MB)}else{''};",
-            "$util=if($gpuUtil.ContainsKey($i)){[Math]::Min(100,[Math]::Round([double]$gpuUtil[$i],1))}else{''};",
-            "Write-Output ($i+','+$name+','+$util+','+$used+','+$total)",
+            "$util=if($gpuUtil.ContainsKey($i)){[Math]::Min(100.0,[Math]::Round([double]$gpuUtil[$i],1))}else{''};",
+            "Write-Output (''+$i+','+$name+','+$util+','+$used+','+$total)",
             "};"
         ));
     }
     if config.processes {
         script.push_str(concat!(
-            "Write-Output '===TOPPROCS===';",
             "$memTotal=if($os){[double]$os.TotalVisibleMemorySize*1024}else{0};",
-            "Get-Process|Sort-Object WorkingSet64 -Descending|Select-Object -First 200|ForEach-Object{",
+            // `Get-Process` exposes total CPU seconds, not a rate. Sample each
+            // process twice and report the delta over the measured window as a
+            // percentage of one core, matching `ps %cpu` (multi-core sums can
+            // exceed 100). `-IncludeUserName` fills the user column but
+            // PowerShell 5.1 needs elevation for it; pwsh 7 fills user names
+            // for the caller's own processes without elevation, and the local
+            // runner prefers pwsh when installed. Without any of the two the
+            // call yields nothing and the plain enumeration keeps the list
+            // alive, only without owners.
+            "$procs=Get-Process -IncludeUserName;if(-not $procs){$procs=Get-Process;};",
+            "$cpuStart=Get-Date;$cpuFirst=@{};",
+            "$procs|ForEach-Object{if($null -ne $_.CPU){$cpuFirst[[string]$_.Id]=$_.CPU}};",
+        ));
+        if config.system {
+            // The process pass already sleeps for its CPU window; the total
+            // CPU rate reuses that window instead of paying its own query.
+            script.push_str(WINDOWS_CPU_RATE_READ_FIRST);
+        }
+        script.push_str(concat!(
+            "Start-Sleep -Milliseconds 300;",
+            "$cpuSpan=[Math]::Max(1,((Get-Date)-$cpuStart).TotalMilliseconds);",
+        ));
+        if config.system {
+            script.push_str(WINDOWS_CPU_RATE_READ_SECOND);
+            script.push_str(WINDOWS_CPU_RATE_EMIT);
+        }
+        // The CPU_DIRECT section is emitted before this marker: a metrics
+        // section ends at the next `===MARKER===` line, so a nested marker
+        // inside TOPPROCS would cut the process rows off.
+        script.push_str(concat!(
+            "Write-Output '===TOPPROCS===';",
+            "$procs=Get-Process -IncludeUserName;if(-not $procs){$procs=Get-Process;};",
+            "$procs|Sort-Object WorkingSet64 -Descending|Select-Object -First 200|ForEach-Object{",
+            "$user=if($_.UserName){[string]$_.UserName}else{''};",
             "$pct=if($memTotal -gt 0){[Math]::Round(($_.WorkingSet64*100)/$memTotal,1)}else{0};",
-            "$cpu=if($_.CPU -ne $null){[Math]::Round($_.CPU,1)}else{0};",
+            "$cpuPrev=$cpuFirst[[string]$_.Id];",
+            "$cpuDelta=if($null -ne $cpuPrev -and $null -ne $_.CPU){($_.CPU-$cpuPrev)*1000}else{0};",
+            "$cpu=if($cpuDelta -gt 0){[Math]::Round($cpuDelta/$cpuSpan*100,1)}else{0};",
             "$rss=[UInt64]$_.WorkingSet64;$vsz=[UInt64]$_.VirtualMemorySize64;",
             "$elapsed=if($_.StartTime){((Get-Date)-$_.StartTime).ToString()}else{''};",
-            "Write-Output ($_.Id+[char]9+''+[char]9+''+[char]9+''+[char]9+$cpu+[char]9+$pct+[char]9+[Math]::Round($rss/1024)+[char]9+[Math]::Round($vsz/1024)+[char]9+$elapsed+[char]9+$_.ProcessName+[char]9+$_.Path)",
+            // A numeric first operand keeps the whole `+` chain numeric in
+            // PowerShell, so the row must start as a string. `Get-Process`
+            // only lists live processes and Windows has no cheap per-process
+            // state, so every row reports running; Task Manager shows no
+            // state either.
+            "Write-Output (''+$_.Id+[char]9+''+[char]9+$user+[char]9+'R'+[char]9+$cpu+[char]9+$pct+[char]9+[Math]::Round($rss/1024)+[char]9+[Math]::Round($vsz/1024)+[char]9+$elapsed+[char]9+$_.ProcessName+[char]9+$_.Path)",
             "};"
         ));
     }
@@ -730,6 +810,11 @@ fn build_windows_sample_command(
     // instead of UTF-16 leaves the full probe below cmd.exe's 8191-character command limit.
     use base64::Engine as _;
     let encoded = base64::engine::general_purpose::STANDARD.encode(script.as_bytes());
+    // One interpreter, one process start. The remote shell always has
+    // powershell; the local capture runner swaps in `pwsh` when installed so
+    // `-IncludeUserName` fills the user column without elevation (exec.rs).
+    // Encoding UTF-8 instead of UTF-16 leaves the full probe below cmd.exe's
+    // 8191-character command limit.
     format!(
         "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& ([scriptblock]::Create([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('{encoded}'))))\"\r\n"
     )
@@ -805,6 +890,9 @@ async fn sample_loop(
     let mut previous_sample: Option<PreviousResourceSample> = None;
     let mut consecutive_failures = 0_u32;
     let mut interval = tokio::time::interval(RESOURCE_SAMPLE_INTERVAL);
+    // A Windows sample measures ten to sixteen seconds, longer than the
+    // interval. Catching up would run samples back to back forever.
+    interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
 
     loop {
         tokio::select! {
@@ -1019,6 +1107,22 @@ mod tests {
     use super::*;
     use crate::MetricsSource;
 
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn native_disk_probe_reads_cumulative_byte_counters() {
+        let output = std::process::Command::new("/bin/sh")
+            .args(["-c", METRICS_COMMAND_MACOS_DISK_IO]).output().unwrap();
+        assert!(output.status.success());
+        let output = String::from_utf8(output.stdout).unwrap();
+        let metrics = parse_resource_metrics(&output, None, 1);
+        let baseline = previous_sample_from_metrics(&metrics, &output).unwrap();
+        assert!(baseline.disk_io.iter().any(|disk| disk.read_bytes > 0));
+        assert!(baseline.disk_io.iter().all(|disk| disk.id.starts_with("0x")));
+        // Reusing the same counters at a later timestamp represents an idle disk.
+        let idle = parse_resource_metrics(&output, Some(&baseline), 1001);
+        assert_eq!((idle.disk_read_bytes_per_sec, idle.disk_write_bytes_per_sec), (Some(0), Some(0)));
+    }
+
     #[test]
     fn profiler_registry_records_registered_samples_and_resets_degraded_history() {
         let registry = ProfilerRegistry::new();
@@ -1157,6 +1261,97 @@ mod tests {
             build_sample_command("Windows").len() <= 8191,
             "cmd.exe must accept the full probe"
         );
+        let full = build_sample_command("Windows");
+        let encoded = full
+            .split_once("FromBase64String('")
+            .unwrap()
+            .1
+            .split_once('\'')
+            .unwrap()
+            .0;
+        let full_script = String::from_utf8(
+            base64::engine::general_purpose::STANDARD
+                .decode(encoded)
+                .unwrap(),
+        )
+        .unwrap();
+        // A metrics section ends at the next `===MARKER===` line, so the
+        // CPU_DIRECT section must be emitted before TOPPROCS; a marker nested
+        // between the TOPPROCS marker and its rows empties the process table.
+        let cpu_direct = full_script.find("===CPU_DIRECT===").unwrap();
+        let topprocs = full_script.find("===TOPPROCS===").unwrap();
+        assert!(
+            cpu_direct < topprocs,
+            "CPU_DIRECT must precede TOPPROCS in the generated script"
+        );
+    }
+
+    #[test]
+    #[cfg_attr(
+        not(windows),
+        ignore = "Requires pwsh; run explicitly on non-Windows hosts"
+    )]
+    fn windows_gpu_probe_distinguishes_measured_and_unavailable_utilization() {
+        use base64::Engine as _;
+        let command = build_sample_command_for(
+            "Windows",
+            ResourceSamplingConfig {
+                system: false,
+                gpu: true,
+                processes: false,
+                docker: false,
+            },
+        );
+        let encoded = command
+            .split_once("FromBase64String('")
+            .unwrap()
+            .1
+            .split_once('\'')
+            .unwrap()
+            .0;
+        let script = String::from_utf8(
+            base64::engine::general_purpose::STANDARD
+                .decode(encoded)
+                .unwrap(),
+        )
+        .unwrap();
+        for (counter, expected) in [
+            (
+                "[pscustomobject]@{CounterSamples=@([pscustomobject]@{InstanceName='pid_42_phys_0_eng_0';CookedValue=42.5})}",
+                Some(42.5),
+            ),
+            ("throw 'Counter unavailable'", None),
+        ] {
+            let fixture = format!(
+                r#"
+function Get-CimInstance {{
+    param($ClassName, $Property)
+    if ($ClassName -eq 'Win32_VideoController') {{
+        [pscustomobject]@{{Name='Fixture GPU';AdapterRAM=1073741824}}
+    }} else {{
+        [pscustomobject]@{{Name='phys_0';DedicatedUsage=268435456}}
+    }}
+}}
+function Get-Counter {{ {counter} }}
+{script}
+"#
+            );
+            let output =
+                std::process::Command::new(if cfg!(windows) { "powershell" } else { "pwsh" })
+                    .args(["-NoProfile", "-NonInteractive", "-Command", &fixture])
+                    .output()
+                    .unwrap();
+            assert!(
+                output.status.success(),
+                "{}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            let gpus = crate::metrics::parse_gpus(&String::from_utf8(output.stdout).unwrap());
+            assert_eq!(gpus.len(), 1);
+            assert_eq!(gpus[0].name, "Fixture GPU");
+            assert_eq!(gpus[0].utilization_percent, expected);
+            assert_eq!(gpus[0].memory_used, Some(268435456));
+        }
     }
 
     #[cfg(unix)]

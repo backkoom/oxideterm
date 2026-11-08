@@ -11,7 +11,11 @@ const TERMINAL_RECORDING_MENU_WIDTH: f32 = 220.0;
 const TERMINAL_RECORDING_MENU_BOTTOM: f32 = 30.0;
 
 impl WorkspaceApp {
-    pub(super) fn render_terminal_command_bar(&self, cx: &mut Context<Self>) -> AnyElement {
+    pub(super) fn render_terminal_command_bar(
+        &self,
+        window: &Window,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
         const COMMAND_BAR_BG_ALPHA: u32 = 0xf2; // Tauri bg-theme-bg/95
         const COMMAND_BAR_BORDER_ALPHA: u32 = 0xb3; // Tauri border-theme-border/70
 
@@ -54,6 +58,12 @@ impl WorkspaceApp {
             .t("settings_view.connections.shell_integration.toolbar_action");
         let target_indicator_is_local =
             is_local_terminal && target_label == self.i18n.t("terminal.command_bar.local_shell");
+        let (target_indicator, latency_indicator) = self.render_terminal_indicators(
+            target_label,
+            target_indicator_is_local,
+            window.is_visible() && !window.is_minimized(),
+            cx,
+        );
         let broadcast_targets =
             self.terminal_broadcast_target_panes(active_pane_id.unwrap_or(PaneId(0)), cx);
         let broadcast_enabled = active_pane_id
@@ -175,11 +185,7 @@ impl WorkspaceApp {
                                 },
                                 cx,
                             ))
-                            .child(self.render_terminal_target_indicator(
-                                target_label,
-                                target_indicator_is_local,
-                                cx,
-                            ))
+                            .child(target_indicator)
                             .when(cwd_supported, |row| {
                                 row.child(self.terminal_command_context_chip_slot(
                                     TERMINAL_COMMAND_CONTEXT_CHIP_MAX_WIDTH,
@@ -204,7 +210,8 @@ impl WorkspaceApp {
                             .flex()
                             .flex_none()
                             .items_center()
-                            .gap(px(self.tokens.spacing.one))
+                            .gap(px(4.0))
+                            .children(latency_indicator)
                             .when(
                                 broadcast_enabled && !broadcast_label.is_empty(),
                                 |actions| {
@@ -1058,6 +1065,34 @@ impl WorkspaceApp {
             );
         }
 
+        let tiled_panes = self.selected_terminal_tile_panes(cx);
+        let can_tile = self.tab_host.read(cx).can_tile_terminal_panes(&tiled_panes);
+        menu = menu.child(
+            div()
+                .px(px(6.0))
+                .py(px(4.0))
+                .child(self.terminal_sync_action_button(
+                    self.i18n.t("terminal.broadcast.tile_selected"),
+                    can_tile,
+                    |this, _, window, cx| {
+                        this.tile_selected_terminal_panes(window, cx);
+                        cx.stop_propagation();
+                    },
+                    cx,
+                ))
+                .when(!can_tile, |row| {
+                    row.child(
+                        div()
+                            .text_size(px(11.0))
+                            .text_color(rgb(theme.text_muted))
+                            .child(
+                                self.i18n
+                                    .t("terminal.broadcast.tile_selection_hint")
+                                    .replace("{{max}}", &MAX_PANES_PER_TAB.to_string()),
+                            ),
+                    )
+                }),
+        );
         let enabled = self.terminal.read(cx).broadcast_enabled();
         let selected_count = self
             .terminal

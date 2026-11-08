@@ -71,9 +71,9 @@
       "processes": "Prozesse",
       "services": "Dienste",
       "logs": "Protokolle",
-      "tmux": "tmux",
+      "tmux": "Terminal-Multiplexer",
       "docker": "Docker",
-      "tmux_management": "tmux-Verwaltung",
+      "tmux_management": "Terminal-Multiplexer",
       "docker_management": "Docker-Verwaltung",
       "session_manager": "Sitzungsmanager",
       "open_session_manager": "Sitzungsmanager öffnen",
@@ -105,6 +105,9 @@
     "active_session_count": "Aktive Sitzungen: {{count}}",
     "no_sessions": "Keine Sitzungen",
     "add_new_connection": "Klicken Sie + um eine neue Verbindung hinzuzufügen",
+    "host_connection": {
+      "local_machine": "Dieser Rechner"
+    },
     "host_gpu": {
       "count_suffix": "Beschleuniger",
       "refresh_interval": "Aktualisierung alle 2 Sekunden",
@@ -113,11 +116,35 @@
       "unsupported": "Die GPU-/NPU-Überwachung wird auf diesem Betriebssystem nicht unterstützt.",
       "no_devices": "Keine unterstützten GPU-/NPU-Geräte gefunden.",
       "error": "GPU-/NPU-Abfrage fehlgeschlagen: {{error}}",
-      "actions": { "refresh": "GPU-/NPU-Daten aktualisieren" },
-      "summary": { "utilization": "Durchschnittliche Auslastung", "memory": "Gerätespeicher", "temperature": "Höchsttemperatur", "power": "Gesamtleistung" },
-      "columns": { "device": "Gerät", "utilization": "Auslastung", "memory": "Speicher" },
-      "details": { "uuid": "UUID", "driver": "Treiber", "performance_state": "Leistungszustand", "health": "Zustand", "temperature": "Temperatur", "power": "Leistung", "fan": "Lüfter" },
-      "processes": { "title": "Rechenprozesse", "empty": "Keine Rechenprozesse verwenden dieses Gerät." }
+      "actions": {
+        "refresh": "GPU-/NPU-Daten aktualisieren"
+      },
+      "summary": {
+        "utilization": "Durchschnittliche Auslastung",
+        "memory": "Gerätespeicher",
+        "shared_memory": "Belegter gemeinsamer Speicher",
+        "temperature": "Höchsttemperatur",
+        "power": "Gesamtleistung"
+      },
+      "columns": {
+        "device": "Gerät",
+        "utilization": "Auslastung",
+        "memory": "Speicher"
+      },
+      "details": {
+        "uuid": "UUID",
+        "driver": "Treiber",
+        "performance_state": "Leistungszustand",
+        "health": "Zustand",
+        "temperature": "Temperatur",
+        "power": "Leistung",
+        "fan": "Lüfter"
+      },
+      "processes": {
+        "unavailable": "Für dieses Gerät sind keine Prozessdaten verfügbar.",
+        "title": "Rechenprozesse",
+        "empty": "Keine Rechenprozesse verwenden dieses Gerät."
+      }
     },
     "host_processes": {
       "search_placeholder": "Prozesse suchen...",
@@ -177,6 +204,7 @@
       }
     },
     "host_docker": {
+      "daemon_unavailable": "Docker läuft nicht oder ist nicht erreichbar. Prüfen Sie, ob der Docker-Dienst läuft, und versuchen Sie es erneut.",
       "search_placeholder": "Container suchen...",
       "count_suffix": "Container",
       "sampling": "Docker-Container werden erfasst...",
@@ -364,8 +392,99 @@
         "unknown_error": "Unbekannter Fehler"
       }
     },
+    "multiplexer": {
+      "refresh": "Sitzungen aktualisieren",
+      "open": "Terminal öffnen",
+      "focus": "Fokussieren",
+      "new_workspace": "Neuer Arbeitsbereich",
+      "new_tab": "Neuer Tab",
+      "split": "Pane teilen",
+      "loading": "Wird geladen…",
+      "empty": "Keine passenden Sitzungen",
+      "unavailable": "Dieser Multiplexer ist auf dem gewählten Host nicht installiert.",
+      "failed": "Befehl fehlgeschlagen. Bitte Version und Sitzungsstatus prüfen.",
+      "server_not_running": "Der Multiplexer-Server läuft nicht. Über die Schaltfläche starten.",
+      "sampling": "Multiplexer-Sitzungen werden geladen…",
+      "error": "Multiplexer-Befehl fehlgeschlagen: {{error}}",
+      "sessions_title": "Sitzungen",
+      "search_empty": "Keine Treffer",
+      "search_child_empty": "Keine passenden Objekte in dieser Sitzung",
+      "workspace_empty": "Keine Arbeitsbereiche in dieser Sitzung",
+      "last_refreshed": "Aktualisiert",
+      "attach_title": "Multiplexer",
+      "focused": "Fokus",
+      "restore_error": "Wiederherstellungsfehler",
+      "orphan_agent": "Unverknüpfter Agent",
+      "row_space": "Arbeitsbereich",
+      "row_tab": "Tab",
+      "row_pane": "Pane",
+      "tabs_suffix": "Tabs",
+      "tabs_suffix_one": "Tab",
+      "panes_suffix": "Panes",
+      "panes_suffix_one": "Pane",
+      "status": {
+        "working": "arbeitet",
+        "blocked": "blockiert",
+        "idle": "bereit",
+        "done": "fertig",
+        "unknown": "unbekannt"
+      },
+      "actions": {
+        "refresh": "Aktualisieren",
+        "agent_attach": "An Agent anhängen",
+        "session_attach": "An Sitzung anhängen",
+        "session_stop": "Sitzung stoppen",
+        "session_delete": "Sitzung löschen",
+        "new_session": "Neue Sitzung",
+        "new_workspace": "Neuer Arbeitsbereich",
+        "rename": "Umbenennen",
+        "close": "Schließen",
+        "send": "Befehl ausführen",
+        "read": "Ausgabe lesen"
+      },
+      "confirm": {
+        "title": "Multiplexer-Aktion bestätigen",
+        "cancel": "Abbrechen",
+        "run": "Bestätigen",
+        "close_workspace": "Arbeitsbereich {{name}} ({{target}}) in Sitzung {{session}} schließen? Alle Tabs und Panes darin werden beendet.",
+        "close_tab": "Tab {{name}} ({{target}}) in Sitzung {{session}} schließen? Alle Panes darin werden beendet.",
+        "close_pane": "Pane {{name}} ({{target}}) in Sitzung {{session}} schließen? Die Arbeit darin wird beendet.",
+        "stop_session": "Sitzung {{name}} stoppen? Alle Arbeitsbereiche und Agenten in der Sitzung werden gestoppt.",
+        "delete_session": "Gestoppte Sitzung {{name}} löschen? Der gespeicherte Zustand wird entfernt."
+      },
+      "inputs": {
+        "new_session": "Neue Sitzung",
+        "new_session_hint": "Sitzungsname",
+        "new_workspace": "Neuer Arbeitsbereich",
+        "new_workspace_hint": "Name [/Remote-Pfad]",
+        "rename_workspace": "Arbeitsbereich umbenennen",
+        "rename_tab": "Tab umbenennen",
+        "rename_pane": "Pane umbenennen",
+        "rename_hint": "Neuer Name",
+        "run_pane": "Befehl in Pane ausführen",
+        "run_pane_hint": "Befehl für das Pane",
+        "error_required": "Gib zuerst einen Wert ein.",
+        "error_rejected": "Der Multiplexer hat diesen Wert abgelehnt."
+      },
+      "read": {
+        "title": "Ausgabe: {{pane}}",
+        "loading": "Ausgabe wird geladen…",
+        "empty": "Keine Ausgabe.",
+        "close": "Schließen"
+      },
+      "toast": {
+        "snapshot_already_running": "Ein Multiplexer-Snapshot wird bereits geladen.",
+        "connection_missing": "Die ausgewählte Verbindung ist nicht mehr verfügbar.",
+        "action_already_running": "Eine Multiplexer-Aktion läuft bereits.",
+        "action_failed": "Multiplexer-Aktion fehlgeschlagen.",
+        "action_succeeded": "Multiplexer-Aktion abgeschlossen für {{target}}.",
+        "read_already_running": "Pane-Ausgabe wird bereits geladen.",
+        "read_failed": "Pane-Ausgabe konnte nicht gelesen werden.",
+        "attach_opened": "Multiplexer in einem Terminal geöffnet."
+      }
+    },
     "host_tmux": {
-      "search_placeholder": "tmux suchen...",
+      "search_placeholder": "Sitzungen suchen…",
       "count_suffix": "Sitzungen",
       "loading": "tmux-Sitzungen werden geladen...",
       "empty": "Keine passenden tmux-Sitzungen",
@@ -584,6 +703,8 @@
       "actions": {
         "refresh": "Ports aktualisieren",
         "diagnostic": "Diagnose-Terminal öffnen",
+        "kill_process": "Prozess beenden",
+        "copy_kill_command": "Beenden-Befehl kopieren",
         "copy_endpoint": "Adresse kopieren",
         "jump_process": "Prozess finden"
       },
@@ -597,6 +718,7 @@
         "exec_terminal_missing": "Keine aktive SSH-Terminalroute für Diagnosen verfügbar.",
         "diagnostic_opened": "Port-Diagnose geöffnet.",
         "copied_endpoint": "{{endpoint}} kopiert.",
+        "kill_command_copied": "Kopiert: {{command}}",
         "partial_support": "Port-Prüfung wird unter {{os}} nur teilweise unterstützt.",
         "unknown_error": "Unbekannter Port-Scan-Fehler."
       }
@@ -707,7 +829,8 @@
         "dnf": "dnf",
         "yum": "yum",
         "pacman": "pacman",
-        "brew": "Homebrew"
+        "brew": "Homebrew",
+        "winget": "winget"
       },
       "columns": {
         "package": "Paket",
@@ -729,8 +852,16 @@
       },
       "actions": {
         "refresh": "Pakete aktualisieren",
+        "uninstall": "Paket deinstallieren",
+        "upgrade": "Paket aktualisieren",
         "inspect": "Paketdetails öffnen",
+        "copy_id": "Paket-ID kopieren",
         "copy_name": "Paketnamen kopieren"
+      },
+      "confirm": {
+        "uninstall_title": "Paket deinstallieren",
+        "uninstall_description": "{{name}} deinstallieren? winget entfernt es von diesem Host.",
+        "uninstall": "Deinstallieren"
       },
       "inspect_title": "Paketdetails",
       "toast": {
@@ -743,6 +874,11 @@
         "inspect_unsupported": "Paketdetails werden für {{manager}} noch nicht unterstützt.",
         "inspect_opened": "Details für {{name}} geöffnet.",
         "copied_name": "{{name}} kopiert.",
+        "copied_id": "{{id}} kopiert.",
+        "uninstall_opened": "{{name}} wird in einem Terminal deinstalliert.",
+        "uninstall_unsupported": "Deinstallieren über {{manager}} wird nicht unterstützt.",
+        "upgrade_opened": "{{name}} wird aktualisiert.",
+        "upgrade_unsupported": "Das Aktualisieren von {{manager}}-Paketen wird noch nicht unterstützt.",
         "partial_support": "Paketprüfung ist auf {{os}} nur lesend unterstützt.",
         "unknown_error": "Unbekannter Paket-Scan-Fehler."
       }

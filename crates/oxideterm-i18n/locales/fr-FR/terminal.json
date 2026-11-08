@@ -1,6 +1,14 @@
 {
   "terminal": {
     "connecting": "Connexion…",
+    "ssh_latency": {
+      "measured": "Temps aller-retour SSH : {{millis}} ms, réseau et réponse du serveur compris. Mis à jour il y a {{seconds}} s.",
+      "pending": "Mesure de la latence SSH…",
+      "timeout": "Aucune réponse depuis {{seconds}} s. L’attente continue ; cela ne signifie pas que la session est déconnectée.",
+      "unavailable": "Connexion SSH indisponible",
+      "unsupported": "La mesure de latence est désactivée dans le mode de compatibilité de cet appareil.",
+      "stale": "La mesure de latence a expiré"
+    },
     "archive": {
       "title": "Extraire l’archive",
       "command": "Commande d’extraction",
@@ -584,6 +592,9 @@
       "error_busy": "Une cible est utilisée par un autre émetteur"
     },
     "broadcast": {
+      "tile_selected": "Disposer les terminaux sélectionnés",
+      "tile_selection_hint": "Sélectionnez 2 à {{max}} terminaux dans la fenêtre principale.",
+      "tiled_title": "Terminaux en mosaïque",
       "members_hint": "Sélectionnez les terminaux, puis activez la synchronisation. Les nouveaux terminaux ne sont pas ajoutés automatiquement. Retirez un terminal de son groupe actuel avant de le déplacer.",
       "isolate_member": "Isoler",
       "resume_member": "Reprendre",

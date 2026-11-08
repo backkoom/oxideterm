@@ -84,8 +84,8 @@ const SFTP_SIDEBAR_TRANSFER_MAX_ROWS: usize = 3;
 const SFTP_INCOMPLETE_TRANSFER_LIST_INITIAL_ITEM_COUNT: usize = 0;
 const SFTP_INCOMPLETE_TRANSFER_LIST_ESTIMATED_HEIGHT: f32 = 52.0;
 const SFTP_INCOMPLETE_TRANSFER_LIST_OVERSCAN: usize = 4;
-const SFTP_TEXT_XS: f32 = 12.0; // Tauri text-xs
 const SFTP_TEXT_SM: f32 = 14.0; // Tauri text-sm
+const SFTP_TEXT_XS: f32 = 12.0; // Tauri text-xs
 const SFTP_TEXT_10: f32 = 10.0; // Tauri text-[10px]
 const SFTP_ICON_SM: f32 = 12.0; // Tauri h-3 w-3
 const SFTP_ICON_MD: f32 = 14.0; // Tauri h-3.5 w-3.5
@@ -166,11 +166,11 @@ fn configured_transfer_protocol(
     }
 }
 
-fn sftp_file_list_virtual_spec() -> TauriVirtualListSpec {
+fn sftp_file_list_virtual_spec(row_height: f32) -> TauriVirtualListSpec {
     // Tauri SFTP FileList uses the same row estimate and overscan for rendering
     // and keyboard reveal. Keep them as one named native spec so scrollIntoView
     // parity does not split from virtualized row rendering.
-    TauriVirtualListSpec::new(px(SFTP_ROW_HEIGHT), SFTP_VIRTUAL_OVERSCAN)
+    TauriVirtualListSpec::new(px(row_height), SFTP_VIRTUAL_OVERSCAN)
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
@@ -228,6 +228,7 @@ enum SftpButtonVariant {
 
 #[derive(Clone, Debug)]
 pub(super) struct SftpFileEntry {
+    // Remote components retain their byte identity; decode only for rendering.
     name: String,
     path: String,
     file_type: SftpFileType,
@@ -693,6 +694,7 @@ pub(super) enum SftpWorkspaceEvent {
         delivery: delivery::ActiveDeliverySender<SftpWorkerResult>,
     },
     PreviewSaveRequested {
+        expected_version: Option<String>,
         path: String,
         content: Arc<str>,
         encoding: Arc<str>,
@@ -710,6 +712,7 @@ pub(super) struct RemoteSftpListing {
 
 #[derive(Clone, Debug)]
 pub(super) struct SftpPreviewSaveResult {
+    version: Option<String>,
     mtime: Option<u64>,
     size: Option<u64>,
     encoding_used: String,
@@ -1067,6 +1070,7 @@ pub(super) struct SftpWorkspaceEntity {
     local_selected: HashSet<String>,
     remote_selected: HashSet<String>,
     local_file_scroll: UniformListScrollHandle,
+    file_row_height: f32,
     remote_file_scroll: UniformListScrollHandle,
     local_path_scroll: ScrollHandle,
     remote_path_scroll: ScrollHandle,
@@ -1203,6 +1207,7 @@ impl Default for SftpWorkspaceEntity {
             local_selected: HashSet::new(),
             remote_selected: HashSet::new(),
             local_file_scroll: UniformListScrollHandle::new(),
+            file_row_height: SFTP_ROW_HEIGHT,
             remote_file_scroll: UniformListScrollHandle::new(),
             local_path_scroll: ScrollHandle::new(),
             remote_path_scroll: ScrollHandle::new(),
@@ -2066,16 +2071,16 @@ pub(super) mod views;
 // Re-export only the cross-module helpers needed by the SFTP facade and its children.
 pub(in crate::workspace::sftp) use actions::{SftpTransferLaunch, sftp_extract_archive_kind};
 use helpers::{
-    default_download_path, diff_cell, format_conflict_modified, format_file_size, format_modified,
+    default_download_path, diff_cell, format_conflict_modified, format_file_size,
     format_sftp_media_time, format_transfer_speed, home_path,
     is_sftp_incomplete_store_compat_error, join_local_path, join_sftp_path, list_local_files,
     load_remote_sftp_completion_listing, load_remote_sftp_listing, load_remote_sftp_preview,
-    load_remote_sftp_preview_hex, local_drives, local_files_or_error, new_sftp_transfer_id,
-    normalize_external_dropped_path, normalize_remote_path, parent_path, preview_content_text,
-    remote_directory_prefixes, save_remote_sftp_preview, sftp_bg, sftp_border, sftp_card_surface,
-    sftp_conflict_resolution_from_settings, sftp_diff_visual_lines, sftp_editor_language,
-    sftp_editor_language_id, sftp_file_name, sftp_hover_bg, sftp_panel_bg, sftp_path_segments,
-    sftp_preview_editor_is_network_error, sftp_preview_is_markdown,
+    load_remote_sftp_preview_hex, local_drives, local_files_or_error, local_modified_time,
+    new_sftp_transfer_id, normalize_external_dropped_path, normalize_remote_path, parent_path,
+    preview_content_text, remote_directory_prefixes, save_remote_sftp_preview, sftp_bg,
+    sftp_border, sftp_card_surface, sftp_conflict_resolution_from_settings, sftp_diff_visual_lines,
+    sftp_editor_language, sftp_editor_language_id, sftp_file_name, sftp_hover_bg, sftp_panel_bg,
+    sftp_path_segments, sftp_preview_editor_is_network_error, sftp_preview_is_markdown,
     sftp_source_not_newer_than_target, sftp_transfer_conflicts,
     sftp_transfer_state_from_background, sorted_sftp_files, unique_sftp_conflict_name,
 };

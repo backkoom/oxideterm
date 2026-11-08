@@ -11,8 +11,15 @@ mod capture;
 mod docker;
 mod filesystem;
 mod gpu;
+mod herdr;
+mod launchd;
 mod log;
 mod metrics;
+#[cfg(target_os = "macos")]
+mod native_macos;
+#[cfg(target_os = "macos")]
+pub use native_macos::macos_cpu_counters;
+pub mod multiplexer;
 mod package;
 mod port;
 mod process;
@@ -69,8 +76,10 @@ pub use metrics::{
 pub use package::{
     PackageCaptureCommand, PackageCommandCapability, PackageFilter, PackageInspectCommand,
     ResourcePackageEntry, ResourcePackageManager, ResourcePackageSnapshot, ResourcePackageStatus,
-    build_package_inspect_command, build_package_snapshot_command, package_filter_label_key,
-    package_row_signature, package_status_label_key, parse_package_snapshot, visible_package_rows,
+    build_package_inspect_command, build_package_snapshot_command, build_package_uninstall_command,
+    build_package_upgrade_command, package_filter_label_key, package_filter_manager,
+    package_filter_options, package_row_signature, package_status_label_key,
+    parse_package_snapshot, visible_package_rows,
 };
 pub use port::{
     PortCaptureCommand, PortCommandCapability, PortFilter, ResourcePortEntry, ResourcePortSnapshot,
@@ -101,8 +110,8 @@ pub use scheduled_task::{
     build_scheduled_task_snapshot_command, parse_scheduled_task_snapshot,
     scheduled_task_action_availability, scheduled_task_active_label_key,
     scheduled_task_capture_snapshot, scheduled_task_enabled_label_key,
-    scheduled_task_filter_label_key, scheduled_task_row_signature, scheduled_task_source_label_key,
-    visible_scheduled_task_rows,
+    scheduled_task_filter_label_key, scheduled_task_filter_options, scheduled_task_row_signature,
+    scheduled_task_source_label_key, visible_scheduled_task_rows,
 };
 pub use service::{
     ResourceService, ResourceServiceSnapshot, ResourceServiceStatus, ServiceActionAvailability,

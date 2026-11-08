@@ -17,7 +17,8 @@ SSH · Mosh · Telnet · 序列埠 · RDP/VNC · SFTP · 連接埠轉送 · 內�
 [**下載**](https://github.com/AnalyseDeCircuit/oxideterm/releases/latest) ·
 [**文件**](https://oxideterm.app) ·
 [**更新紀錄**](../../.github/release-notes/stable-changelog.md) ·
-[**報告問題**](https://github.com/AnalyseDeCircuit/oxideterm/issues)
+[**報告問題**](https://github.com/AnalyseDeCircuit/oxideterm/issues) ·
+[**微信交流群**](https://github.com/AnalyseDeCircuit/oxideterm/issues/752)
 
 [English](../../README.md) | [简体中文](README.zh-Hans.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Italiano](README.it.md) | [Português](README.pt-BR.md) | [Tiếng Việt](README.vi.md)
 
@@ -350,3 +351,13 @@ cargo run -p oxideterm-cli -- report --bundle ./oxideterm-report.zip
 **GPL-3.0-only。** 相依套件署名見 [`THIRD_PARTY_NOTICES.md`](../../THIRD_PARTY_NOTICES.md)，其他聲明見 [`NOTICE`](../../NOTICE)。
 
 **使用以下專案打造：** [russh](https://github.com/warp-tech/russh) · [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui) · [alacritty_terminal](https://github.com/alacritty/alacritty) · [portable-pty](https://github.com/wez/wezterm/tree/main/pty) · [wasmtime](https://wasmtime.dev/) · [tree-sitter](https://tree-sitter.github.io/)
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=AnalyseDeCircuit%2Foxideterm&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=AnalyseDeCircuit/oxideterm&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=AnalyseDeCircuit/oxideterm&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=AnalyseDeCircuit/oxideterm&type=date&legend=top-left" />
+ </picture>
+</a>

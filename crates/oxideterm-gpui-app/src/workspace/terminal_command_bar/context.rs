@@ -3,6 +3,140 @@
 
 use super::*;
 
+fn ssh_latency_display(
+    sample: oxideterm_ssh::SshLatencySnapshot,
+    i18n: &oxideterm_i18n::I18n,
+) -> (String, StatusTone, String) {
+    use oxideterm_ssh::SshLatencySnapshot::*;
+    let (label, tone, key) = match sample {
+        Measured {
+            millis,
+            measured_at,
+        } => {
+            let tone = match millis {
+                0..100 => StatusTone::Success,
+                100..300 => StatusTone::Warning,
+                _ => StatusTone::Error,
+            };
+            // Bound the toolbar label; the tooltip retains the exact measurement.
+            // Truncate tenths so 999.999 seconds does not round into an extra digit.
+            let label = match millis {
+                0..1000 => format!("{millis} ms"),
+                1000..1_000_000 => format!("{}.{:01} s", millis / 1000, millis % 1000 / 100),
+                _ => "≥1000 s".into(),
+            };
+            let detail = i18n
+                .t("terminal.ssh_latency.measured")
+                .replace("{{millis}}", &millis.to_string())
+                .replace("{{seconds}}", &measured_at.elapsed().as_secs().to_string());
+            return (label, tone, detail);
+        }
+        Timeout => (
+            format!(">{} s", oxideterm_ssh::SSH_LATENCY_TIMEOUT.as_secs()),
+            StatusTone::Error,
+            "terminal.ssh_latency.timeout",
+        ),
+        Pending => (
+            "…".into(),
+            StatusTone::Neutral,
+            "terminal.ssh_latency.pending",
+        ),
+        Unavailable => (
+            "—".into(),
+            StatusTone::Neutral,
+            "terminal.ssh_latency.unavailable",
+        ),
+        Unsupported => (
+            "—".into(),
+            StatusTone::Neutral,
+            "terminal.ssh_latency.unsupported",
+        ),
+        Stale => (
+            "—".into(),
+            StatusTone::Neutral,
+            "terminal.ssh_latency.stale",
+        ),
+    };
+    let detail = i18n.t(key).replace(
+        "{{seconds}}",
+        &oxideterm_ssh::SSH_LATENCY_TIMEOUT.as_secs().to_string(),
+    );
+    (label, tone, detail)
+}
+
+#[cfg(test)]
+mod latency_tests {
+    use super::*;
+    use oxideterm_i18n::{I18n, Locale};
+    use oxideterm_ssh::SshLatencySnapshot;
+
+    #[test]
+    fn latency_labels_preserve_severity_and_extreme_measurements() {
+        let i18n = I18n::new(Locale::En);
+        for (millis, label, tone) in [
+            (1, "1 ms", StatusTone::Success),
+            (99, "99 ms", StatusTone::Success),
+            (100, "100 ms", StatusTone::Warning),
+            (299, "299 ms", StatusTone::Warning),
+            (300, "300 ms", StatusTone::Error),
+            (999, "999 ms", StatusTone::Error),
+            (1000, "1.0 s", StatusTone::Error),
+            (1999, "1.9 s", StatusTone::Error),
+            (999_999, "999.9 s", StatusTone::Error),
+            (1_000_000, "≥1000 s", StatusTone::Error),
+            (u64::MAX, "≥1000 s", StatusTone::Error),
+        ] {
+            let (actual, actual_tone, detail) = ssh_latency_display(
+                SshLatencySnapshot::Measured {
+                    millis,
+                    measured_at: tokio::time::Instant::now(),
+                },
+                &i18n,
+            );
+            assert_eq!(actual, label);
+            assert_eq!(actual_tone, tone);
+            assert!(detail.contains(&format!("{millis} ms")), "{detail}");
+        }
+        for (sample, label, tone, detail) in [
+            (
+                SshLatencySnapshot::Pending,
+                "…",
+                StatusTone::Neutral,
+                "Measuring SSH latency…",
+            ),
+            (
+                SshLatencySnapshot::Timeout,
+                ">3 s",
+                StatusTone::Error,
+                "No reply within 3 s. Still waiting; this does not indicate a disconnected session.",
+            ),
+            (
+                SshLatencySnapshot::Unavailable,
+                "—",
+                StatusTone::Neutral,
+                "SSH connection unavailable",
+            ),
+            (
+                SshLatencySnapshot::Unsupported,
+                "—",
+                StatusTone::Neutral,
+                "Latency probing is disabled for this device's compatibility mode.",
+            ),
+            (
+                SshLatencySnapshot::Stale,
+                "—",
+                StatusTone::Neutral,
+                "Latency sample expired",
+            ),
+        ] {
+            assert_eq!(
+                ssh_latency_display(sample, &i18n),
+                (label.into(), tone, detail.into())
+            );
+        }
+    }
+}
+
 impl WorkspaceApp {
     pub(super) fn terminal_command_action_button(
         &self,
@@ -77,49 +211,84 @@ impl WorkspaceApp {
             .into_any_element()
     }
 
-    pub(super) fn render_terminal_target_indicator(
+    pub(super) fn render_terminal_indicators(
         &self,
         target_label: String,
         is_local_terminal: bool,
+        visible: bool,
         cx: &mut Context<Self>,
-    ) -> AnyElement {
+    ) -> (AnyElement, Option<AnyElement>) {
         let theme = self.tokens.ui;
-        let tooltip_id = "terminal-command-target-indicator";
+        let latency = self
+            .active_ssh_terminal_node_id(cx)
+            .filter(|_| {
+                self.settings_store
+                    .settings()
+                    .terminal
+                    .command_bar
+                    .ssh_latency
+            })
+            .map(|node| {
+                self.workspace_runtime
+                    .update(cx, |runtime, _| runtime.ssh_latency(&node, visible))
+            });
+        let chip_style = ContextChipOptions::new();
         let icon = if is_local_terminal {
             LucideIcon::Terminal
         } else {
             LucideIcon::Server
         };
-
-        div()
-            .h(px(20.0))
-            .min_w(px(28.0))
+        let with_tooltip = |chip: gpui::Div, tooltip_id: &'static str, title: String| {
+            chip.id(tooltip_id)
+                .on_mouse_move(
+                    cx.listener(move |this, event: &MouseMoveEvent, _window, cx| {
+                        this.queue_workspace_tooltip(
+                            tooltip_id,
+                            title.clone(),
+                            f32::from(event.position.x) + 12.0,
+                            f32::from(event.position.y) + 16.0,
+                            cx,
+                        );
+                    }),
+                )
+                .on_hover(cx.listener(move |this, hovered: &bool, _window, cx| {
+                    if !*hovered {
+                        this.clear_workspace_tooltip(tooltip_id, cx);
+                    }
+                }))
+                .into_any_element()
+        };
+        let latency_chip = latency.map(|sample| {
+            let (label, tone, detail) = ssh_latency_display(sample, &self.i18n);
+            let chip = div()
+                .h(px(chip_style.height))
+                .px(px(2.0))
+                .flex_none()
+                .flex()
+                .items_center()
+                .whitespace_nowrap()
+                .font_family(settings_mono_font_family(self.settings_store.settings()))
+                .text_size(px(chip_style.font_size))
+                .text_color(oxideterm_gpui_ui::status_pill_colors(&self.tokens, tone, false).text)
+                .child(label);
+            with_tooltip(
+                chip,
+                "terminal-command-ssh-latency",
+                format!("{target_label}\n{detail}"),
+            )
+        });
+        let target = div()
+            .h(px(chip_style.height))
+            .w(px(28.0))
             .flex_none()
-            .px(px(self.tokens.spacing.one_half))
             .flex()
             .items_center()
             .justify_center()
-            .text_color(rgb(theme.text_muted))
-            .id(tooltip_id)
-            .on_mouse_move({
-                let title = target_label;
-                cx.listener(move |this, event: &MouseMoveEvent, _window, cx| {
-                    this.queue_workspace_tooltip(
-                        tooltip_id,
-                        title.clone(),
-                        f32::from(event.position.x) + 12.0,
-                        f32::from(event.position.y) + 16.0,
-                        cx,
-                    );
-                })
-            })
-            .on_hover(cx.listener(move |this, hovered: &bool, _window, cx| {
-                if !*hovered {
-                    this.clear_workspace_tooltip(tooltip_id, cx);
-                }
-            }))
-            .child(Self::render_lucide_icon(icon, 12.0, rgb(theme.text_muted)))
-            .into_any_element()
+            .child(Self::render_lucide_icon(icon, 12.0, rgb(theme.text_muted)));
+        (
+            with_tooltip(target, "terminal-command-target-indicator", target_label),
+            latency_chip,
+        )
     }
 
     pub(super) fn render_terminal_cwd_chip(

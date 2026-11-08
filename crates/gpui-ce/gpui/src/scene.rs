@@ -18,6 +18,9 @@ use std::{
     sync::Arc,
 };
 
+#[cfg(all(test, feature = "bench"))]
+mod benchmarks;
+
 #[allow(non_camel_case_types, unused)]
 #[expect(missing_docs)]
 pub type PathVertex_ScaledPixels = PathVertex<ScaledPixels>;
@@ -205,13 +208,17 @@ impl Scene {
         opacity: f32,
     ) {
         let layer_order = self.layer_stack.last().copied();
+        let glyph_opacity = opacity.clamp(0.0, 1.0);
         for glyph in &batch.monochrome {
             let mut sprite = MonochromeSprite {
                 order: 0,
                 pad: 0,
                 bounds: glyph.bounds + origin,
                 content_mask,
-                color: glyph.color.opacity(opacity).into(),
+                color: SceneHsla {
+                    a: glyph.color.a * glyph_opacity,
+                    ..glyph.color
+                },
                 tile: glyph.tile,
                 transformation: TransformationMatrix::unit(),
             };
@@ -229,7 +236,10 @@ impl Scene {
                 pad: 0,
                 bounds: glyph.bounds + origin,
                 content_mask,
-                color: glyph.color.opacity(opacity).into(),
+                color: SceneHsla {
+                    a: glyph.color.a * glyph_opacity,
+                    ..glyph.color
+                },
                 tile: glyph.tile,
                 transformation: TransformationMatrix::unit(),
             };
@@ -244,7 +254,7 @@ impl Scene {
         for glyph in &batch.polychrome {
             let mut sprite = PolychromeSprite {
                 order: 0,
-                pad: 0,
+                corner_shape: 0,
                 grayscale: false.into(),
                 opacity,
                 bounds: glyph.bounds + origin,
@@ -784,6 +794,31 @@ impl PrimitiveBatch {
     }
 }
 
+/// The contour used for rounded UI rectangles. Circular remains the default.
+#[derive(Default, Debug, Copy, Clone, PartialEq, Eq)]
+pub enum CornerShape {
+    /// A circular arc at each corner.
+    #[default]
+    Circular,
+    /// Cubic Bézier corners with zero curvature at the straight edges.
+    Continuous,
+}
+
+impl CornerShape {
+    pub(crate) fn for_bounds(
+        self,
+        bounds: Bounds<crate::Pixels>,
+        radii: Corners<crate::Pixels>,
+    ) -> u32 {
+        // Full-radius shapes denote circles or capsules, not rounded panels.
+        let capsule = radii.top_left == radii.top_right
+            && radii.top_left == radii.bottom_left
+            && radii.top_left == radii.bottom_right
+            && radii.top_left >= bounds.size.width.min(bounds.size.height) / 2.0;
+        u32::from(self == Self::Continuous && !capsule)
+    }
+}
+
 #[derive(Default, Debug, Copy, Clone)]
 #[repr(C)]
 #[expect(missing_docs)]
@@ -796,6 +831,8 @@ pub struct Quad {
     pub border_color: SceneHsla,
     pub corner_radii: Corners<ScaledPixels>,
     pub border_widths: Edges<ScaledPixels>,
+    pub corner_shape: u32,
+    pub pad: [u32; 3],
 }
 
 impl From<Quad> for Primitive {
@@ -837,7 +874,7 @@ pub struct Shadow {
     pub element_corner_radii: Corners<ScaledPixels>,
     /// 0 = drop shadow (rendered outside the element), 1 = inset shadow (rendered inside).
     pub inset: u32,
-    pub pad: u32, // align to 8 bytes
+    pub corner_shape: u32,
 }
 
 impl From<Shadow> for Primitive {
@@ -853,6 +890,7 @@ impl From<Shadow> for Primitive {
 #[expect(missing_docs)]
 pub struct BackdropFilter {
     pub order: DrawOrder,
+    pub corner_shape: u32,
     pub bounds: Bounds<ScaledPixels>,
     pub content_mask: ContentMask<ScaledPixels>,
     pub corner_radii: Corners<ScaledPixels>,
@@ -881,6 +919,7 @@ impl From<BackdropFilter> for Primitive {
 #[expect(missing_docs)]
 pub struct FilterBoundary {
     pub order: DrawOrder,
+    pub corner_shape: u32,
     pub bounds: Bounds<ScaledPixels>,
     pub content_mask: ContentMask<ScaledPixels>,
     pub corner_radii: Corners<ScaledPixels>,
@@ -1058,7 +1097,7 @@ impl From<SubpixelSprite> for Primitive {
 #[expect(missing_docs)]
 pub struct PolychromeSprite {
     pub order: DrawOrder,
-    pub pad: u32,
+    pub corner_shape: u32,
     pub grayscale: PaddedBool32,
     pub opacity: f32,
     pub bounds: Bounds<ScaledPixels>,
@@ -1296,6 +1335,22 @@ mod tests {
         }
     }
 
+    #[test]
+    fn continuous_corners_preserve_circles_and_capsules() {
+        use crate::{point, px, size};
+        for (width, height, radius, expected) in [
+            (100.0, 60.0, 12.0, 1),
+            (24.0, 24.0, 12.0, 0),
+            (100.0, 24.0, 12.0, 0),
+            (24.0, 100.0, 1000.0, 0),
+        ] {
+            let bounds = Bounds::new(point(px(0.0), px(0.0)), size(px(width), px(height)));
+            let radii = Corners::all(px(radius));
+            assert_eq!(CornerShape::Continuous.for_bounds(bounds, radii), expected);
+            assert_eq!(CornerShape::default().for_bounds(bounds, radii), 0);
+        }
+    }
+
     fn quad() -> Quad {
         Quad {
             bounds: full_bounds(),
@@ -1327,6 +1382,7 @@ mod tests {
     fn boundary(is_start: bool) -> FilterBoundary {
         FilterBoundary {
             order: 0,
+            corner_shape: 0,
             bounds: full_bounds(),
             content_mask: mask(),
             corner_radii: Corners::default(),
@@ -1351,7 +1407,7 @@ mod tests {
     fn prepared_monochrome_glyph(bounds: Bounds<ScaledPixels>) -> PreparedMonochromeGlyph {
         PreparedMonochromeGlyph {
             bounds,
-            color: crate::Hsla::default(),
+            color: crate::Hsla::default().into(),
             tile: AtlasTile {
                 texture_id: AtlasTextureId {
                     index: 0,
@@ -1481,5 +1537,51 @@ mod tests {
             replayed.monochrome_sprites[0].order,
             scene.monochrome_sprites[0].order
         );
+    }
+
+    #[test]
+    fn prepared_glyph_colors_preserve_wrapped_hue_and_live_opacity() {
+        for (hue, expected_hue) in [(-0.25, 0.75), (2.25, 0.25)] {
+            let mut glyph = prepared_monochrome_glyph(full_bounds());
+            glyph.color = crate::Hsla {
+                h: hue,
+                s: 0.5,
+                l: 0.25,
+                a: 0.8,
+            }
+            .into();
+            let batch = Arc::new(PreparedGlyphBatch {
+                monochrome: vec![glyph],
+                subpixel: vec![glyph],
+                ..Default::default()
+            });
+            for (opacity, alpha) in [(-0.5, 0.0), (0.25, 0.2), (1.5, 0.8)] {
+                let mut scene = Scene::default();
+                scene.push_layer(full_bounds());
+                scene.insert_prepared_glyph_batch(batch.clone(), Point::default(), mask(), opacity);
+                let expected = vec![SceneHsla {
+                    h: expected_hue,
+                    s: 0.5,
+                    l: 0.25,
+                    a: alpha,
+                }];
+                assert_eq!(
+                    scene
+                        .monochrome_sprites
+                        .iter()
+                        .map(|s| s.color)
+                        .collect::<Vec<_>>(),
+                    expected
+                );
+                assert_eq!(
+                    scene
+                        .subpixel_sprites
+                        .iter()
+                        .map(|s| s.color)
+                        .collect::<Vec<_>>(),
+                    expected
+                );
+            }
+        }
     }
 }

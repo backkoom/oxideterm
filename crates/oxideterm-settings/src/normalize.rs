@@ -724,6 +724,7 @@ pub fn sanitize_settings_value(raw: Value) -> Result<SanitizedSettings> {
             BACKEND_HOT_BUFFER_MIN,
             BACKEND_HOT_BUFFER_MAX,
         ),
+        ("terminal.commandBar.sshLatencyIntervalSecs", 10, 5, 60),
         ("terminal.fontSize", 14, 8, 32),
         (
             "terminal.fontWeight",
@@ -962,6 +963,13 @@ pub fn sanitize_settings_value(raw: Value) -> Result<SanitizedSettings> {
         &["terminal", "backgroundFit"],
         &["cover", "contain", "fill", "tile"],
         "cover",
+        &mut validation_warnings,
+    );
+    sanitize_enum(
+        &mut settings,
+        &["appearance", "cornerStyle"],
+        &["circular", "continuous"],
+        "circular",
         &mut validation_warnings,
     );
     sanitize_enum(

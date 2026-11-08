@@ -17,7 +17,8 @@ SSH · Mosh · Telnet · 시리얼 · RDP/VNC · SFTP · 포트 포워딩 · 내
 [**다운로드**](https://github.com/AnalyseDeCircuit/oxideterm/releases/latest) ·
 [**문서**](https://oxideterm.app) ·
 [**변경 이력**](../../.github/release-notes/stable-changelog.md) ·
-[**문제 보고**](https://github.com/AnalyseDeCircuit/oxideterm/issues)
+[**문제 보고**](https://github.com/AnalyseDeCircuit/oxideterm/issues) ·
+[**위챗 사용자 모임**](https://github.com/AnalyseDeCircuit/oxideterm/issues/752)
 
 [English](../../README.md) | [简体中文](README.zh-Hans.md) | [繁體中文](README.zh-Hant.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Italiano](README.it.md) | [Português](README.pt-BR.md) | [Tiếng Việt](README.vi.md)
 
@@ -350,3 +351,13 @@ OxideTerm을 더 나은 앱으로 만드는 데 함께해 주시는 모든 분�
 **GPL-3.0-only.** 의존 라이브러리의 저작권 표기는 [`THIRD_PARTY_NOTICES.md`](../../THIRD_PARTY_NOTICES.md)에, 추가 고지는 [`NOTICE`](../../NOTICE)에 있습니다.
 
 **사용 기술:** [russh](https://github.com/warp-tech/russh) · [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui) · [alacritty_terminal](https://github.com/alacritty/alacritty) · [portable-pty](https://github.com/wez/wezterm/tree/main/pty) · [wasmtime](https://wasmtime.dev/) · [tree-sitter](https://tree-sitter.github.io/)
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=AnalyseDeCircuit%2Foxideterm&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=AnalyseDeCircuit/oxideterm&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=AnalyseDeCircuit/oxideterm&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=AnalyseDeCircuit/oxideterm&type=date&legend=top-left" />
+ </picture>
+</a>

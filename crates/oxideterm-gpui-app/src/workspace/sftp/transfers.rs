@@ -58,6 +58,7 @@ struct SftpTransferRowLabels {
 
 #[derive(Clone)]
 struct SftpTransferRowRenderer {
+    ui: layout::SftpUiMetrics,
     sftp: Entity<SftpWorkspaceEntity>,
     theme: AppUiColors,
     radius: f32,
@@ -78,6 +79,10 @@ enum SftpTransferRowAction {
 }
 
 impl SftpTransferRowRenderer {
+    fn sftp_ui_metrics(&self) -> layout::SftpUiMetrics {
+        self.ui
+    }
+
     fn status_text(&self, transfer: &SftpTransferItem) -> String {
         match transfer.state {
             SftpTransferState::Pending => self.labels.waiting.clone(),
@@ -99,6 +104,7 @@ impl SftpTransferRowRenderer {
         label: String,
         action: SftpTransferRowAction,
     ) -> AnyElement {
+        let ui = self.sftp_ui_metrics();
         let tooltip_id = element_id.clone();
         let tooltip_label = label;
         let tooltip_sftp = self.sftp.clone();
@@ -108,7 +114,7 @@ impl SftpTransferRowRenderer {
 
         div()
             .id(element_id)
-            .size(px(SFTP_TOOL_BUTTON))
+            .size(px(ui.size(SFTP_TOOL_BUTTON)))
             .flex_none()
             .flex()
             .items_center()
@@ -122,7 +128,7 @@ impl SftpTransferRowRenderer {
             .cursor_pointer()
             .child(WorkspaceApp::render_lucide_icon(
                 icon,
-                SFTP_ICON_SM,
+                ui.size(SFTP_ICON_SM),
                 rgb(self.theme.text),
             ))
             .on_mouse_move(move |event: &MouseMoveEvent, _window, cx| {
@@ -266,6 +272,7 @@ impl SftpTransferRowRenderer {
     }
 
     fn render_compact_queue_item(&self, transfer: SftpTransferItem) -> AnyElement {
+        let ui = self.sftp_ui_metrics();
         let progress = if transfer.size == 0 {
             0.0
         } else {
@@ -310,7 +317,7 @@ impl SftpTransferRowRenderer {
                             .flex_1()
                             .min_w_0()
                             .truncate()
-                            .text_size(px(SFTP_TEXT_XS))
+                            .text_size(px(ui.text_xs))
                             .text_color(rgb(self.theme.text))
                             .child(transfer.name.clone()),
                     )
@@ -318,7 +325,7 @@ impl SftpTransferRowRenderer {
                         div()
                             .max_w(px(96.0))
                             .truncate()
-                            .text_size(px(SFTP_TEXT_10))
+                            .text_size(px(ui.text_small))
                             .font_family(self.mono_font.clone())
                             .text_color(rgb(status_color))
                             .child(status_text),
@@ -352,7 +359,7 @@ impl SftpTransferRowRenderer {
                         div()
                             .flex()
                             .justify_between()
-                            .text_size(px(SFTP_TEXT_10))
+                            .text_size(px(ui.text_small))
                             .text_color(rgb(self.theme.text_muted))
                             .child(if indeterminate {
                                 format_file_size(transfer.transferred)
@@ -378,6 +385,7 @@ impl SftpTransferRowRenderer {
         total: usize,
         has_background: bool,
     ) -> AnyElement {
+        let ui = self.sftp_ui_metrics();
         let theme = self.theme;
         let progress = if transfer.size == 0 {
             0.0
@@ -431,7 +439,7 @@ impl SftpTransferRowRenderer {
                         SFTP_PANEL_80_ALPHA,
                     ))
                     .hover(move |row| row.border_color(rgb(theme.border)))
-                    .text_size(px(SFTP_TEXT_SM))
+                    .text_size(px(ui.text_sm))
                     .child(
                         div()
                             .w(px(16.0))
@@ -458,7 +466,7 @@ impl SftpTransferRowRenderer {
                             .child(
                                 div()
                                     .truncate()
-                                    .text_size(px(SFTP_TEXT_10))
+                                    .text_size(px(ui.text_small))
                                     .text_color(rgb(theme.text_muted))
                                     .child(format!("{protocol_label} · {destination_path}")),
                             ),
@@ -498,7 +506,7 @@ impl SftpTransferRowRenderer {
                                 div()
                                     .flex()
                                     .justify_between()
-                                    .text_size(px(SFTP_TEXT_10))
+                                    .text_size(px(ui.text_small))
                                     .text_color(rgb(theme.text_muted))
                                     .child(if indeterminate {
                                         format_file_size(transfer.transferred)
@@ -518,7 +526,7 @@ impl SftpTransferRowRenderer {
                         div()
                             .w(px(96.0))
                             .text_align(gpui::TextAlign::Right)
-                            .text_size(px(SFTP_TEXT_XS))
+                            .text_size(px(ui.text_xs))
                             .font_family(self.mono_font.clone())
                             .text_color(rgb(status_color))
                             .child(status_text),
@@ -534,6 +542,7 @@ impl SftpTransferRowRenderer {
         index: usize,
         has_background: bool,
     ) -> AnyElement {
+        let ui = self.sftp_ui_metrics();
         let theme = self.theme;
         let name = transfer
             .source_path
@@ -586,7 +595,7 @@ impl SftpTransferRowRenderer {
                             (SFTP_YELLOW << 8) | SFTP_TRANSFER_INCOMPLETE_HOVER_BORDER_ALPHA,
                         ))
                     })
-                    .text_size(px(SFTP_TEXT_XS))
+                    .text_size(px(ui.text_xs))
                     .child(
                         div()
                             .w(px(16.0))
@@ -622,7 +631,7 @@ impl SftpTransferRowRenderer {
                             .when_some(transfer.error.clone(), |row, error| {
                                 row.child(
                                     div()
-                                        .text_size(px(SFTP_TEXT_10))
+                                        .text_size(px(ui.text_small))
                                         .text_color(rgb(SFTP_RED))
                                         .truncate()
                                         .child(error),
@@ -631,7 +640,7 @@ impl SftpTransferRowRenderer {
                     )
                     .child(
                         div()
-                            .text_size(px(SFTP_TEXT_10))
+                            .text_size(px(ui.text_small))
                             .text_color(rgb(theme.text_muted))
                             .child(status),
                     )
@@ -660,6 +669,7 @@ impl SftpTransferRowRenderer {
     }
 
     fn render_loading_item(&self) -> AnyElement {
+        let ui = self.sftp_ui_metrics();
         div()
             .px(px(self.spacing.two))
             .py(px(self.spacing.two))
@@ -673,7 +683,7 @@ impl SftpTransferRowRenderer {
                     .text_color(rgb(self.theme.text_muted))
                     .child(WorkspaceApp::render_lucide_icon(
                         LucideIcon::RefreshCw,
-                        SFTP_ICON_SM,
+                        ui.size(SFTP_ICON_SM),
                         rgb(self.theme.text_muted),
                     ))
                     .child(self.labels.loading.clone()),
@@ -685,6 +695,7 @@ impl SftpTransferRowRenderer {
 impl WorkspaceApp {
     fn sftp_transfer_row_renderer(&self, _cx: &App) -> SftpTransferRowRenderer {
         SftpTransferRowRenderer {
+            ui: self.sftp_ui_metrics(),
             sftp: self.sftp_view().clone(),
             theme: self.tokens.ui,
             radius: self.tokens.radii.sm,
@@ -712,6 +723,7 @@ impl WorkspaceApp {
         node_id: &NodeId,
         cx: &mut Context<Self>,
     ) -> Option<AnyElement> {
+        let ui = self.sftp_ui_metrics();
         let (transfer_count, active_count, mut transfers) = {
             let sftp = self.sftp_view().read(cx);
             let mut transfers = sftp
@@ -760,12 +772,12 @@ impl WorkspaceApp {
                 .bg(rgb(theme.bg))
                 .child(
                     div()
-                        .h(px(29.0))
+                        .h(px(ui.size(29.0)))
                         .flex()
                         .items_center()
                         .gap_2()
                         .px_2()
-                        .text_size(px(SFTP_TEXT_XS))
+                        .text_size(px(ui.text_xs))
                         .font_weight(gpui::FontWeight::SEMIBOLD)
                         .text_color(rgb(theme.text_muted))
                         .child(self.queue_title(active_count))
@@ -774,7 +786,7 @@ impl WorkspaceApp {
                                 .rounded_full()
                                 .bg(rgb(theme.bg_panel))
                                 .px_2()
-                                .text_size(px(SFTP_TEXT_10))
+                                .text_size(px(ui.text_small))
                                 .font_weight(gpui::FontWeight::NORMAL)
                                 .child(transfer_count.to_string()),
                         ),
@@ -796,6 +808,7 @@ impl WorkspaceApp {
         has_background: bool,
         cx: &mut Context<Self>,
     ) -> AnyElement {
+        let ui = self.sftp_ui_metrics();
         let theme = self.tokens.ui;
         let (active_count, has_completed, incomplete_count, show_incomplete, transfers_empty) = {
             let sftp = self.sftp_view().read(cx);
@@ -829,7 +842,7 @@ impl WorkspaceApp {
             .border_color(sftp_border(theme.border, has_background))
             .child(
                 div()
-                    .h(px(29.0))
+                    .h(px(ui.size(29.0)))
                     .flex()
                     .flex_row()
                     .items_center()
@@ -875,7 +888,7 @@ impl WorkspaceApp {
                                             .text_color(rgb(theme.accent))
                                             .child(Self::render_lucide_icon(
                                                 LucideIcon::History,
-                                                SFTP_ICON_SM,
+                                                ui.size(SFTP_ICON_SM),
                                                 rgb(theme.accent),
                                             ))
                                             .child(
@@ -908,9 +921,9 @@ impl WorkspaceApp {
                                 ..ToolbarButtonOptions::compact_text(
                                     ButtonVariant::Ghost,
                                     ButtonRadius::Sm,
-                                    24.0,
+                                    ui.size(24.0),
                                     8.0,
-                                    SFTP_TEXT_XS,
+                                    ui.text_xs,
                                 )
                             },
                             self.sftp_listener(cx, |this, _event, _window, cx| {
@@ -939,7 +952,7 @@ impl WorkspaceApp {
                                 .flex()
                                 .items_center()
                                 .justify_center()
-                                .text_size(px(SFTP_TEXT_SM))
+                                .text_size(px(ui.text_sm))
                                 .text_color(rgb(theme.text_muted))
                                 .child(self.render_selectable_display_text(
                                     "sftp-queue-empty",
@@ -981,11 +994,15 @@ impl WorkspaceApp {
     }
 
     fn sync_sftp_transfer_queue_list_state(&self, cx: &App) {
+        // Font changes must invalidate cached row measurements even when progress is unchanged.
         let sftp = self.sftp_view().read(cx);
         let signatures = sftp
             .transfers
             .iter()
-            .map(sftp_transfer_queue_row_signature)
+            .map(|transfer| {
+                sftp_transfer_queue_row_signature(transfer)
+                    ^ u64::from(self.tokens.metrics.ui_text_xs.to_bits())
+            })
             .collect::<Vec<_>>();
         sync_tauri_variable_list_state_by_signatures(
             &sftp.transfer_queue_list_state,
@@ -997,8 +1014,9 @@ impl WorkspaceApp {
     }
 
     fn sftp_transfer_queue_list_spec(&self) -> TauriVirtualListSpec {
+        let ui = self.sftp_ui_metrics();
         TauriVirtualListSpec::new(
-            px(SFTP_TRANSFER_QUEUE_LIST_ESTIMATED_HEIGHT),
+            px(ui.size(SFTP_TRANSFER_QUEUE_LIST_ESTIMATED_HEIGHT)),
             SFTP_TRANSFER_QUEUE_LIST_OVERSCAN,
         )
     }
@@ -1008,6 +1026,7 @@ impl WorkspaceApp {
         has_background: bool,
         cx: &mut Context<Self>,
     ) -> AnyElement {
+        let _ui = self.sftp_ui_metrics();
         let theme = self.tokens.ui;
         sftp_card_surface(
             div()
@@ -1077,9 +1096,10 @@ impl WorkspaceApp {
     }
 
     fn sftp_incomplete_transfer_list_height(&self, cx: &App) -> f32 {
+        let ui = self.sftp_ui_metrics();
         (self.sftp_incomplete_transfer_list_item_count(cx) as f32
-            * SFTP_INCOMPLETE_TRANSFER_LIST_ESTIMATED_HEIGHT)
-            .min(128.0)
+            * ui.size(SFTP_INCOMPLETE_TRANSFER_LIST_ESTIMATED_HEIGHT))
+        .min(128.0)
     }
 
     fn sync_sftp_incomplete_transfer_list_state(&self, cx: &App) {
@@ -1087,10 +1107,16 @@ impl WorkspaceApp {
         let mut signatures = sftp
             .incomplete_transfers
             .iter()
-            .map(sftp_incomplete_transfer_row_signature)
+            .map(|transfer| {
+                sftp_incomplete_transfer_row_signature(transfer)
+                    ^ u64::from(self.tokens.metrics.ui_text_xs.to_bits())
+            })
             .collect::<Vec<_>>();
         if sftp.incomplete_load_inflight {
-            signatures.push(sftp_incomplete_loading_signature());
+            signatures.push(
+                sftp_incomplete_loading_signature()
+                    ^ u64::from(self.tokens.metrics.ui_text_xs.to_bits()),
+            );
         }
         sync_tauri_variable_list_state_by_signatures(
             &sftp.incomplete_transfer_list_state,
@@ -1102,8 +1128,9 @@ impl WorkspaceApp {
     }
 
     fn sftp_incomplete_transfer_list_spec(&self) -> TauriVirtualListSpec {
+        let ui = self.sftp_ui_metrics();
         TauriVirtualListSpec::new(
-            px(SFTP_INCOMPLETE_TRANSFER_LIST_ESTIMATED_HEIGHT),
+            px(ui.size(SFTP_INCOMPLETE_TRANSFER_LIST_ESTIMATED_HEIGHT)),
             SFTP_INCOMPLETE_TRANSFER_LIST_OVERSCAN,
         )
     }

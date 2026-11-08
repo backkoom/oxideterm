@@ -71,9 +71,9 @@
       "processes": "Processes",
       "services": "Services",
       "logs": "Logs",
-      "tmux": "tmux",
+      "tmux": "Terminal multiplexers",
       "docker": "Docker",
-      "tmux_management": "tmux Management",
+      "tmux_management": "Terminal multiplexers",
       "docker_management": "Docker Management",
       "session_manager": "Session Manager",
       "open_session_manager": "Open Session Manager",
@@ -105,6 +105,9 @@
     "active_session_count": "Active sessions: {{count}}",
     "no_sessions": "No Sessions",
     "add_new_connection": "Click + to add a new connection",
+    "host_connection": {
+      "local_machine": "This machine"
+    },
     "host_gpu": {
       "count_suffix": "accelerators",
       "refresh_interval": "Updates every 2 seconds",
@@ -113,11 +116,35 @@
       "unsupported": "GPU / NPU monitoring is not supported on this operating system.",
       "no_devices": "No supported GPU / NPU devices were found.",
       "error": "GPU / NPU query failed: {{error}}",
-      "actions": { "refresh": "Refresh GPU / NPU data" },
-      "summary": { "utilization": "Average utilization", "memory": "Device memory", "temperature": "Maximum temperature", "power": "Total power" },
-      "columns": { "device": "Device", "utilization": "Usage", "memory": "Memory" },
-      "details": { "uuid": "UUID", "driver": "Driver", "performance_state": "Performance", "health": "Health", "temperature": "Temperature", "power": "Power", "fan": "Fan" },
-      "processes": { "title": "Compute processes", "empty": "No compute processes are using this device." }
+      "actions": {
+        "refresh": "Refresh GPU / NPU data"
+      },
+      "summary": {
+        "utilization": "Average utilization",
+        "memory": "Device memory",
+        "shared_memory": "Shared memory in use",
+        "temperature": "Maximum temperature",
+        "power": "Total power"
+      },
+      "columns": {
+        "device": "Device",
+        "utilization": "Usage",
+        "memory": "Memory"
+      },
+      "details": {
+        "uuid": "UUID",
+        "driver": "Driver",
+        "performance_state": "Performance",
+        "health": "Health",
+        "temperature": "Temperature",
+        "power": "Power",
+        "fan": "Fan"
+      },
+      "processes": {
+        "unavailable": "Process metrics are unavailable for this device.",
+        "title": "Compute processes",
+        "empty": "No compute processes are using this device."
+      }
     },
     "host_processes": {
       "search_placeholder": "Search processes...",
@@ -177,6 +204,7 @@
       }
     },
     "host_docker": {
+      "daemon_unavailable": "Docker is not running or cannot be reached. Check that the Docker service is running, then retry.",
       "search_placeholder": "Search containers...",
       "count_suffix": "containers",
       "sampling": "Sampling Docker containers...",
@@ -364,8 +392,99 @@
         "unknown_error": "Unknown error"
       }
     },
+    "multiplexer": {
+      "refresh": "Refresh sessions",
+      "open": "Open terminal",
+      "focus": "Focus",
+      "new_workspace": "New workspace",
+      "new_tab": "New tab",
+      "split": "Split pane",
+      "loading": "Loading…",
+      "empty": "No matching sessions",
+      "unavailable": "This multiplexer is not installed on the selected host.",
+      "failed": "The command failed. Check the installed version and session state.",
+      "server_not_running": "The multiplexer server is not running. Use the attach button to launch it.",
+      "sampling": "Sampling multiplexer sessions…",
+      "error": "The multiplexer command failed: {{error}}",
+      "sessions_title": "Sessions",
+      "search_empty": "No matches",
+      "search_child_empty": "No matching objects in this session",
+      "workspace_empty": "No workspaces in this session",
+      "last_refreshed": "Updated",
+      "attach_title": "Multiplexer",
+      "focused": "focused",
+      "restore_error": "restore error",
+      "orphan_agent": "unlinked agent",
+      "row_space": "workspace",
+      "row_tab": "tab",
+      "row_pane": "pane",
+      "tabs_suffix": "tabs",
+      "tabs_suffix_one": "tab",
+      "panes_suffix": "panes",
+      "panes_suffix_one": "pane",
+      "status": {
+        "working": "working",
+        "blocked": "blocked",
+        "idle": "idle",
+        "done": "done",
+        "unknown": "unknown"
+      },
+      "actions": {
+        "refresh": "Refresh",
+        "agent_attach": "Attach to agent",
+        "session_attach": "Attach to session",
+        "session_stop": "Stop session",
+        "session_delete": "Delete session",
+        "new_session": "New session",
+        "new_workspace": "New workspace",
+        "rename": "Rename",
+        "close": "Close",
+        "send": "Run command",
+        "read": "Read output"
+      },
+      "confirm": {
+        "title": "Confirm multiplexer action",
+        "cancel": "Cancel",
+        "run": "Confirm",
+        "close_workspace": "Close workspace {{name}} ({{target}}) in session {{session}}? Every tab and pane inside stops.",
+        "close_tab": "Close tab {{name}} ({{target}}) in session {{session}}? Every pane in it stops.",
+        "close_pane": "Close pane {{name}} ({{target}}) in session {{session}}? Work inside it stops.",
+        "stop_session": "Stop session {{name}}? Every workspace and agent in the session stops.",
+        "delete_session": "Delete stopped session {{name}}? Its saved state is removed."
+      },
+      "inputs": {
+        "new_session": "New session",
+        "new_session_hint": "Session name",
+        "new_workspace": "New workspace",
+        "new_workspace_hint": "name [/remote/path]",
+        "rename_workspace": "Rename workspace",
+        "rename_tab": "Rename tab",
+        "rename_pane": "Rename pane",
+        "rename_hint": "New name",
+        "run_pane": "Run command in pane",
+        "run_pane_hint": "Command to type into the pane",
+        "error_required": "Enter a value first.",
+        "error_rejected": "The multiplexer rejected this value."
+      },
+      "read": {
+        "title": "Output: {{pane}}",
+        "loading": "Loading output…",
+        "empty": "No output.",
+        "close": "Close"
+      },
+      "toast": {
+        "snapshot_already_running": "A multiplexer snapshot is already loading.",
+        "connection_missing": "The selected connection is no longer available.",
+        "action_already_running": "A multiplexer action is already running.",
+        "action_failed": "Multiplexer action failed.",
+        "action_succeeded": "Multiplexer action completed for {{target}}.",
+        "read_already_running": "Pane output is already loading.",
+        "read_failed": "Failed to read pane output.",
+        "attach_opened": "Opened the multiplexer in a terminal window."
+      }
+    },
     "host_tmux": {
-      "search_placeholder": "Search tmux...",
+      "search_placeholder": "Search sessions…",
       "count_suffix": "sessions",
       "loading": "Loading tmux sessions...",
       "empty": "No tmux sessions match",
@@ -584,6 +703,8 @@
       "actions": {
         "refresh": "Refresh ports",
         "diagnostic": "Open diagnostic terminal",
+        "kill_process": "Stop process",
+        "copy_kill_command": "Copy stop command",
         "copy_endpoint": "Copy address",
         "jump_process": "Find process"
       },
@@ -597,6 +718,7 @@
         "exec_terminal_missing": "No live SSH terminal route is available for diagnostics.",
         "diagnostic_opened": "Opened port diagnostics.",
         "copied_endpoint": "Copied {{endpoint}}.",
+        "kill_command_copied": "Copied: {{command}}",
         "partial_support": "Port inspection is partial on {{os}}.",
         "unknown_error": "Unknown port scan error."
       }
@@ -707,7 +829,8 @@
         "dnf": "dnf",
         "yum": "yum",
         "pacman": "pacman",
-        "brew": "Homebrew"
+        "brew": "Homebrew",
+        "winget": "winget"
       },
       "columns": {
         "package": "Package",
@@ -729,8 +852,16 @@
       },
       "actions": {
         "refresh": "Refresh packages",
+        "uninstall": "Uninstall package",
+        "upgrade": "Update package",
         "inspect": "Open package details",
+        "copy_id": "Copy package ID",
         "copy_name": "Copy package name"
+      },
+      "confirm": {
+        "uninstall_title": "Uninstall package",
+        "uninstall_description": "Uninstall {{name}}? winget removes it from this host.",
+        "uninstall": "Uninstall"
       },
       "inspect_title": "Package details",
       "toast": {
@@ -743,6 +874,11 @@
         "inspect_unsupported": "Package details are not supported for {{manager}} yet.",
         "inspect_opened": "Opened details for {{name}}.",
         "copied_name": "Copied {{name}}.",
+        "copied_id": "Copied {{id}}.",
+        "uninstall_opened": "Uninstalling {{name}} in a terminal.",
+        "uninstall_unsupported": "Uninstalling through {{manager}} is not supported.",
+        "upgrade_opened": "Updating {{name}}.",
+        "upgrade_unsupported": "Updating {{manager}} packages is not supported yet.",
         "partial_support": "Package inspection is read-only on {{os}}.",
         "unknown_error": "Unknown package scan error."
       }

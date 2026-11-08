@@ -610,10 +610,11 @@ async fn load_remote_sftp_preview_hex_once(
 pub(in crate::workspace::sftp) async fn save_remote_sftp_preview(
     backend: SftpRemoteBackend,
     path: &str,
+    expected_version: Option<&str>,
     content: &str,
     encoding: &str,
     line_ending: TextLineEnding,
-) -> Result<SftpPreviewSaveResult, String> {
+) -> Result<SftpPreviewSaveResult, SftpError> {
     let target_encoding = if encoding.trim().is_empty() {
         "UTF-8"
     } else {
@@ -622,17 +623,23 @@ pub(in crate::workspace::sftp) async fn save_remote_sftp_preview(
     let remote_content = restore_text_line_endings(content, line_ending);
     let encoded = encode_to_encoding(&remote_content, target_encoding);
     if let SftpRemoteBackend::Ftp { runtime } = &backend {
-        return runtime.save(path, &encoded, target_encoding).await;
+        return runtime
+            .save(path, &encoded, target_encoding)
+            .await
+            .map_err(SftpError::WriteError);
     }
-    let sftp = backend.acquire_transfer_sftp().await?;
+    let sftp = backend
+        .acquire_transfer_sftp()
+        .await
+        .map_err(SftpError::ChannelError)?;
     // Saving uses a short-lived SFTP channel so a large write/stat round trip
     // cannot stall the shared directory listing owner.
     let write_result = sftp
-        .write_content(path, &encoded)
-        .await
-        .map_err(|error| error.to_string())?;
-    let file_info = sftp.stat(path).await.map_err(|error| error.to_string())?;
+        .write_content_checked(path, &encoded, expected_version)
+        .await?;
+    let file_info = sftp.stat(path).await?;
     Ok(SftpPreviewSaveResult {
+        version: Some(write_result.version),
         mtime: (file_info.modified > 0).then_some(file_info.modified as u64),
         size: Some(file_info.size),
         encoding_used: target_encoding.to_string(),
@@ -680,7 +687,13 @@ fn remote_listing_from_file_infos(cwd: String, entries: Vec<RemoteFileInfo>) -> 
     let mut files = entries
         .into_iter()
         .map(|entry| SftpFileEntry {
-            name: entry.name,
+            // Selection keys are lossless components, not the rendered label.
+            name: entry
+                .path
+                .rsplit('/')
+                .next()
+                .unwrap_or(&entry.name)
+                .to_owned(),
             path: entry.path,
             file_type: match entry.file_type {
                 RemoteFileType::Directory => SftpFileType::Directory,
@@ -731,20 +744,11 @@ pub(in crate::workspace::sftp) fn format_transfer_speed(bytes_per_second: u64) -
     format!("{}/s", format_file_size(bytes_per_second))
 }
 
-pub(in crate::workspace::sftp) fn format_modified(modified: Option<i64>) -> String {
-    let Some(modified) = modified.filter(|modified| *modified > 0) else {
-        return "-".to_string();
-    };
-    let Some(datetime) = chrono::DateTime::from_timestamp(modified, 0) else {
-        return "-".to_string();
-    };
-    // Tauri renders `new Date(file.modified * 1000).toLocaleDateString()`;
-    // native keeps the same Unix-seconds -> local-date contract instead of
-    // showing UTC or a placeholder date.
-    datetime
-        .with_timezone(&chrono::Local)
-        .format("%Y/%-m/%-d")
-        .to_string()
+pub(in crate::workspace::sftp) fn local_modified_time(
+    modified: Option<i64>,
+) -> Option<chrono::DateTime<chrono::Local>> {
+    let timestamp = modified.filter(|value| *value > 0)?;
+    Some(chrono::DateTime::from_timestamp(timestamp, 0)?.with_timezone(&chrono::Local))
 }
 
 pub(in crate::workspace::sftp) fn format_conflict_modified(modified: Option<i64>) -> String {
@@ -870,6 +874,7 @@ pub(in crate::workspace::sftp) fn diff_cell(
     highlighted: bool,
     border: u32,
     left: bool,
+    number_column_width: f32,
 ) -> AnyElement {
     div()
         .flex_1()
@@ -887,7 +892,7 @@ pub(in crate::workspace::sftp) fn diff_cell(
         })
         .child(
             div()
-                .w(px(SFTP_DIFF_LINE_NUMBER_COL))
+                .w(px(number_column_width))
                 .flex_none()
                 .px(px(SFTP_DIFF_CELL_PADDING_X))
                 .py(px(SFTP_DIFF_CELL_PADDING_Y))
@@ -914,6 +919,39 @@ pub(in crate::workspace::sftp) fn diff_cell(
 #[cfg(test)]
 mod sftp_helper_tests {
     use super::*;
+
+    #[test]
+    fn identical_display_names_have_distinct_browser_selection_keys() {
+        let entries = ["/\0ff.log", "/\0fe.log"].map(|path| RemoteFileInfo {
+            name: "�.log".into(),
+            path: path.into(),
+            file_type: RemoteFileType::File,
+            size: 1,
+            modified: 1,
+            permissions: "600".into(),
+            owner: None,
+            group: None,
+            is_symlink: false,
+            symlink_target: None,
+        });
+        let listing = remote_listing_from_file_infos("/".into(), entries.into());
+        let mut identities = listing
+            .files
+            .iter()
+            .map(|file| (file.name.as_str(), file.path.as_str()))
+            .collect::<Vec<_>>();
+        identities.sort();
+        assert_eq!(
+            identities,
+            vec![("\0fe.log", "/\0fe.log"), ("\0ff.log", "/\0ff.log")]
+        );
+        assert!(
+            listing
+                .files
+                .iter()
+                .all(|file| oxideterm_sftp::display_remote_path(&file.name) == "�.log")
+        );
+    }
 
     #[test]
     fn local_listing_reads_the_directory_again() {

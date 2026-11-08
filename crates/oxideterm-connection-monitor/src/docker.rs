@@ -23,6 +23,9 @@ pub enum ResourceDockerStatus {
     Unavailable,
     Incomplete,
     OutputLimit,
+    DaemonUnavailable {
+        message: String,
+    },
     Error {
         message: String,
     },
@@ -79,6 +82,7 @@ struct DockerInspectOverride {
     id: String,
     name: Option<String>,
     image: Option<String>,
+    state: Option<String>,
 }
 
 const DOCKER_UNAVAILABLE_MARKER: &str = "__OXIDE_DOCKER_UNAVAILABLE__";
@@ -86,48 +90,50 @@ const DOCKER_ERROR_MARKER: &str = "__OXIDE_DOCKER_ERROR__";
 
 // Generate JSON keys inside the template so legacy PowerShell native argument passing
 // cannot strip their quotes. Only fields consumed by this panel cross the SSH channel.
+// Docker CLI before 20.10 has no .State in ps templates; inspect supplies the exact state.
 macro_rules! docker_ps_format {
-    () => { r#"{ {{json `ID`}}:{{json .ID}},{{json `Names`}}:{{json .Names}},{{json `Image`}}:{{json .Image}},{{json `State`}}:{{json .State}},{{json `Status`}}:{{json .Status}},{{json `Ports`}}:{{json .Ports}}}"# };
+    () => { r#"{ {{json `ID`}}:{{json .ID}},{{json `Names`}}:{{json .Names}},{{json `Image`}}:{{json .Image}},{{json `Status`}}:{{json .Status}},{{json `Ports`}}:{{json .Ports}}}"# };
 }
 
 macro_rules! docker_inspect_format {
     () => {
-        r#"{ {{json `Id`}}:{{json .Id}},{{json `Name`}}:{{json .Name}},{{json `Config`}}:{ {{json `Image`}}:{{json .Config.Image}}}}"#
+        r#"{ {{json `Id`}}:{{json .Id}},{{json `Name`}}:{{json .Name}},{{json `Config`}}:{ {{json `Image`}}:{{json .Config.Image}}},{{json `State`}}:{ {{json `Status`}}:{{json .State.Status}}}}"#
+    };
+}
+
+// Keep the user's Docker context and original failure unless a permission retry succeeds.
+macro_rules! docker_unix_runner {
+    () => {
+        concat!(
+            "oxide_docker() { ",
+            "oxide_docker_output=$(docker \"$@\" 2>&1); oxide_docker_result=$?; ",
+            "if [ \"$oxide_docker_result\" -ne 0 ]; then ",
+            "case \"$oxide_docker_output\" in *'permission denied'*|*'Permission denied'*) ",
+            "oxide_docker_sudo_output=$(sudo -n docker \"$@\" 2>&1); ",
+            "if [ $? -eq 0 ]; then oxide_docker_output=$oxide_docker_sudo_output; oxide_docker_result=0; fi; ",
+            ";; esac; fi; ",
+            "printf '%s\\n' \"$oxide_docker_output\"; return \"$oxide_docker_result\"; }; "
+        )
     };
 }
 
 const DOCKER_SAMPLE_COMMAND_UNIX: &str = concat!(
+    docker_unix_runner!(),
     "echo '===DOCKER==='; ",
     "if command -v docker >/dev/null 2>&1; then ",
-    "oxide_docker_ps=$(docker ps -a --no-trunc --format '",
+    "oxide_docker_ps=$(oxide_docker ps -a --no-trunc --format '",
     docker_ps_format!(),
     "' 2>&1); ",
     "oxide_docker_status=$?; ",
-    "if [ \"$oxide_docker_status\" -ne 0 ]; then ",
-    "oxide_docker_ps=$(sudo -n docker ps -a --no-trunc --format '",
-    docker_ps_format!(),
-    "' 2>&1); ",
-    "oxide_docker_status=$?; ",
-    "fi; ",
     "if [ \"$oxide_docker_status\" -eq 0 ]; then ",
     "printf '%s\\n' \"$oxide_docker_ps\" | sed 's/^/PS\\t/'; ",
-    "oxide_docker_ids=$(docker ps -aq --no-trunc 2>/dev/null); ",
+    "oxide_docker_ids=$(oxide_docker ps -aq --no-trunc 2>/dev/null); ",
     "oxide_docker_ids_status=$?; ",
-    "if [ \"$oxide_docker_ids_status\" -ne 0 ]; then ",
-    "oxide_docker_ids=$(sudo -n docker ps -aq --no-trunc 2>/dev/null); ",
-    "oxide_docker_ids_status=$?; ",
-    "fi; ",
     "if [ \"$oxide_docker_ids_status\" -eq 0 ] && [ -n \"$oxide_docker_ids\" ]; then ",
-    "oxide_docker_inspect=$(docker inspect --format '",
+    "oxide_docker_inspect=$(oxide_docker inspect --format '",
     docker_inspect_format!(),
     "' $oxide_docker_ids 2>/dev/null); ",
     "oxide_docker_inspect_status=$?; ",
-    "if [ \"$oxide_docker_inspect_status\" -ne 0 ]; then ",
-    "oxide_docker_inspect=$(sudo -n docker inspect --format '",
-    docker_inspect_format!(),
-    "' $oxide_docker_ids 2>/dev/null); ",
-    "oxide_docker_inspect_status=$?; ",
-    "fi; ",
     "if [ \"$oxide_docker_inspect_status\" -eq 0 ]; then ",
     "printf '%s\\n' \"$oxide_docker_inspect\" | sed 's/^/INSPECT\\t/'; ",
     "fi; ",
@@ -196,9 +202,22 @@ pub fn parse_docker_snapshot(output: &str) -> ResourceDockerSnapshot {
             };
         }
         if let Some(message) = line.strip_prefix(DOCKER_ERROR_MARKER) {
+            let lower = message.to_ascii_lowercase();
+            let message = clean_error_marker_message(message);
+            let daemon_unavailable = !lower.contains("permission denied")
+                && (lower.contains("cannot connect to the docker daemon")
+                    || lower.contains("is the docker daemon running")
+                    || (lower.contains("failed to connect")
+                        && lower.contains("docker")
+                        && (lower.contains("connection refused")
+                            || lower.contains("no such file or directory")))
+                    || (lower.contains("open //./pipe/")
+                        && lower.contains("the system cannot find the file specified")));
             return ResourceDockerSnapshot {
-                status: ResourceDockerStatus::Error {
-                    message: clean_error_marker_message(message),
+                status: if daemon_unavailable {
+                    ResourceDockerStatus::DaemonUnavailable { message }
+                } else {
+                    ResourceDockerStatus::Error { message }
                 },
                 containers: Vec::new(),
             };
@@ -281,7 +300,7 @@ pub fn build_docker_logs_command(
 pub fn build_docker_exec_shell_command(container_id: &str) -> Result<String, String> {
     let container_id = validated_container_id(container_id)?;
     Ok(format!(
-        "docker exec -it {container_id} sh -lc 'if command -v bash >/dev/null 2>&1; then exec bash; else exec sh; fi'"
+        "docker exec -it {container_id} sh -lc \"if command -v bash >/dev/null 2>&1; then exec bash; else exec sh; fi\""
     ))
 }
 
@@ -298,7 +317,8 @@ fn build_docker_cli_command(os_type: &str, operation: &str, container_id: &str) 
             "powershell -NoProfile -ExecutionPolicy Bypass -Command \"docker {operation} {container_id}\""
         ),
         _ => format!(
-            "docker {operation} {container_id} 2>&1 || sudo -n docker {operation} {container_id}"
+            "{}oxide_docker {operation} {container_id}",
+            docker_unix_runner!()
         ),
     };
     command
@@ -367,7 +387,16 @@ fn parse_docker_inspect_line(line: &str) -> Option<DockerInspectOverride> {
         .and_then(|config| clean_json_container_field(config, "Image"))
         .or_else(|| clean_json_container_field(&value, "Image"));
 
-    Some(DockerInspectOverride { id, name, image })
+    let state = value
+        .get("State")
+        .and_then(|state| clean_json_container_field(state, "Status"));
+
+    Some(DockerInspectOverride {
+        id,
+        name,
+        image,
+        state,
+    })
 }
 
 fn parse_docker_container_json_line(line: &str) -> Option<ResourceDockerContainer> {
@@ -378,6 +407,9 @@ fn parse_docker_container_json_line(line: &str) -> Option<ResourceDockerContaine
         return None;
     }
 
+    let status = clean_json_container_field(&value, "Status").unwrap_or_else(|| "-".to_string());
+    let state = clean_json_container_field(&value, "State")
+        .unwrap_or_else(|| docker_state_from_status(&status).to_string());
     Some(ResourceDockerContainer {
         id: id.to_string(),
         name: clean_json_container_field(&value, "Names")
@@ -385,10 +417,24 @@ fn parse_docker_container_json_line(line: &str) -> Option<ResourceDockerContaine
             .map(clean_container_name)
             .unwrap_or_else(|| id.to_string()),
         image: clean_json_container_field(&value, "Image").unwrap_or_else(|| "-".to_string()),
-        state: clean_json_container_field(&value, "State").unwrap_or_else(|| "unknown".to_string()),
-        status: clean_json_container_field(&value, "Status").unwrap_or_else(|| "-".to_string()),
+        state,
+        status,
         ports: clean_json_container_field(&value, "Ports"),
     })
+}
+
+fn docker_state_from_status(status: &str) -> &'static str {
+    // Inspect can fail independently of ps, for example if a container disappears mid-sample.
+    match status.split_whitespace().next() {
+        Some("Up") if status.ends_with("(Paused)") => "paused",
+        Some("Up") => "running",
+        Some("Restarting") => "restarting",
+        Some("Exited") => "exited",
+        Some("Created") => "created",
+        Some("Dead") => "dead",
+        _ if status == "Removal In Progress" => "removing",
+        _ => "unknown",
+    }
 }
 
 fn apply_docker_inspect_overrides(
@@ -404,6 +450,9 @@ fn apply_docker_inspect_overrides(
         }
         if let Some(image) = inspect.image.as_ref() {
             container.image = image.clone();
+        }
+        if let Some(state) = inspect.state.as_ref() {
+            container.state = state.clone();
         }
     }
 }
@@ -503,6 +552,91 @@ fn extract_section<'a>(output: &'a str, name: &str) -> Option<&'a str> {
 mod tests {
     use super::*;
 
+    #[cfg(unix)]
+    #[test]
+    fn docker_commands_preserve_original_failure_when_sudo_cannot_help() {
+        for error in [
+            "Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?",
+            "permission denied while trying to connect to the Docker daemon socket",
+        ] {
+            let fixture = format!(
+                "docker() {{ printf '%s\\n' '{error}' >&2; return 17; }}; sudo() {{ printf '%s\\n' 'sudo: a password is required' >&2; return 1; }};"
+            );
+            for (kind, command) in [
+                ("sample", docker_sample_command("Linux").to_string()),
+                (
+                    "action",
+                    build_docker_action_command("Linux", "abc123def456", DockerActionKind::Restart)
+                        .unwrap()
+                        .command,
+                ),
+                (
+                    "logs",
+                    build_docker_logs_command("Linux", "abc123def456")
+                        .unwrap()
+                        .command,
+                ),
+            ] {
+                let output = std::process::Command::new("sh")
+                    .arg("-c")
+                    .arg(format!("{fixture}\n{command}"))
+                    .output()
+                    .unwrap();
+                let stdout = String::from_utf8(output.stdout).unwrap();
+                let stderr = String::from_utf8(output.stderr).unwrap();
+                assert!(stdout.contains(error), "{kind}: {stdout}");
+                assert!(!stdout.contains("sudo:"), "{kind}: {stdout}");
+                assert_eq!(stderr, "", "{kind}");
+                assert_eq!(
+                    output.status.code(),
+                    Some(if kind == "sample" { 0 } else { 17 }),
+                    "{kind}"
+                );
+            }
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn docker_commands_retry_only_permission_errors() {
+        for (error, expected_sudo) in [
+            (
+                "Cannot connect to the Docker daemon. Is the docker daemon running?",
+                false,
+            ),
+            ("Error response from daemon: container is restarting", false),
+            (
+                "permission denied while trying to connect to the Docker daemon socket",
+                true,
+            ),
+        ] {
+            let fixture = format!(
+                "docker() {{ printf '%s\\n' '{error}' >&2; return 17; }}; sudo() {{ printf '%s\\n' 'sudo succeeded'; }};"
+            );
+            for command in [
+                docker_sample_command("Linux").to_string(),
+                build_docker_action_command("Linux", "abc123def456", DockerActionKind::Restart)
+                    .unwrap()
+                    .command,
+                build_docker_logs_command("Linux", "abc123def456")
+                    .unwrap()
+                    .command,
+            ] {
+                let output = std::process::Command::new("sh")
+                    .args(["-c", &format!("{fixture}\n{command}")])
+                    .output()
+                    .unwrap();
+                let stdout = String::from_utf8(output.stdout).unwrap();
+                assert_eq!(
+                    stdout.contains("sudo succeeded"),
+                    expected_sudo,
+                    "{error}: {stdout}"
+                );
+                assert_eq!(stdout.contains(error), !expected_sudo, "{error}: {stdout}");
+            }
+        }
+    }
+
     #[test]
     fn docker_parser_preserves_container_fields_and_applies_inspect_overrides() {
         for (case, output, expected) in [
@@ -560,14 +694,14 @@ mod tests {
                 concat!(
                     "===DOCKER===\n",
                     "PS\t{\"ID\":\"abc123def4567890\",\"Names\":\"...\",\"Image\":\"...\",\"State\":\"running\",\"Status\":\"Up 7 weeks\",\"Ports\":\"127.0.0.1:2375->2375/tcp\"}\n",
-                    "INSPECT\t{\"Id\":\"abc123def4567890\",\"Name\":\"/oxideterm-cloud-sync\",\"Config\":{\"Image\":\"ghcr.io/analyse-decircuit/oxideterm-cloud-sync:latest\"}}\n",
+                    "INSPECT\t{\"Id\":\"abc123def4567890\",\"Name\":\"/oxideterm-cloud-sync\",\"Config\":{\"Image\":\"ghcr.io/analyse-decircuit/oxideterm-cloud-sync:latest\"},\"State\":{\"Status\":\"paused\"}}\n",
                     "===DOCKER_END===",
                 ),
                 vec![(
                     "abc123def4567890",
                     "oxideterm-cloud-sync",
                     "ghcr.io/analyse-decircuit/oxideterm-cloud-sync:latest",
-                    "running",
+                    "paused",
                     "Up 7 weeks",
                     Some("127.0.0.1:2375->2375/tcp"),
                 )],
@@ -590,6 +724,101 @@ mod tests {
                     .collect::<Vec<_>>(),
                 expected,
                 "{case}"
+            );
+        }
+    }
+
+    #[test]
+    fn docker_status_text_preserves_actions_when_inspect_is_unavailable() {
+        for (status, state, live, label) in [
+            (
+                "Up 2 hours",
+                "running",
+                true,
+                "sidebar.host_docker.states.running",
+            ),
+            (
+                "Up 2 hours (healthy)",
+                "running",
+                true,
+                "sidebar.host_docker.states.running",
+            ),
+            (
+                "Up 2 hours (unhealthy)",
+                "running",
+                true,
+                "sidebar.host_docker.states.running",
+            ),
+            (
+                "Up 2 hours (Paused)",
+                "paused",
+                true,
+                "sidebar.host_docker.states.paused",
+            ),
+            (
+                "Restarting (1) 5 seconds ago",
+                "restarting",
+                true,
+                "sidebar.host_docker.states.restarting",
+            ),
+            (
+                "Exited (0) 3 days ago",
+                "exited",
+                false,
+                "sidebar.host_docker.states.exited",
+            ),
+            (
+                "Created",
+                "created",
+                false,
+                "sidebar.host_docker.states.created",
+            ),
+            (
+                "Removal In Progress",
+                "removing",
+                false,
+                "sidebar.host_docker.states.removing",
+            ),
+            ("Dead", "dead", false, "sidebar.host_docker.states.dead"),
+            ("", "unknown", false, "sidebar.host_docker.states.unknown"),
+            (
+                "Unexpected status",
+                "unknown",
+                false,
+                "sidebar.host_docker.states.unknown",
+            ),
+        ] {
+            let output = format!(
+                "===DOCKER===\nPS\t{{\"ID\":\"abc123def456\",\"Names\":\"web\",\"Image\":\"nginx:alpine\",\"Status\":{}}}\n===DOCKER_END===",
+                serde_json::to_string(status).unwrap(),
+            );
+            let snapshot = parse_docker_snapshot(&output);
+            assert_eq!(
+                snapshot.containers,
+                vec![ResourceDockerContainer {
+                    id: "abc123def456".into(),
+                    name: "web".into(),
+                    image: "nginx:alpine".into(),
+                    state: state.into(),
+                    status: if status.is_empty() { "-" } else { status }.into(),
+                    ports: None,
+                }],
+                "{status}"
+            );
+            assert_eq!(
+                docker_action_availability(&snapshot.containers[0].state),
+                DockerActionAvailability {
+                    can_start: !live,
+                    can_stop: live,
+                    can_restart: live,
+                    can_use_live_tools: live,
+                },
+                "{status}"
+            );
+            assert_eq!(
+                docker_state_label_key(&snapshot.containers[0].state),
+                label,
+                "{status}"
             );
         }
     }
@@ -626,6 +855,52 @@ mod tests {
                 message: "permission denied".to_string()
             }
         );
+        for (error, unavailable) in [
+            (
+                "Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?",
+                true,
+            ),
+            (
+                "failed to connect to the docker API at unix:///var/run/docker.sock; check if the path is correct and if the daemon is running: dial unix /var/run/docker.sock: connect: no such file or directory",
+                true,
+            ),
+            (
+                "failed to connect to the docker API at unix:///run/docker.sock: dial unix /run/docker.sock: connect: connection refused",
+                true,
+            ),
+            (
+                "error during connect: Get http://example: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.",
+                true,
+            ),
+            (
+                "permission denied while trying to connect to the Docker daemon socket",
+                false,
+            ),
+            (
+                "Cannot connect to the Docker daemon: permission denied",
+                false,
+            ),
+            (
+                "Error response from daemon: client version is too old",
+                false,
+            ),
+        ] {
+            let output = format!("===DOCKER===\n__OXIDE_DOCKER_ERROR__\t{error}\n===DOCKER_END===");
+            let expected_message = error.chars().take(180).collect();
+            assert_eq!(
+                parse_docker_snapshot(&output).status,
+                if unavailable {
+                    ResourceDockerStatus::DaemonUnavailable {
+                        message: expected_message,
+                    }
+                } else {
+                    ResourceDockerStatus::Error {
+                        message: expected_message,
+                    }
+                },
+                "{error}"
+            );
+        }
     }
 
     #[test]
@@ -648,10 +923,6 @@ mod tests {
         assert!(
             logs.command
                 .contains("docker logs --tail 200 --timestamps abc123def456")
-        );
-        assert!(
-            logs.command
-                .contains("sudo -n docker logs --tail 200 --timestamps abc123def456")
         );
 
         let exec = build_docker_exec_shell_command("abc123def456").unwrap();
@@ -695,8 +966,8 @@ mod tests {
                 !command.contains("{{json .}}"),
                 "{os}: do not collect full configs or labels"
             );
-            assert!(command.contains(r#"docker ps -a --no-trunc --format '{ {{json `ID`}}:{{json .ID}},{{json `Names`}}:{{json .Names}},{{json `Image`}}:{{json .Image}},{{json `State`}}:{{json .State}},{{json `Status`}}:{{json .Status}},{{json `Ports`}}:{{json .Ports}}}'"#));
-            assert!(command.contains(r#"docker inspect --format '{ {{json `Id`}}:{{json .Id}},{{json `Name`}}:{{json .Name}},{{json `Config`}}:{ {{json `Image`}}:{{json .Config.Image}}}}'"#));
+            assert!(command.contains(r#"docker ps -a --no-trunc --format '{ {{json `ID`}}:{{json .ID}},{{json `Names`}}:{{json .Names}},{{json `Image`}}:{{json .Image}},{{json `Status`}}:{{json .Status}},{{json `Ports`}}:{{json .Ports}}}'"#));
+            assert!(command.contains(r#"docker inspect --format '{ {{json `Id`}}:{{json .Id}},{{json `Name`}}:{{json .Name}},{{json `Config`}}:{ {{json `Image`}}:{{json .Config.Image}}},{{json `State`}}:{ {{json `Status`}}:{{json .State.Status}}}}'"#));
         }
     }
 }

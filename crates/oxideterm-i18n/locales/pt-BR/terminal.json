@@ -1,6 +1,14 @@
 {
   "terminal": {
     "connecting": "Conectando…",
+    "ssh_latency": {
+      "measured": "Tempo de ida e volta SSH: {{millis}} ms, incluindo rede e resposta do servidor. Atualizado há {{seconds}} s.",
+      "pending": "Medindo latência SSH…",
+      "timeout": "Sem resposta em {{seconds}} s. A espera continua; isso não indica que a sessão esteja desconectada.",
+      "unavailable": "Conexão SSH indisponível",
+      "unsupported": "A medição de latência está desativada no modo de compatibilidade deste dispositivo.",
+      "stale": "O valor de latência expirou"
+    },
     "archive": {
       "title": "Extrair arquivo",
       "command": "Comando de extração",
@@ -584,6 +592,9 @@
       "error_busy": "Um destino está em uso por outro envio"
     },
     "broadcast": {
+      "tile_selected": "Organizar terminais selecionados",
+      "tile_selection_hint": "Selecione de 2 a {{max}} terminais na janela principal.",
+      "tiled_title": "Terminais lado a lado",
       "members_hint": "Selecione os terminais e ative a sincronização. Novos terminais não entram automaticamente. Remova um terminal do grupo atual antes de movê-lo.",
       "isolate_member": "Isolar",
       "resume_member": "Retomar",

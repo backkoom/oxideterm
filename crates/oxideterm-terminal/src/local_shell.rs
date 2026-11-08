@@ -4,6 +4,20 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
 };
+use zeroize::Zeroizing;
+
+/// A one-shot executable launch, distinct from the shell identity used by splits.
+#[derive(Clone)]
+pub struct LocalCommand {
+    pub program: PathBuf,
+    pub args: Zeroizing<Vec<String>>,
+}
+
+impl std::fmt::Debug for LocalCommand {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LocalCommand").field("argument_count", &self.args.len()).finish_non_exhaustive()
+    }
+}
 
 #[cfg(unix)]
 use std::{collections::HashSet, fs};
@@ -73,9 +87,14 @@ impl ShellInfo {
 
 #[derive(Clone, Debug)]
 pub struct LocalPtyConfig {
+    pub command: Option<LocalCommand>,
     pub shell: Option<ShellInfo>,
     pub cwd: Option<PathBuf>,
     pub env: HashMap<String, String>,
+    /// Inherited variables the child must not receive. A terminal created by
+    /// the application is not the pane that launched it, so a multiplexer's
+    /// pane identity would be stale here.
+    pub remove_env: Vec<String>,
     pub load_profile: bool,
     pub current_directory_shell_integration: bool,
     pub oh_my_posh_enabled: bool,
@@ -85,9 +104,11 @@ pub struct LocalPtyConfig {
 impl Default for LocalPtyConfig {
     fn default() -> Self {
         Self {
+            command: None,
             shell: None,
             cwd: None,
             env: HashMap::new(),
+            remove_env: Vec::new(),
             load_profile: true,
             current_directory_shell_integration: false,
             oh_my_posh_enabled: false,

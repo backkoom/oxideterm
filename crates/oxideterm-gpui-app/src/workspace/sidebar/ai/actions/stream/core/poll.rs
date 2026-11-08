@@ -874,6 +874,7 @@ impl WorkspaceApp {
                             )
                             .with_args(args);
                             let config = LocalPtyConfig {
+                                command: None,
                                 shell: Some(shell),
                                 cwd: Some(resolved_cwd),
                                 env,
@@ -881,6 +882,7 @@ impl WorkspaceApp {
                                 current_directory_shell_integration: false,
                                 oh_my_posh_enabled: false,
                                 oh_my_posh_theme: None,
+                                remove_env: Vec::new(),
                             };
                             let terminal_id = oxideterm_ai::next_acp_terminal_id();
                             match workspace

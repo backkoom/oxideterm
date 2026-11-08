@@ -3571,7 +3571,7 @@ mod tests {
     };
     use oxideterm_terminal::{
         TerminalEditorApplication, TerminalEditorCapabilities, TerminalEditorIntegrationEvent,
-        TerminalEditorMode, TerminalEditorSelection,
+        TerminalEditorMode, TerminalEditorSelection, TerminalEvent,
     };
 
     struct TerminalScrollTestRoot;

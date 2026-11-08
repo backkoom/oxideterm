@@ -3,7 +3,7 @@ use std::hash::{Hash, Hasher};
 
 use serde::{Deserialize, Serialize};
 
-use crate::shell::{powershell_quote, shell_quote};
+use crate::shell::{posix_shell_command, powershell_quote, shell_quote, windows_encoded_command};
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -83,8 +83,10 @@ pub fn service_action_availability(service: &ResourceService) -> ServiceActionAv
         can_start: !active,
         can_stop: active,
         can_restart: active,
-        can_reload: active,
-        can_enable: !enabled,
+        can_reload: active && !crate::launchd::valid_target(&service.id),
+        can_enable: if crate::launchd::valid_target(&service.id) {
+            service.enabled_state == "disabled"
+        } else { !enabled },
         can_disable: enabled,
     }
 }
@@ -136,13 +138,7 @@ const SERVICE_SAMPLE_COMMAND_MACOS_LAUNCHCTL: &str = concat!(
     "echo '===SERVICES==='; ",
     "if command -v launchctl >/dev/null 2>&1; then ",
     "echo '__OXIDE_SERVICE_CAPABILITY__\tpartial\tmacos_launchctl'; ",
-    "oxide_launchctl_services=$(launchctl list 2>&1); ",
-    "oxide_launchctl_status=$?; ",
-    "if [ \"$oxide_launchctl_status\" -ne 0 ]; then ",
-    "printf '__OXIDE_SERVICE_ERROR__\\t%s\\n' \"$(printf '%s' \"$oxide_launchctl_services\" | head -n 1 | tr '\\t' ' ')\"; ",
-    "else ",
-    "printf '%s\\n' \"$oxide_launchctl_services\" | awk 'NR > 1 && NF >= 3 { pid=$1; status=$2; label=$3; active=(pid ~ /^[0-9]+$/ ? \"running\" : \"inactive\"); main=(pid ~ /^[0-9]+$/ ? pid : \"\"); printf \"ROW\\t%s\\tloaded\\t%s\\t%s\\tunknown\\t%s\\t%s\\n\", label, active, status, main, label }'; ",
-    "fi; ",
+    "\n", include_str!("launchd_inventory.sh"), "\n",
     "else echo '__OXIDE_SERVICE_UNAVAILABLE__'; fi; ",
     "echo '===SERVICES_END==='"
 );
@@ -170,14 +166,19 @@ const SERVICE_SAMPLE_COMMAND_BSD: &str = concat!(
 );
 
 const SERVICE_SAMPLE_COMMAND_WINDOWS: &str = concat!(
+    // Service descriptions are localized; the capture decodes UTF-8, so the
+    // console writer must emit UTF-8 instead of the OEM code page.
+    "[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;$OutputEncoding=[System.Text.Encoding]::UTF8;",
     "Write-Output '===SERVICES===';",
     "Write-Output ('__OXIDE_SERVICE_CAPABILITY__'+[char]9+'partial'+[char]9+'windows_powershell');",
     "try{",
     "Get-CimInstance Win32_Service -Property Name,State,Status,StartMode,ProcessId,DisplayName|ForEach-Object{",
-    "$pid=if($_.ProcessId -and $_.ProcessId -ne 0){[string]$_.ProcessId}else{''};",
+    // `$PID` is a read-only automatic variable, so the service PID needs its
+    // own name; assigning to `$PID` aborts the pipeline.
+    "$procId=if($_.ProcessId -and $_.ProcessId -ne 0){[string]$_.ProcessId}else{''};",
     "$enabled=if($_.StartMode){[string]$_.StartMode}else{'unknown'};",
     "$desc=if($_.DisplayName){[string]$_.DisplayName}else{[string]$_.Name};",
-    "Write-Output ('ROW'+[char]9+$_.Name+[char]9+''+[char]9+$_.State+[char]9+$_.Status+[char]9+$enabled+[char]9+$pid+[char]9+$desc)",
+    "Write-Output ('ROW'+[char]9+$_.Name+[char]9+''+[char]9+$_.State+[char]9+$_.Status+[char]9+$enabled+[char]9+$procId+[char]9+$desc)",
     "}",
     "}catch{Write-Output ('__OXIDE_SERVICE_ERROR__'+[char]9+$_.Exception.Message)};",
     "Write-Output '===SERVICES_END===';"
@@ -205,7 +206,7 @@ pub fn build_service_snapshot_command(os_type: &str) -> ServiceCaptureCommand {
             ServiceCommandCapability::Full,
         ),
         ServiceOs::MacLaunchctl => (
-            SERVICE_SAMPLE_COMMAND_MACOS_LAUNCHCTL.to_string(),
+            posix_shell_command(SERVICE_SAMPLE_COMMAND_MACOS_LAUNCHCTL),
             ServiceCommandCapability::Partial,
         ),
         ServiceOs::Bsd => (
@@ -252,7 +253,8 @@ pub fn parse_service_snapshot(output: &str) -> ResourceServiceSnapshot {
                 services: Vec::new(),
             };
         }
-        if let Some(message) = line.strip_prefix(SERVICE_ERROR_MARKER) {
+        if let Some(message) = line.strip_prefix(SERVICE_ERROR_MARKER)
+            .or_else(|| line.strip_prefix("LAUNCHD_ERROR\t")) {
             return ResourceServiceSnapshot {
                 status: ResourceServiceStatus::Error {
                     message: clean_marker_message(message, "Service command failed."),
@@ -276,6 +278,7 @@ pub fn parse_service_snapshot(output: &str) -> ResourceServiceSnapshot {
         }
     }
 
+    services.extend(crate::launchd::parse_services(section));
     merge_service_enabled_states(&mut services, &enabled_by_id);
     append_unit_file_only_services(&mut services, &enabled_by_id);
     services.sort_by_key(|service| service.id.to_lowercase());
@@ -352,7 +355,7 @@ pub fn build_service_action_command(
             capability: ServiceCommandCapability::Full,
         }),
         ServiceOs::MacLaunchctl => Ok(ServiceActionCommand {
-            command: build_launchctl_service_action_command(service_id, &action),
+            command: build_launchctl_service_action_command(service_id, &action)?,
             capability: ServiceCommandCapability::Partial,
         }),
         ServiceOs::Bsd => Ok(ServiceActionCommand {
@@ -374,6 +377,10 @@ pub fn build_service_logs_command(
     service_id: &str,
 ) -> Result<ServiceCaptureCommand, String> {
     let service_id = validated_service_id(service_id)?;
+    let service_id = if matches!(normalized_service_os(os_type), ServiceOs::MacLaunchctl)
+        && crate::launchd::valid_target(service_id) {
+        service_id.rsplit_once('/').unwrap().1
+    } else { service_id };
     let (command, capability) = match normalized_service_os(os_type) {
         ServiceOs::LinuxSystemd => (
             format!(
@@ -420,6 +427,10 @@ pub fn build_service_follow_logs_command(
     service_id: &str,
 ) -> Result<ServiceCaptureCommand, String> {
     let service_id = validated_service_id(service_id)?;
+    let service_id = if matches!(normalized_service_os(os_type), ServiceOs::MacLaunchctl)
+        && crate::launchd::valid_target(service_id) {
+        service_id.rsplit_once('/').unwrap().1
+    } else { service_id };
     let (command, capability) = match normalized_service_os(os_type) {
         ServiceOs::LinuxSystemd => (
             format!("journalctl -fu {} --no-pager", shell_quote(service_id)),
@@ -634,35 +645,19 @@ fn build_systemd_service_action_command(service_id: &str, action: &ServiceAction
     )
 }
 
-fn build_launchctl_service_action_command(service_id: &str, action: &ServiceActionKind) -> String {
-    let label = shell_quote(service_id);
-    let target_system = shell_quote(&format!("system/{service_id}"));
-    let target_user = format!("\"gui/$(id -u)/{}\"", shell_escape_double(service_id));
-    let operation = match action {
-        ServiceActionKind::Start | ServiceActionKind::Restart | ServiceActionKind::Reload => {
-            format!(
-                "launchctl kickstart -k {target_system} 2>&1 || launchctl kickstart -k {target_user} 2>&1"
-            )
-        }
-        ServiceActionKind::Stop => {
-            format!(
-                "launchctl kill TERM {target_system} 2>&1 || launchctl kill TERM {target_user} 2>&1 || launchctl stop {label} 2>&1"
-            )
-        }
-        ServiceActionKind::Enable => {
-            format!("launchctl enable {target_system} 2>&1 || launchctl enable {target_user} 2>&1")
-        }
-        ServiceActionKind::Disable => {
-            format!(
-                "launchctl disable {target_system} 2>&1 || launchctl disable {target_user} 2>&1"
-            )
-        }
+fn build_launchctl_service_action_command(service_id: &str, action: &ServiceActionKind) -> Result<String, String> {
+    if !crate::launchd::valid_target(service_id) {
+        return Err("Refresh services to obtain a scoped launchd service target.".into());
+    }
+    let verb = match action {
+        ServiceActionKind::Start => "kickstart -p",
+        ServiceActionKind::Restart => "kickstart -kp",
+        ServiceActionKind::Stop => "kill TERM",
+        ServiceActionKind::Enable => "enable",
+        ServiceActionKind::Disable => "disable",
+        ServiceActionKind::Reload => return Err("launchd has no generic reload operation; choose Restart explicitly.".into()),
     };
-    let success = service_action_success_text(service_id, action);
-    format!(
-        "if {operation}; then echo {}; else status=$?; echo 'Service action failed' >&2; exit $status; fi",
-        shell_quote(&success)
-    )
+    Ok(posix_shell_command(&format!("launchctl {verb} {}", shell_quote(service_id))))
 }
 
 fn build_bsd_service_action_command(service_id: &str, action: &ServiceActionKind) -> String {
@@ -722,17 +717,29 @@ fn build_windows_service_action_command(service_id: &str, action: &ServiceAction
 }
 
 fn build_windows_service_logs_command(service_id: &str, follow: bool) -> String {
-    let needle = powershell_quote(service_id);
-    let body = "Get-WinEvent -LogName System -MaxEvents 200 -ErrorAction SilentlyContinue | Where-Object { $_.ProviderName -like ('*' + $name + '*') -or $_.Message -like ('*' + $name + '*') } | Select-Object -First 200 | ForEach-Object { $_.TimeCreated.ToString('s') + ' ' + $_.ProviderName + ' ' + $_.Message }";
-    let script = if follow {
-        format!("$name={needle}; while($true){{ {body}; Start-Sleep -Seconds 2 }}")
-    } else {
-        format!("$name={needle}; {body}")
-    };
+    let script = windows_service_logs_script(service_id, follow);
+    if follow {
+        // Typed into a terminal, so it must survive whatever shell is local.
+        return windows_encoded_command(&script);
+    }
     format!(
         "powershell -NoProfile -ExecutionPolicy Bypass -Command \"{}\"",
         script.replace('"', "`\"")
     )
+}
+
+fn windows_service_logs_script(service_id: &str, follow: bool) -> String {
+    let needle = powershell_quote(service_id);
+    let body = "Get-WinEvent -LogName System -MaxEvents 200 -ErrorAction SilentlyContinue | Where-Object { $_.ProviderName -like ('*' + $name + '*') -or $_.Message -like ('*' + $name + '*') } | Select-Object -First 200 | ForEach-Object { $_.TimeCreated.ToString('s') + ' ' + $_.ProviderName + ' ' + $_.Message }";
+    if follow {
+        format!(
+            "[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;$OutputEncoding=[System.Text.Encoding]::UTF8;$name={needle}; while($true){{ {body}; Start-Sleep -Seconds 2 }}"
+        )
+    } else {
+        format!(
+            "[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;$OutputEncoding=[System.Text.Encoding]::UTF8;$name={needle}; {body}"
+        )
+    }
 }
 
 fn service_action_success_text(service_id: &str, action: &ServiceActionKind) -> String {
@@ -809,14 +816,6 @@ fn compact_service_command_message(value: &str) -> Option<String> {
         .take(180)
         .collect::<String>();
     Some(summary)
-}
-
-fn shell_escape_double(value: &str) -> String {
-    value
-        .replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('$', "\\$")
-        .replace('`', "\\`")
 }
 
 fn shell_escape_sysrc_name(value: &str) -> String {
@@ -979,10 +978,13 @@ mod tests {
         assert!(linux.command.contains("systemctl restart 'sshd.service'"));
 
         let mac =
-            build_service_action_command("macOS", "com.example.agent", ServiceActionKind::Disable)
+            build_service_action_command("macOS", "gui/501/com.example.agent", ServiceActionKind::Disable)
                 .unwrap();
         assert_eq!(mac.capability, ServiceCommandCapability::Partial);
         assert!(mac.command.contains("launchctl disable"));
+        assert_eq!(crate::shell::decoded_posix_script(&mac.command), "launchctl disable 'gui/501/com.example.agent'");
+        assert!(build_service_action_command("Darwin", "system/com.example.agent", ServiceActionKind::Reload).is_err());
+        assert!(build_service_action_command("Darwin", "com.example.agent", ServiceActionKind::Stop).is_err());
 
         let windows =
             build_service_action_command("Windows", "Spooler", ServiceActionKind::Enable).unwrap();

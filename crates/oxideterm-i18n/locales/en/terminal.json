@@ -1,6 +1,14 @@
 {
   "terminal": {
     "connecting": "Connecting…",
+    "ssh_latency": {
+      "measured": "SSH round-trip time: {{millis}} ms, including network and server response. Updated {{seconds}} s ago.",
+      "pending": "Measuring SSH latency…",
+      "timeout": "No reply within {{seconds}} s. Still waiting; this does not indicate a disconnected session.",
+      "unavailable": "SSH connection unavailable",
+      "unsupported": "Latency probing is disabled for this device's compatibility mode.",
+      "stale": "Latency sample expired"
+    },
     "archive": {
       "title": "Extract archive",
       "command": "Extraction command",
@@ -156,6 +164,9 @@
       "error_busy": "A target is used by another sender"
     },
     "broadcast": {
+      "tile_selected": "Tile selected terminals",
+      "tile_selection_hint": "Select 2–{{max}} terminals in the main window.",
+      "tiled_title": "Tiled terminals",
       "members_hint": "Select specific terminals, then enable sync. New terminals do not join automatically. Remove a terminal from its current group before moving it.",
       "isolate_member": "Isolate",
       "resume_member": "Resume sync",

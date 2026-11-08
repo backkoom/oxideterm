@@ -372,9 +372,11 @@ impl WorkspaceApp {
             .collect();
 
         LocalPtyConfig {
+            command: None,
             shell,
             cwd,
             env,
+            remove_env: Vec::new(),
             load_profile: settings.load_shell_profile,
             current_directory_shell_integration: self
                 .settings_store

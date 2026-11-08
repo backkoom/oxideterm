@@ -71,9 +71,9 @@
       "processes": "Processus",
       "services": "Services",
       "logs": "Journaux",
-      "tmux": "tmux",
+      "tmux": "Multiplexeurs de terminal",
       "docker": "Docker",
-      "tmux_management": "Gestion de tmux",
+      "tmux_management": "Multiplexeurs de terminal",
       "docker_management": "Gestion de Docker",
       "session_manager": "Gestionnaire de sessions",
       "open_session_manager": "Ouvrir le gestionnaire de sessions",
@@ -105,6 +105,9 @@
     "active_session_count": "Sessions actives : {{count}}",
     "no_sessions": "Aucune session",
     "add_new_connection": "Cliquez sur + pour ajouter une connexion",
+    "host_connection": {
+      "local_machine": "Cet ordinateur"
+    },
     "host_gpu": {
       "count_suffix": "accélérateurs",
       "refresh_interval": "Actualisation toutes les 2 secondes",
@@ -113,11 +116,35 @@
       "unsupported": "La surveillance GPU / NPU n’est pas prise en charge sur ce système.",
       "no_devices": "Aucun périphérique GPU / NPU pris en charge n’a été détecté.",
       "error": "Échec de la requête GPU / NPU : {{error}}",
-      "actions": { "refresh": "Actualiser les données GPU / NPU" },
-      "summary": { "utilization": "Utilisation moyenne", "memory": "Mémoire du périphérique", "temperature": "Température maximale", "power": "Puissance totale" },
-      "columns": { "device": "Périphérique", "utilization": "Utilisation", "memory": "Mémoire" },
-      "details": { "uuid": "UUID", "driver": "Pilote", "performance_state": "Performance", "health": "État", "temperature": "Température", "power": "Puissance", "fan": "Ventilateur" },
-      "processes": { "title": "Processus de calcul", "empty": "Aucun processus de calcul n’utilise ce périphérique." }
+      "actions": {
+        "refresh": "Actualiser les données GPU / NPU"
+      },
+      "summary": {
+        "utilization": "Utilisation moyenne",
+        "memory": "Mémoire du périphérique",
+        "shared_memory": "Mémoire partagée utilisée",
+        "temperature": "Température maximale",
+        "power": "Puissance totale"
+      },
+      "columns": {
+        "device": "Périphérique",
+        "utilization": "Utilisation",
+        "memory": "Mémoire"
+      },
+      "details": {
+        "uuid": "UUID",
+        "driver": "Pilote",
+        "performance_state": "Performance",
+        "health": "État",
+        "temperature": "Température",
+        "power": "Puissance",
+        "fan": "Ventilateur"
+      },
+      "processes": {
+        "unavailable": "Les données des processus ne sont pas disponibles pour ce périphérique.",
+        "title": "Processus de calcul",
+        "empty": "Aucun processus de calcul n’utilise ce périphérique."
+      }
     },
     "host_processes": {
       "search_placeholder": "Rechercher des processus...",
@@ -177,6 +204,7 @@
       }
     },
     "host_docker": {
+      "daemon_unavailable": "Docker n’est pas démarré ou est inaccessible. Vérifiez que le service Docker est démarré, puis réessayez.",
       "search_placeholder": "Rechercher des conteneurs...",
       "count_suffix": "conteneurs",
       "sampling": "Échantillonnage des conteneurs Docker...",
@@ -364,8 +392,99 @@
         "unknown_error": "Erreur inconnue"
       }
     },
+    "multiplexer": {
+      "refresh": "Actualiser les sessions",
+      "open": "Ouvrir le terminal",
+      "focus": "Activer",
+      "new_workspace": "Nouvel espace de travail",
+      "new_tab": "Nouvel onglet",
+      "split": "Scinder le volet",
+      "loading": "Chargement…",
+      "empty": "Aucune session correspondante",
+      "unavailable": "Ce multiplexeur n’est pas installé sur l’hôte sélectionné.",
+      "failed": "La commande a échoué. Vérifiez la version installée et l’état de la session.",
+      "server_not_running": "Le serveur du multiplexeur n’est pas démarré. Utilisez le bouton d’attachement pour le lancer.",
+      "sampling": "Chargement des sessions du multiplexeur…",
+      "error": "La commande du multiplexeur a échoué : {{error}}",
+      "sessions_title": "Sessions",
+      "search_empty": "Aucun résultat",
+      "search_child_empty": "Aucun objet correspondant dans cette session",
+      "workspace_empty": "Aucun espace de travail dans cette session",
+      "last_refreshed": "Mis à jour",
+      "attach_title": "Multiplexeur",
+      "focused": "actif",
+      "restore_error": "erreur de restauration",
+      "orphan_agent": "agent non lié",
+      "row_space": "espace de travail",
+      "row_tab": "onglet",
+      "row_pane": "volet",
+      "tabs_suffix": "onglets",
+      "tabs_suffix_one": "onglet",
+      "panes_suffix": "volets",
+      "panes_suffix_one": "volet",
+      "status": {
+        "working": "en cours",
+        "blocked": "bloqué",
+        "idle": "inactif",
+        "done": "terminé",
+        "unknown": "inconnu"
+      },
+      "actions": {
+        "refresh": "Actualiser",
+        "agent_attach": "S'attacher à l'agent",
+        "session_attach": "S'attacher à la session",
+        "session_stop": "Arrêter la session",
+        "session_delete": "Supprimer la session",
+        "new_session": "Nouvelle session",
+        "new_workspace": "Nouvel espace de travail",
+        "rename": "Renommer",
+        "close": "Fermer",
+        "send": "Exécuter une commande",
+        "read": "Lire la sortie"
+      },
+      "confirm": {
+        "title": "Confirmer l’action du multiplexeur",
+        "cancel": "Annuler",
+        "run": "Confirmer",
+        "close_workspace": "Fermer l’espace de travail {{name}} ({{target}}) dans la session {{session}} ? Tous les onglets et volets qu’il contient seront arrêtés.",
+        "close_tab": "Fermer l’onglet {{name}} ({{target}}) dans la session {{session}} ? Tous les volets qu’il contient seront arrêtés.",
+        "close_pane": "Fermer le volet {{name}} ({{target}}) dans la session {{session}} ? Le travail qu’il contient sera arrêté.",
+        "stop_session": "Arrêter la session {{name}} ? Tous les espaces de travail et agents de la session seront arrêtés.",
+        "delete_session": "Supprimer la session arrêtée {{name}} ? Son état enregistré est supprimé."
+      },
+      "inputs": {
+        "new_session": "Nouvelle session",
+        "new_session_hint": "Nom de la session",
+        "new_workspace": "Nouvel espace de travail",
+        "new_workspace_hint": "nom [/chemin/distant]",
+        "rename_workspace": "Renommer l’espace de travail",
+        "rename_tab": "Renommer l’onglet",
+        "rename_pane": "Renommer le volet",
+        "rename_hint": "Nouveau nom",
+        "run_pane": "Exécuter une commande dans le volet",
+        "run_pane_hint": "Commande à saisir dans le volet",
+        "error_required": "Saisissez d’abord une valeur.",
+        "error_rejected": "Le multiplexeur a refusé cette valeur."
+      },
+      "read": {
+        "title": "Sortie : {{pane}}",
+        "loading": "Chargement de la sortie…",
+        "empty": "Aucune sortie.",
+        "close": "Fermer"
+      },
+      "toast": {
+        "snapshot_already_running": "Un instantané du multiplexeur est déjà en cours de chargement.",
+        "connection_missing": "La connexion sélectionnée n'est plus disponible.",
+        "action_already_running": "Une action du multiplexeur est déjà en cours.",
+        "action_failed": "L’action du multiplexeur a échoué.",
+        "action_succeeded": "Action du multiplexeur terminée pour {{target}}.",
+        "read_already_running": "La sortie du volet est déjà en cours de chargement.",
+        "read_failed": "Impossible de lire la sortie du volet.",
+        "attach_opened": "Multiplexeur ouvert dans une fenêtre de terminal."
+      }
+    },
     "host_tmux": {
-      "search_placeholder": "Rechercher tmux...",
+      "search_placeholder": "Rechercher des sessions…",
       "count_suffix": "sessions",
       "loading": "Chargement des sessions tmux...",
       "empty": "Aucune session tmux correspondante",
@@ -584,6 +703,8 @@
       "actions": {
         "refresh": "Actualiser les ports",
         "diagnostic": "Ouvrir le terminal de diagnostic",
+        "kill_process": "Arrêter le processus",
+        "copy_kill_command": "Copier la commande d’arrêt",
         "copy_endpoint": "Copier l’adresse",
         "jump_process": "Trouver le processus"
       },
@@ -597,6 +718,7 @@
         "exec_terminal_missing": "Aucune route de terminal SSH active pour le diagnostic.",
         "diagnostic_opened": "Diagnostic des ports ouvert.",
         "copied_endpoint": "{{endpoint}} copié.",
+        "kill_command_copied": "Copié : {{command}}",
         "partial_support": "L’inspection des ports est partielle sur {{os}}.",
         "unknown_error": "Erreur inconnue d’analyse des ports."
       }
@@ -707,7 +829,8 @@
         "dnf": "dnf",
         "yum": "yum",
         "pacman": "pacman",
-        "brew": "Homebrew"
+        "brew": "Homebrew",
+        "winget": "winget"
       },
       "columns": {
         "package": "Paquet",
@@ -729,8 +852,16 @@
       },
       "actions": {
         "refresh": "Actualiser les paquets",
+        "uninstall": "Désinstaller le paquet",
+        "upgrade": "Mettre à jour le paquet",
         "inspect": "Ouvrir les détails du paquet",
+        "copy_id": "Copier l’ID du paquet",
         "copy_name": "Copier le nom du paquet"
+      },
+      "confirm": {
+        "uninstall_title": "Désinstaller le paquet",
+        "uninstall_description": "Désinstaller {{name}} ? winget le retire de cet hôte.",
+        "uninstall": "Désinstaller"
       },
       "inspect_title": "Détails du paquet",
       "toast": {
@@ -743,6 +874,11 @@
         "inspect_unsupported": "Les détails de paquet ne sont pas encore pris en charge pour {{manager}}.",
         "inspect_opened": "Détails ouverts pour {{name}}.",
         "copied_name": "{{name}} copié.",
+        "copied_id": "{{id}} copié.",
+        "uninstall_opened": "Désinstallation de {{name}} dans un terminal.",
+        "uninstall_unsupported": "La désinstallation via {{manager}} n’est pas prise en charge.",
+        "upgrade_opened": "Mise à jour de {{name}}.",
+        "upgrade_unsupported": "La mise à jour des paquets {{manager}} n’est pas encore prise en charge.",
         "partial_support": "L'inspection des paquets est en lecture seule sur {{os}}.",
         "unknown_error": "Erreur inconnue lors de l'analyse des paquets."
       }

@@ -6,6 +6,7 @@ impl WorkspaceApp {
         _has_background: bool,
         cx: &mut Context<Self>,
     ) -> AnyElement {
+        let _ui = self.sftp_ui_metrics();
         let theme = self.tokens.ui;
         let drives = local_drives();
         let drive_count = drives.len();
@@ -132,6 +133,7 @@ impl WorkspaceApp {
         _has_background: bool,
         cx: &App,
     ) -> AnyElement {
+        let _ui = self.sftp_ui_metrics();
         let theme = self.tokens.ui;
         div()
             .px(px(self.tokens.spacing.four))
@@ -156,6 +158,7 @@ impl WorkspaceApp {
         placeholder_key: &'static str,
         cx: &mut Context<Self>,
     ) -> AnyElement {
+        let ui = self.sftp_ui_metrics();
         let theme = self.tokens.ui;
         let (focused, dialog_value) = {
             let sftp_view = self.sftp_view().read(cx);
@@ -169,7 +172,7 @@ impl WorkspaceApp {
             .py(px(self.tokens.spacing.three))
             .child(
                 div()
-                    .h(px(36.0))
+                    .h(px(ui.size(36.0)))
                     .w_full()
                     .rounded(px(self.tokens.radii.md))
                     .border_1()

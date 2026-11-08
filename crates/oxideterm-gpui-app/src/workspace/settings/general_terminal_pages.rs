@@ -1041,6 +1041,27 @@ impl WorkspaceApp {
                     ),
                     self.card_separator(),
                     self.bool_row(
+                        "settings_view.terminal.command_bar_ssh_latency",
+                        "settings_view.terminal.command_bar_ssh_latency_hint",
+                        settings.terminal.command_bar.ssh_latency,
+                        set_command_bar_ssh_latency,
+                        cx,
+                    ),
+                    self.card_separator(),
+                    self.select_setting_row(
+                        "settings_view.terminal.ssh_latency_interval",
+                        "settings_view.terminal.ssh_latency_interval_hint",
+                        SettingsSelect::SshLatencyInterval,
+                        settings
+                            .terminal
+                            .command_bar
+                            .ssh_latency_interval_secs
+                            .to_string(),
+                        self.tokens.metrics.settings_select_narrow_width,
+                        cx,
+                    ),
+                    self.card_separator(),
+                    self.bool_row(
                         "settings_view.terminal.command_bar_current_directory_awareness",
                         "settings_view.terminal.command_bar_current_directory_awareness_hint",
                         settings.terminal.command_bar.show_current_directory,

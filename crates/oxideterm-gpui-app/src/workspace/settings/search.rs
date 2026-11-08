@@ -258,6 +258,10 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
             &[
                 "settings_view.terminal.command_bar_git_status",
                 "settings_view.terminal.command_bar_project_tasks",
+                "settings_view.terminal.command_bar_ssh_latency",
+                "settings_view.terminal.command_bar_ssh_latency_hint",
+                "settings_view.terminal.ssh_latency_interval",
+                "settings_view.terminal.ssh_latency_interval_hint",
                 "settings_view.terminal.command_bar_current_directory_awareness",
                 "settings_view.terminal.autosuggest_local_history",
                 "settings_view.terminal.autosuggest_local_history_hint",
@@ -395,6 +399,9 @@ fn settings_search_specs() -> Vec<SettingsSearchEntrySpec> {
             &[
                 "settings_view.appearance.density",
                 "settings_view.appearance.border_radius",
+                "settings_view.appearance.corner_style",
+                "settings_view.appearance.corner_circular",
+                "settings_view.appearance.corner_continuous",
                 "settings_view.appearance.ui_font",
                 "settings_view.appearance.ui_font_size",
             ],
