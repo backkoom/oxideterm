@@ -373,85 +373,91 @@ fn terminal_fig_spec(
     }
 }
 
-pub(in crate::workspace) fn built_in_terminal_fig_specs() -> Vec<TerminalFigSpec> {
+/// 终端补全规格：版本控制。
+fn fig_specs_vcs() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    vec![terminal_fig_spec(
+        "git",
+        "Distributed version control",
+        vec![
+            subcommand_with_options(
+                "add",
+                Some("Add file contents to the index"),
+                vec![option("-p", None, NoArg), option("--patch", None, NoArg)],
+                Path,
+            ),
+            subcommand("branch"),
+            subcommand("checkout"),
+            subcommand_with_options(
+                "clone",
+                Some("Clone a repository"),
+                vec![option("--depth", None, Value), option("-b", None, Value)],
+                Path,
+            ),
+            subcommand_with_options(
+                "commit",
+                Some("Record changes"),
+                vec![
+                    option("-m", Some("Commit message"), Value),
+                    option("--amend", None, NoArg),
+                    option("--no-edit", None, NoArg),
+                ],
+                NoArg,
+            ),
+            subcommand_with_options(
+                "diff",
+                Some("Show changes"),
+                vec![
+                    option("--cached", None, NoArg),
+                    option("--stat", None, NoArg),
+                ],
+                Path,
+            ),
+            subcommand("fetch"),
+            subcommand("init"),
+            subcommand_with_options(
+                "log",
+                Some("Show commit logs"),
+                vec![
+                    option("--oneline", None, NoArg),
+                    option("--graph", None, NoArg),
+                ],
+                NoArg,
+            ),
+            subcommand("merge"),
+            subcommand("pull"),
+            subcommand("push"),
+            subcommand_with_options(
+                "rebase",
+                Some("Reapply commits"),
+                vec![
+                    option("-i", None, NoArg),
+                    option("--continue", None, NoArg),
+                    option("--abort", None, NoArg),
+                ],
+                NoArg,
+            ),
+            subcommand("remote"),
+            subcommand("reset"),
+            subcommand("restore"),
+            subcommand("show"),
+            subcommand("stash"),
+            subcommand("status"),
+            subcommand("switch"),
+        ],
+        vec![
+            option("-C", Some("Run as if git was started in path"), Directory),
+            option("--git-dir", None, Directory),
+            option("--work-tree", None, Directory),
+        ],
+        NoArg,
+    )]
+}
+
+/// 终端补全规格：JS / Node 生态。
+fn fig_specs_js() -> Vec<TerminalFigSpec> {
     use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
     vec![
-        terminal_fig_spec(
-            "git",
-            "Distributed version control",
-            vec![
-                subcommand_with_options(
-                    "add",
-                    Some("Add file contents to the index"),
-                    vec![option("-p", None, NoArg), option("--patch", None, NoArg)],
-                    Path,
-                ),
-                subcommand("branch"),
-                subcommand("checkout"),
-                subcommand_with_options(
-                    "clone",
-                    Some("Clone a repository"),
-                    vec![option("--depth", None, Value), option("-b", None, Value)],
-                    Path,
-                ),
-                subcommand_with_options(
-                    "commit",
-                    Some("Record changes"),
-                    vec![
-                        option("-m", Some("Commit message"), Value),
-                        option("--amend", None, NoArg),
-                        option("--no-edit", None, NoArg),
-                    ],
-                    NoArg,
-                ),
-                subcommand_with_options(
-                    "diff",
-                    Some("Show changes"),
-                    vec![
-                        option("--cached", None, NoArg),
-                        option("--stat", None, NoArg),
-                    ],
-                    Path,
-                ),
-                subcommand("fetch"),
-                subcommand("init"),
-                subcommand_with_options(
-                    "log",
-                    Some("Show commit logs"),
-                    vec![
-                        option("--oneline", None, NoArg),
-                        option("--graph", None, NoArg),
-                    ],
-                    NoArg,
-                ),
-                subcommand("merge"),
-                subcommand("pull"),
-                subcommand("push"),
-                subcommand_with_options(
-                    "rebase",
-                    Some("Reapply commits"),
-                    vec![
-                        option("-i", None, NoArg),
-                        option("--continue", None, NoArg),
-                        option("--abort", None, NoArg),
-                    ],
-                    NoArg,
-                ),
-                subcommand("remote"),
-                subcommand("reset"),
-                subcommand("restore"),
-                subcommand("show"),
-                subcommand("stash"),
-                subcommand("status"),
-                subcommand("switch"),
-            ],
-            vec![
-                option("-C", Some("Run as if git was started in path"), Directory),
-                option("--git-dir", None, Directory),
-                option("--work-tree", None, Directory),
-            ],
-            NoArg,
-        ),
         terminal_fig_spec(
             "npm",
             "Node package manager",
@@ -494,6 +500,13 @@ pub(in crate::workspace) fn built_in_terminal_fig_specs() -> Vec<TerminalFigSpec
             vec![option("-e", None, Value)],
             File,
         ),
+    ]
+}
+
+/// 终端补全规格：Python 生态。
+fn fig_specs_python() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    vec![
         terminal_fig_spec(
             "python",
             "Python interpreter",
@@ -508,6 +521,33 @@ pub(in crate::workspace) fn built_in_terminal_fig_specs() -> Vec<TerminalFigSpec
             vec![],
             NoArg,
         ),
+        terminal_fig_spec(
+            "uv",
+            "Python package and project manager",
+            subcommands(&[
+                "add", "build", "init", "lock", "pip", "python", "remove", "run", "sync", "tool",
+                "venv",
+            ]),
+            vec![],
+            NoArg,
+        ),
+        terminal_fig_spec(
+            "poetry",
+            "Python packaging and dependency manager",
+            subcommands(&[
+                "add", "build", "check", "config", "env", "export", "install", "lock", "publish",
+                "remove", "run", "shell", "update",
+            ]),
+            vec![],
+            NoArg,
+        ),
+    ]
+}
+
+/// 终端补全规格：Rust 工具链。
+fn fig_specs_rust() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    vec![
         terminal_fig_spec(
             "cargo",
             "Rust package manager",
@@ -564,6 +604,40 @@ pub(in crate::workspace) fn built_in_terminal_fig_specs() -> Vec<TerminalFigSpec
             NoArg,
         ),
         terminal_fig_spec(
+            "rustc",
+            "Rust compiler",
+            subcommands(&[]),
+            vec![
+                option("--crate-name", None, Value),
+                option("--crate-type", None, Value),
+                option("--edition", None, Value),
+                option("-o", None, File),
+            ],
+            File,
+        ),
+    ]
+}
+
+/// 终端补全规格：Go 工具链。
+fn fig_specs_go() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    vec![terminal_fig_spec(
+        "go",
+        "Go toolchain",
+        subcommands(&[
+            "build", "clean", "doc", "env", "fmt", "generate", "get", "install", "list", "mod",
+            "run", "test", "version",
+        ]),
+        vec![],
+        NoArg,
+    )]
+}
+
+/// 终端补全规格：容器与编排。
+fn fig_specs_container() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    vec![
+        terminal_fig_spec(
             "docker",
             "Container platform",
             subcommands(&[
@@ -595,6 +669,13 @@ pub(in crate::workspace) fn built_in_terminal_fig_specs() -> Vec<TerminalFigSpec
             ],
             NoArg,
         ),
+    ]
+}
+
+/// 终端补全规格：远程连接与传输。
+fn fig_specs_remote() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    vec![
         terminal_fig_spec(
             "ssh",
             "OpenSSH remote login",
@@ -625,50 +706,30 @@ pub(in crate::workspace) fn built_in_terminal_fig_specs() -> Vec<TerminalFigSpec
             Path,
         ),
         terminal_fig_spec(
+            "ssh-keygen",
+            "OpenSSH authentication key utility",
+            subcommands(&[]),
+            vec![
+                option("-t", Some("Key type"), Value),
+                option("-f", Some("Output file"), File),
+                option("-C", Some("Comment"), Value),
+                option("-N", Some("New passphrase"), Value),
+                option("-y", None, NoArg),
+            ],
+            File,
+        ),
+    ]
+}
+
+/// 终端补全规格：文件与目录。
+fn fig_specs_files() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    vec![
+        terminal_fig_spec(
             "tar",
             "Archive utility",
             subcommands(&[]),
             vec![option("-f", None, File), option("-C", None, Directory)],
-            Path,
-        ),
-        terminal_fig_spec(
-            "curl",
-            "Transfer URLs",
-            subcommands(&[]),
-            vec![
-                option("-o", None, File),
-                option("-H", None, Value),
-                option("-X", None, Value),
-            ],
-            NoArg,
-        ),
-        terminal_fig_spec(
-            "wget",
-            "Download files",
-            subcommands(&[]),
-            vec![option("-O", None, File), option("-P", None, Directory)],
-            NoArg,
-        ),
-        terminal_fig_spec(
-            "grep",
-            "Search text",
-            subcommands(&[]),
-            vec![
-                option("-r", None, NoArg),
-                option("-i", None, NoArg),
-                option("-n", None, NoArg),
-            ],
-            Path,
-        ),
-        terminal_fig_spec(
-            "rg",
-            "ripgrep search",
-            subcommands(&[]),
-            vec![
-                option("-i", None, NoArg),
-                option("-n", None, NoArg),
-                option("--glob", None, Value),
-            ],
             Path,
         ),
         terminal_fig_spec(
@@ -718,272 +779,16 @@ pub(in crate::workspace) fn built_in_terminal_fig_specs() -> Vec<TerminalFigSpec
             vec![option("-r", None, NoArg), option("-p", None, NoArg)],
             Path,
         ),
-        terminal_fig_spec("mv", "Move files", subcommands(&[]), vec![], Path),
         terminal_fig_spec(
-            "chmod",
-            "Change file modes",
-            subcommands(&[]),
-            vec![option("-R", None, NoArg)],
-            Path,
-        ),
-        terminal_fig_spec(
-            "chown",
-            "Change owner/group",
-            subcommands(&[]),
-            vec![option("-R", None, NoArg)],
-            Path,
-        ),
-        terminal_fig_spec(
-            "ps",
-            "Process status",
+            "df",
+            "Report file system disk space",
             subcommands(&[]),
             vec![
-                option("-a", None, NoArg),
-                option("-u", None, NoArg),
-                option("-x", None, NoArg),
-            ],
-            NoArg,
-        ),
-        terminal_fig_spec(
-            "kill",
-            "Send signal to process",
-            subcommands(&[]),
-            vec![option("-9", None, NoArg), option("-TERM", None, NoArg)],
-            NoArg,
-        ),
-        terminal_fig_spec(
-            "systemctl",
-            "Control systemd",
-            subcommands(&[
-                "status",
-                "start",
-                "stop",
-                "restart",
-                "reload",
-                "enable",
-                "disable",
-                "list-units",
-            ]),
-            vec![],
-            NoArg,
-        ),
-        terminal_fig_spec(
-            "brew",
-            "Homebrew package manager",
-            subcommands(&[
-                "install",
-                "uninstall",
-                "update",
-                "upgrade",
-                "search",
-                "info",
-                "services",
-            ]),
-            vec![],
-            NoArg,
-        ),
-        terminal_fig_spec(
-            "gh",
-            "GitHub CLI",
-            subcommands(&["auth", "browse", "issue", "pr", "repo", "run", "workflow"]),
-            vec![],
-            NoArg,
-        ),
-        terminal_fig_spec(
-            "sed",
-            "Stream editor",
-            subcommands(&[]),
-            vec![
-                option("-E", None, NoArg),
-                option("-e", None, Value),
-                option("-f", None, File),
-                option("-i", None, Value),
+                option("-h", None, NoArg),
+                option("-i", None, NoArg),
+                option("-T", None, NoArg),
             ],
             Path,
-        ),
-        terminal_fig_spec(
-            "awk",
-            "Pattern scanning and processing language",
-            subcommands(&[]),
-            vec![
-                option("-F", Some("Input field separator"), Value),
-                option("-f", None, File),
-                option("-v", Some("Variable assignment"), Value),
-            ],
-            Path,
-        ),
-        terminal_fig_spec(
-            "jq",
-            "JSON processor",
-            subcommands(&[]),
-            vec![
-                option("-r", None, NoArg),
-                option("-c", None, NoArg),
-                option("-f", None, File),
-                option("--arg", None, Value),
-            ],
-            File,
-        ),
-        terminal_fig_spec(
-            "make",
-            "Build automation",
-            subcommands(&[]),
-            vec![
-                option("-C", None, Directory),
-                option("-f", None, File),
-                option("-j", None, Value),
-            ],
-            Value,
-        ),
-        terminal_fig_spec(
-            "cmake",
-            "Cross-platform build system",
-            subcommands(&["--build", "--install", "--preset", "--workflow"]),
-            vec![
-                option("-S", None, Directory),
-                option("-B", None, Directory),
-                option("-D", None, Value),
-                option("-G", None, Value),
-            ],
-            Directory,
-        ),
-        terminal_fig_spec(
-            "go",
-            "Go toolchain",
-            subcommands(&[
-                "build", "clean", "doc", "env", "fmt", "generate", "get", "install", "list", "mod",
-                "run", "test", "version",
-            ]),
-            vec![],
-            NoArg,
-        ),
-        terminal_fig_spec(
-            "rustc",
-            "Rust compiler",
-            subcommands(&[]),
-            vec![
-                option("--crate-name", None, Value),
-                option("--crate-type", None, Value),
-                option("--edition", None, Value),
-                option("-o", None, File),
-            ],
-            File,
-        ),
-        terminal_fig_spec(
-            "uv",
-            "Python package and project manager",
-            subcommands(&[
-                "add", "build", "init", "lock", "pip", "python", "remove", "run", "sync", "tool",
-                "venv",
-            ]),
-            vec![],
-            NoArg,
-        ),
-        terminal_fig_spec(
-            "poetry",
-            "Python packaging and dependency manager",
-            subcommands(&[
-                "add", "build", "check", "config", "env", "export", "install", "lock", "publish",
-                "remove", "run", "shell", "update",
-            ]),
-            vec![],
-            NoArg,
-        ),
-        terminal_fig_spec(
-            "psql",
-            "PostgreSQL interactive terminal",
-            subcommands(&[]),
-            vec![
-                option("-d", Some("Database"), Value),
-                option("-h", Some("Host"), Value),
-                option("-p", Some("Port"), Value),
-                option("-U", Some("User"), Value),
-                option("-f", None, File),
-            ],
-            NoArg,
-        ),
-        terminal_fig_spec(
-            "mysql",
-            "MySQL client",
-            subcommands(&[]),
-            vec![
-                option("-h", Some("Host"), Value),
-                option("-P", Some("Port"), Value),
-                option("-u", Some("User"), Value),
-                option("-D", Some("Database"), Value),
-            ],
-            NoArg,
-        ),
-        terminal_fig_spec(
-            "redis-cli",
-            "Redis command line interface",
-            subcommands(&[]),
-            vec![
-                option("-h", Some("Host"), Value),
-                option("-p", Some("Port"), Value),
-                option("-n", Some("Database"), Value),
-                option("--tls", None, NoArg),
-            ],
-            Value,
-        ),
-        terminal_fig_spec(
-            "tmux",
-            "Terminal multiplexer",
-            subcommands(&[
-                "attach",
-                "detach",
-                "kill-session",
-                "list-sessions",
-                "new-session",
-                "split-window",
-                "switch-client",
-            ]),
-            vec![option("-L", None, Value), option("-S", None, File)],
-            NoArg,
-        ),
-        terminal_fig_spec(
-            "ssh-keygen",
-            "OpenSSH authentication key utility",
-            subcommands(&[]),
-            vec![
-                option("-t", Some("Key type"), Value),
-                option("-f", Some("Output file"), File),
-                option("-C", Some("Comment"), Value),
-                option("-N", Some("New passphrase"), Value),
-                option("-y", None, NoArg),
-            ],
-            File,
-        ),
-        terminal_fig_spec(
-            "openssl",
-            "OpenSSL command line tool",
-            subcommands(&[
-                "asn1parse",
-                "dgst",
-                "enc",
-                "genpkey",
-                "pkcs12",
-                "rand",
-                "req",
-                "rsa",
-                "s_client",
-                "x509",
-            ]),
-            vec![],
-            NoArg,
-        ),
-        terminal_fig_spec(
-            "journalctl",
-            "Query systemd journal",
-            subcommands(&[]),
-            vec![
-                option("-u", Some("Unit"), Value),
-                option("-f", Some("Follow"), NoArg),
-                option("-n", Some("Lines"), Value),
-                option("--since", None, Value),
-                option("--until", None, Value),
-            ],
-            NoArg,
         ),
         terminal_fig_spec(
             "du",
@@ -996,16 +801,30 @@ pub(in crate::workspace) fn built_in_terminal_fig_specs() -> Vec<TerminalFigSpec
             ],
             Path,
         ),
+    ]
+}
+
+/// 终端补全规格：网络诊断。
+fn fig_specs_net() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    vec![
         terminal_fig_spec(
-            "df",
-            "Report file system disk space",
+            "curl",
+            "Transfer URLs",
             subcommands(&[]),
             vec![
-                option("-h", None, NoArg),
-                option("-i", None, NoArg),
-                option("-T", None, NoArg),
+                option("-o", None, File),
+                option("-H", None, Value),
+                option("-X", None, Value),
             ],
-            Path,
+            NoArg,
+        ),
+        terminal_fig_spec(
+            "wget",
+            "Download files",
+            subcommands(&[]),
+            vec![option("-O", None, File), option("-P", None, Directory)],
+            NoArg,
         ),
         terminal_fig_spec(
             "netstat",
@@ -1077,6 +896,300 @@ pub(in crate::workspace) fn built_in_terminal_fig_specs() -> Vec<TerminalFigSpec
             NoArg,
         ),
     ]
+}
+
+/// 终端补全规格：文本处理。
+fn fig_specs_text() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    vec![
+        terminal_fig_spec(
+            "grep",
+            "Search text",
+            subcommands(&[]),
+            vec![
+                option("-r", None, NoArg),
+                option("-i", None, NoArg),
+                option("-n", None, NoArg),
+            ],
+            Path,
+        ),
+        terminal_fig_spec(
+            "rg",
+            "ripgrep search",
+            subcommands(&[]),
+            vec![
+                option("-i", None, NoArg),
+                option("-n", None, NoArg),
+                option("--glob", None, Value),
+            ],
+            Path,
+        ),
+        terminal_fig_spec(
+            "sed",
+            "Stream editor",
+            subcommands(&[]),
+            vec![
+                option("-E", None, NoArg),
+                option("-e", None, Value),
+                option("-f", None, File),
+                option("-i", None, Value),
+            ],
+            Path,
+        ),
+        terminal_fig_spec(
+            "awk",
+            "Pattern scanning and processing language",
+            subcommands(&[]),
+            vec![
+                option("-F", Some("Input field separator"), Value),
+                option("-f", None, File),
+                option("-v", Some("Variable assignment"), Value),
+            ],
+            Path,
+        ),
+        terminal_fig_spec(
+            "jq",
+            "JSON processor",
+            subcommands(&[]),
+            vec![
+                option("-r", None, NoArg),
+                option("-c", None, NoArg),
+                option("-f", None, File),
+                option("--arg", None, Value),
+            ],
+            File,
+        ),
+    ]
+}
+
+/// 终端补全规格：系统与进程。
+fn fig_specs_sys() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    vec![
+        terminal_fig_spec(
+            "chmod",
+            "Change file modes",
+            subcommands(&[]),
+            vec![option("-R", None, NoArg)],
+            Path,
+        ),
+        terminal_fig_spec(
+            "chown",
+            "Change owner/group",
+            subcommands(&[]),
+            vec![option("-R", None, NoArg)],
+            Path,
+        ),
+        terminal_fig_spec(
+            "ps",
+            "Process status",
+            subcommands(&[]),
+            vec![
+                option("-a", None, NoArg),
+                option("-u", None, NoArg),
+                option("-x", None, NoArg),
+            ],
+            NoArg,
+        ),
+        terminal_fig_spec(
+            "kill",
+            "Send signal to process",
+            subcommands(&[]),
+            vec![option("-9", None, NoArg), option("-TERM", None, NoArg)],
+            NoArg,
+        ),
+        terminal_fig_spec(
+            "systemctl",
+            "Control systemd",
+            subcommands(&[
+                "status",
+                "start",
+                "stop",
+                "restart",
+                "reload",
+                "enable",
+                "disable",
+                "list-units",
+            ]),
+            vec![],
+            NoArg,
+        ),
+        terminal_fig_spec(
+            "journalctl",
+            "Query systemd journal",
+            subcommands(&[]),
+            vec![
+                option("-u", Some("Unit"), Value),
+                option("-f", Some("Follow"), NoArg),
+                option("-n", Some("Lines"), Value),
+                option("--since", None, Value),
+                option("--until", None, Value),
+            ],
+            NoArg,
+        ),
+        terminal_fig_spec(
+            "tmux",
+            "Terminal multiplexer",
+            subcommands(&[
+                "attach",
+                "detach",
+                "kill-session",
+                "list-sessions",
+                "new-session",
+                "split-window",
+                "switch-client",
+            ]),
+            vec![option("-L", None, Value), option("-S", None, File)],
+            NoArg,
+        ),
+    ]
+}
+
+/// 终端补全规格：包管理与发布。
+fn fig_specs_pkg() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    vec![
+        terminal_fig_spec(
+            "brew",
+            "Homebrew package manager",
+            subcommands(&[
+                "install",
+                "uninstall",
+                "update",
+                "upgrade",
+                "search",
+                "info",
+                "services",
+            ]),
+            vec![],
+            NoArg,
+        ),
+        terminal_fig_spec(
+            "gh",
+            "GitHub CLI",
+            subcommands(&["auth", "browse", "issue", "pr", "repo", "run", "workflow"]),
+            vec![],
+            NoArg,
+        ),
+    ]
+}
+
+/// 终端补全规格：构建工具。
+fn fig_specs_build() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    vec![
+        terminal_fig_spec(
+            "make",
+            "Build automation",
+            subcommands(&[]),
+            vec![
+                option("-C", None, Directory),
+                option("-f", None, File),
+                option("-j", None, Value),
+            ],
+            Value,
+        ),
+        terminal_fig_spec(
+            "cmake",
+            "Cross-platform build system",
+            subcommands(&["--build", "--install", "--preset", "--workflow"]),
+            vec![
+                option("-S", None, Directory),
+                option("-B", None, Directory),
+                option("-D", None, Value),
+                option("-G", None, Value),
+            ],
+            Directory,
+        ),
+    ]
+}
+
+/// 终端补全规格：数据库客户端。
+fn fig_specs_db() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    vec![
+        terminal_fig_spec(
+            "psql",
+            "PostgreSQL interactive terminal",
+            subcommands(&[]),
+            vec![
+                option("-d", Some("Database"), Value),
+                option("-h", Some("Host"), Value),
+                option("-p", Some("Port"), Value),
+                option("-U", Some("User"), Value),
+                option("-f", None, File),
+            ],
+            NoArg,
+        ),
+        terminal_fig_spec(
+            "mysql",
+            "MySQL client",
+            subcommands(&[]),
+            vec![
+                option("-h", Some("Host"), Value),
+                option("-P", Some("Port"), Value),
+                option("-u", Some("User"), Value),
+                option("-D", Some("Database"), Value),
+            ],
+            NoArg,
+        ),
+        terminal_fig_spec(
+            "redis-cli",
+            "Redis command line interface",
+            subcommands(&[]),
+            vec![
+                option("-h", Some("Host"), Value),
+                option("-p", Some("Port"), Value),
+                option("-n", Some("Database"), Value),
+                option("--tls", None, NoArg),
+            ],
+            Value,
+        ),
+    ]
+}
+
+/// 终端补全规格：其它。
+fn fig_specs_misc() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    vec![terminal_fig_spec(
+        "openssl",
+        "OpenSSL command line tool",
+        subcommands(&[
+            "asn1parse",
+            "dgst",
+            "enc",
+            "genpkey",
+            "pkcs12",
+            "rand",
+            "req",
+            "rsa",
+            "s_client",
+            "x509",
+        ]),
+        vec![],
+        NoArg,
+    )]
+}
+
+pub(in crate::workspace) fn built_in_terminal_fig_specs() -> Vec<TerminalFigSpec> {
+    use TerminalFigArgType::{Command, Directory, File, None as NoArg, Path, Value};
+    let mut specs = Vec::new();
+    specs.extend(fig_specs_vcs());
+    specs.extend(fig_specs_js());
+    specs.extend(fig_specs_python());
+    specs.extend(fig_specs_rust());
+    specs.extend(fig_specs_go());
+    specs.extend(fig_specs_container());
+    specs.extend(fig_specs_remote());
+    specs.extend(fig_specs_files());
+    specs.extend(fig_specs_net());
+    specs.extend(fig_specs_text());
+    specs.extend(fig_specs_sys());
+    specs.extend(fig_specs_pkg());
+    specs.extend(fig_specs_build());
+    specs.extend(fig_specs_db());
+    specs.extend(fig_specs_misc());
+    specs
 }
 
 pub(super) fn should_run_terminal_path_provider(
