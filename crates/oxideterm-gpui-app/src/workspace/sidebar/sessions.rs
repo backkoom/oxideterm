@@ -3844,71 +3844,81 @@ impl WorkspaceApp {
                 false,
             )
         };
+
+        let panel = context_menu_content(&self.tokens)
+            .w(px(190.0))
+            .id("session-context-menu")
+            .child(item("sessions.tree.actions.sftp").on_mouse_down(
+                MouseButton::Left,
+                cx.listener(move |this, _event, window, cx| {
+                    this.open_sftp_tab(sftp_node.clone(), window, cx);
+                    this.close_session_context_menu();
+                    cx.stop_propagation();
+                    cx.notify();
+                }),
+            ))
+            .child(
+                context_menu_item(
+                    &self.tokens,
+                    "IDE".to_string(),
+                    ContextMenuItemKind::Plain,
+                    false,
+                    false,
+                )
+                .on_mouse_down(
+                    MouseButton::Left,
+                    cx.listener(move |this, _event, window, cx| {
+                        this.open_ide_folder_picker_tab(ide_node.clone(), window, cx);
+                        this.close_session_context_menu();
+                        cx.stop_propagation();
+                        cx.notify();
+                    }),
+                ),
+            )
+            .child(context_menu_separator(&self.tokens))
+            .child(item("sessions.tree.actions.port_forwarding").on_mouse_down(
+                MouseButton::Left,
+                cx.listener(move |this, _event, window, cx| {
+                    this.open_forwards_tab(forward_node.clone(), window, cx);
+                    this.close_session_context_menu();
+                    cx.stop_propagation();
+                    cx.notify();
+                }),
+            ))
+            .child(item("sessions.tree.actions.drill_in").on_mouse_down(
+                MouseButton::Left,
+                cx.listener(move |this, _event, window, cx| {
+                    this.open_drill_down_form(drill_node.clone(), window, cx);
+                    this.close_session_context_menu();
+                    cx.stop_propagation();
+                    cx.notify();
+                }),
+            ));
+
         Some(
+            // 全屏遮罩：点空白处关闭，同时拦住鼠标不让它穿透到下层列表和终端。
             div()
                 .absolute()
-                .left(px(menu.x))
-                .top(px(menu.y))
-                // 拦住鼠标：不 occlude 的话，鼠标移到菜单上时事件会穿透到
-                // 底下的会话列表和终端，看着像"连底层一起选中"。
+                .top_0()
+                .left_0()
+                .right_0()
+                .bottom_0()
                 .occlude()
-                .child(context_menu_event_boundary(
-                    div().child(
-                        context_menu_content(&self.tokens)
-                            .w(px(190.0))
-                            .id("session-context-menu")
-                            .child(item("sessions.tree.actions.sftp").on_mouse_down(
-                                MouseButton::Left,
-                                cx.listener(move |this, _event, window, cx| {
-                                    this.open_sftp_tab(sftp_node.clone(), window, cx);
-                                    this.close_session_context_menu();
-                                    cx.stop_propagation();
-                                    cx.notify();
-                                }),
-                            ))
-                            .child(
-                                context_menu_item(
-                                    &self.tokens,
-                                    "IDE".to_string(),
-                                    ContextMenuItemKind::Plain,
-                                    false,
-                                    false,
-                                )
-                                .on_mouse_down(
-                                    MouseButton::Left,
-                                    cx.listener(move |this, _event, window, cx| {
-                                        this.open_ide_folder_picker_tab(
-                                            ide_node.clone(),
-                                            window,
-                                            cx,
-                                        );
-                                        this.close_session_context_menu();
-                                        cx.stop_propagation();
-                                        cx.notify();
-                                    }),
-                                ),
-                            )
-                            .child(context_menu_separator(&self.tokens))
-                            .child(item("sessions.tree.actions.port_forwarding").on_mouse_down(
-                                MouseButton::Left,
-                                cx.listener(move |this, _event, window, cx| {
-                                    this.open_forwards_tab(forward_node.clone(), window, cx);
-                                    this.close_session_context_menu();
-                                    cx.stop_propagation();
-                                    cx.notify();
-                                }),
-                            ))
-                            .child(item("sessions.tree.actions.drill_in").on_mouse_down(
-                                MouseButton::Left,
-                                cx.listener(move |this, _event, window, cx| {
-                                    this.open_drill_down_form(drill_node.clone(), window, cx);
-                                    this.close_session_context_menu();
-                                    cx.stop_propagation();
-                                    cx.notify();
-                                }),
-                            )),
-                    ),
-                ))
+                .on_mouse_down(
+                    MouseButton::Left,
+                    cx.listener(|this, _event, _window, cx| {
+                        this.close_session_context_menu();
+                        cx.stop_propagation();
+                        cx.notify();
+                    }),
+                )
+                .child(
+                    div()
+                        .absolute()
+                        .left(px(menu.x))
+                        .top(px(menu.y))
+                        .child(context_menu_event_boundary(div().child(panel))),
+                )
                 .into_any_element(),
         )
     }
