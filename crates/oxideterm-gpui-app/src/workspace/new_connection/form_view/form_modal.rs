@@ -137,6 +137,33 @@ impl ConnectionFormModalSnapshot {
 }
 
 impl WorkspaceApp {
+    /// 表单底部的错误提示条。
+    ///
+    /// 提示模式下不显示（那是给用户的引导文案）；成功后用 success 色。
+    fn render_new_connection_form_error(
+        &self,
+        form: &ConnectionFormModalSnapshot,
+        prompt_mode: bool,
+    ) -> Option<AnyElement> {
+        if prompt_mode {
+            return None;
+        }
+        let error = form.error.clone()?;
+        let theme = self.tokens.ui;
+        let feedback_color = if form.feedback_success {
+            theme.success
+        } else {
+            theme.error
+        };
+        Some(
+            div()
+                .text_size(px(self.tokens.metrics.ui_text_xs))
+                .text_color(rgb(feedback_color))
+                .child(error)
+                .into_any_element(),
+        )
+    }
+
     pub(in crate::workspace) fn render_new_connection_modal(
         &self,
         window: &Window,
@@ -1018,24 +1045,8 @@ impl WorkspaceApp {
                         })
                         )
                         .when_some(
-                            if prompt_mode {
-                                None
-                            } else {
-                                form.error.clone()
-                            },
-                            |content, error| {
-                                let feedback_color = if form.feedback_success {
-                                    theme.success
-                                } else {
-                                    theme.error
-                                };
-                                content.child(
-                                    div()
-                                        .text_size(px(self.tokens.metrics.ui_text_xs))
-                                        .text_color(rgb(feedback_color))
-                                        .child(error),
-                                )
-                            },
+                            self.render_new_connection_form_error(&form, prompt_mode),
+                            |content, error| content.child(error),
                         ),
                 )
                 .child(
