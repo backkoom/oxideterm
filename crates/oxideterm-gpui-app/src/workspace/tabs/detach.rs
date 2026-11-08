@@ -1270,6 +1270,8 @@ impl WorkspaceApp {
         } else {
             TAB_CONTEXT_MENU_HEIGHT
         };
+        // 新增的水平/垂直分屏两项
+        menu_height += TAB_CONTEXT_MENU_SPLIT_HEIGHT * 2.0;
         if can_split_into_active {
             menu_height += TAB_CONTEXT_MENU_SPLIT_HEIGHT;
         }
@@ -1315,6 +1317,45 @@ impl WorkspaceApp {
                             ),
                         )
                     })
+                    // 直接对当前面板分屏。这两项原来只挂在命令栏上，
+                    // 分屏属于「标签布局」操作，放标签右键更符合直觉。
+                    .child(context_menu_separator(&self.tokens))
+                    .child(
+                        context_menu_item(
+                            &self.tokens,
+                            self.i18n.t("command_palette.cmd_split_horizontal"),
+                            ContextMenuItemKind::Plain,
+                            false,
+                            false,
+                        )
+                        .on_mouse_down(
+                            MouseButton::Left,
+                            cx.listener(|this, _event, window, cx| {
+                                this.split_active_pane(SplitDirection::Horizontal, window, cx);
+                                this.close_tab_context_menu();
+                                cx.stop_propagation();
+                                cx.notify();
+                            }),
+                        ),
+                    )
+                    .child(
+                        context_menu_item(
+                            &self.tokens,
+                            self.i18n.t("command_palette.cmd_split_vertical"),
+                            ContextMenuItemKind::Plain,
+                            false,
+                            false,
+                        )
+                        .on_mouse_down(
+                            MouseButton::Left,
+                            cx.listener(|this, _event, window, cx| {
+                                this.split_active_pane(SplitDirection::Vertical, window, cx);
+                                this.close_tab_context_menu();
+                                cx.stop_propagation();
+                                cx.notify();
+                            }),
+                        ),
+                    )
                     .when(can_split_into_active, |content| {
                         content
                             .child(context_menu_separator(&self.tokens))

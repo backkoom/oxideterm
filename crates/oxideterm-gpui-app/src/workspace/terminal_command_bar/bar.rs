@@ -46,13 +46,6 @@ impl WorkspaceApp {
         let active_pane_id = self.active_pane_id(cx);
         let is_local_terminal = self.active_terminal_kind(cx)
             == Some(oxideterm_terminal::TerminalSessionKind::LocalPty);
-        let split_controls_visible = matches!(
-            self.active_terminal_kind(cx),
-            Some(
-                oxideterm_terminal::TerminalSessionKind::LocalPty
-                    | oxideterm_terminal::TerminalSessionKind::SshPty
-            )
-        );
         let can_configure_remote_integration = self.active_ssh_terminal_node_id(cx).is_some();
         let remote_integration_pending = self.remote_shell_integration_pending(cx);
         let remote_integration_tooltip_id = "terminal-command-configure-directory-tracking";
@@ -61,7 +54,6 @@ impl WorkspaceApp {
             .t("settings_view.connections.shell_integration.toolbar_action");
         let target_indicator_is_local =
             is_local_terminal && target_label == self.i18n.t("terminal.command_bar.local_shell");
-        let can_split = self.can_split_active_pane(cx);
         let broadcast_targets =
             self.terminal_broadcast_target_panes(active_pane_id.unwrap_or(PaneId(0)), cx);
         let broadcast_enabled = active_pane_id
@@ -238,45 +230,6 @@ impl WorkspaceApp {
                                     )
                                 },
                             )
-                            .when(split_controls_visible, |actions| {
-                                // Transport readiness controls the disabled state; keeping SSH
-                                // actions visible makes their placement match local terminals.
-                                actions
-                                    .child(self.terminal_command_action_button(
-                                        LucideIcon::SplitSquareHorizontal,
-                                        rgb(theme.text_muted),
-                                        !can_split,
-                                        None,
-                                        "terminal-command-split-horizontal",
-                                        self.i18n.t("command_palette.cmd_split_horizontal"),
-                                        |this, _event, window, cx| {
-                                            this.split_active_pane(
-                                                SplitDirection::Horizontal,
-                                                window,
-                                                cx,
-                                            );
-                                            cx.stop_propagation();
-                                        },
-                                        cx,
-                                    ))
-                                    .child(self.terminal_command_action_button(
-                                        LucideIcon::SplitSquareVertical,
-                                        rgb(theme.text_muted),
-                                        !can_split,
-                                        None,
-                                        "terminal-command-split-vertical",
-                                        self.i18n.t("command_palette.cmd_split_vertical"),
-                                        |this, _event, window, cx| {
-                                            this.split_active_pane(
-                                                SplitDirection::Vertical,
-                                                window,
-                                                cx,
-                                            );
-                                            cx.stop_propagation();
-                                        },
-                                        cx,
-                                    ))
-                            })
                             .when(can_configure_remote_integration, |actions| {
                                 actions.child(self.terminal_command_action_button(
                                     LucideIcon::FolderSync,
