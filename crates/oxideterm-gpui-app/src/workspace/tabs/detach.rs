@@ -1270,8 +1270,8 @@ impl WorkspaceApp {
         } else {
             TAB_CONTEXT_MENU_HEIGHT
         };
-        // 新增的水平/垂直分屏两项
-        menu_height += TAB_CONTEXT_MENU_SPLIT_HEIGHT * 2.0;
+        // 新增的水平/垂直分屏两项 + 搜索
+        menu_height += TAB_CONTEXT_MENU_SPLIT_HEIGHT * 3.0;
         if can_split_into_active {
             menu_height += TAB_CONTEXT_MENU_SPLIT_HEIGHT;
         }
@@ -1350,6 +1350,28 @@ impl WorkspaceApp {
                             MouseButton::Left,
                             cx.listener(|this, _event, window, cx| {
                                 this.split_active_pane(SplitDirection::Vertical, window, cx);
+                                this.close_tab_context_menu();
+                                cx.stop_propagation();
+                                cx.notify();
+                            }),
+                        ),
+                    )
+                    .child(
+                        context_menu_item(
+                            &self.tokens,
+                            self.i18n.t("search.placeholder"),
+                            ContextMenuItemKind::Plain,
+                            false,
+                            false,
+                        )
+                        .on_mouse_down(
+                            MouseButton::Left,
+                            cx.listener(|this, _event, window, cx| {
+                                if this.search_visible(cx) {
+                                    this.close_search(window, cx);
+                                } else {
+                                    this.open_search(window, cx);
+                                }
                                 this.close_tab_context_menu();
                                 cx.stop_propagation();
                                 cx.notify();

@@ -378,31 +378,6 @@ impl WorkspaceApp {
                                     }
                                 },
                             ))
-                            .child(self.terminal_command_action_button(
-                                LucideIcon::Search,
-                                if self.search_visible(cx) {
-                                    rgb(theme.accent)
-                                } else {
-                                    rgb(theme.text_muted)
-                                },
-                                false,
-                                Some(if self.search_visible(cx) {
-                                    rgba((theme.accent << 8) | 0x26)
-                                } else {
-                                    rgba(0x00000000)
-                                }),
-                                "terminal-command-search",
-                                self.i18n.t("search.placeholder"),
-                                |this, _event, window, cx| {
-                                    if this.search_visible(cx) {
-                                        this.close_search(window, cx);
-                                    } else {
-                                        this.open_search(window, cx);
-                                    }
-                                    cx.stop_propagation();
-                                },
-                                cx,
-                            ))
                             .when(recording_active, |actions| {
                                 actions.child(
                                     div()
