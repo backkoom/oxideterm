@@ -641,10 +641,6 @@ impl WorkspaceApp {
         }
     }
 
-    pub(super) fn can_split_active_pane(&self, cx: &App) -> bool {
-        self.active_pane_split_target(cx).is_some()
-    }
-
     fn active_pane_split_target(&self, cx: &App) -> Option<ActivePaneSplitTarget> {
         let (tab_id, active_pane_id, pane_count) = self.active_tab(cx).and_then(|tab| {
             Some((
