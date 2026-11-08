@@ -1,7 +1,7 @@
 use super::*;
 use gpui::{Div, StatefulInteractiveElement, point};
 use oxideterm_gpui_ui::context_menu::{
-    ContextMenuItemKind, context_menu_content, context_menu_event_boundary, context_menu_item,
+    ContextMenuItemKind, context_menu_content, context_menu_event_boundary, context_menu_item_row,
     context_menu_separator,
 };
 use oxideterm_remote_desktop::RemoteDesktopSessionStatus;
@@ -3835,66 +3835,76 @@ impl WorkspaceApp {
         let ide_node = menu.node_id.clone();
         let forward_node = menu.node_id.clone();
         let drill_node = menu.node_id.clone();
-        let item = |key: &str| {
-            context_menu_item(
-                &self.tokens,
-                self.i18n.t(key),
-                ContextMenuItemKind::Plain,
-                false,
-                false,
-            )
+        // 菜单项带图标：纯文字看着空，也跟展开区里原来的动作对不上。
+        let item = |icon: LucideIcon, label: String| {
+            context_menu_item_row(&self.tokens, ContextMenuItemKind::Plain, false, false)
+                .gap(px(self.tokens.spacing.one_half))
+                .child(Self::render_lucide_icon(
+                    icon,
+                    14.0,
+                    rgb(self.tokens.ui.text_muted),
+                ))
+                .child(label)
         };
 
         let panel = context_menu_content(&self.tokens)
             .w(px(190.0))
             .id("session-context-menu")
-            .child(item("sessions.tree.actions.sftp").on_mouse_down(
-                MouseButton::Left,
-                cx.listener(move |this, _event, window, cx| {
-                    this.open_sftp_tab(sftp_node.clone(), window, cx);
-                    this.close_session_context_menu();
-                    cx.stop_propagation();
-                    cx.notify();
-                }),
-            ))
             .child(
-                context_menu_item(
-                    &self.tokens,
-                    "IDE".to_string(),
-                    ContextMenuItemKind::Plain,
-                    false,
-                    false,
+                item(
+                    LucideIcon::FolderOpen,
+                    self.i18n.t("sessions.tree.actions.sftp"),
                 )
                 .on_mouse_down(
                     MouseButton::Left,
                     cx.listener(move |this, _event, window, cx| {
-                        this.open_ide_folder_picker_tab(ide_node.clone(), window, cx);
+                        this.open_sftp_tab(sftp_node.clone(), window, cx);
                         this.close_session_context_menu();
                         cx.stop_propagation();
                         cx.notify();
                     }),
                 ),
             )
-            .child(context_menu_separator(&self.tokens))
-            .child(item("sessions.tree.actions.port_forwarding").on_mouse_down(
+            .child(item(LucideIcon::Code2, "IDE".to_string()).on_mouse_down(
                 MouseButton::Left,
                 cx.listener(move |this, _event, window, cx| {
-                    this.open_forwards_tab(forward_node.clone(), window, cx);
+                    this.open_ide_folder_picker_tab(ide_node.clone(), window, cx);
                     this.close_session_context_menu();
                     cx.stop_propagation();
                     cx.notify();
                 }),
             ))
-            .child(item("sessions.tree.actions.drill_in").on_mouse_down(
-                MouseButton::Left,
-                cx.listener(move |this, _event, window, cx| {
-                    this.open_drill_down_form(drill_node.clone(), window, cx);
-                    this.close_session_context_menu();
-                    cx.stop_propagation();
-                    cx.notify();
-                }),
-            ));
-
+            .child(context_menu_separator(&self.tokens))
+            .child(
+                item(
+                    LucideIcon::ArrowLeftRight,
+                    self.i18n.t("sessions.tree.actions.port_forwarding"),
+                )
+                .on_mouse_down(
+                    MouseButton::Left,
+                    cx.listener(move |this, _event, window, cx| {
+                        this.open_forwards_tab(forward_node.clone(), window, cx);
+                        this.close_session_context_menu();
+                        cx.stop_propagation();
+                        cx.notify();
+                    }),
+                ),
+            )
+            .child(
+                item(
+                    LucideIcon::ArrowDownRight,
+                    self.i18n.t("sessions.tree.actions.drill_in"),
+                )
+                .on_mouse_down(
+                    MouseButton::Left,
+                    cx.listener(move |this, _event, window, cx| {
+                        this.open_drill_down_form(drill_node.clone(), window, cx);
+                        this.close_session_context_menu();
+                        cx.stop_propagation();
+                        cx.notify();
+                    }),
+                ),
+            );
         Some(
             // 全屏遮罩：点空白处关闭，同时拦住鼠标不让它穿透到下层列表和终端。
             div()
