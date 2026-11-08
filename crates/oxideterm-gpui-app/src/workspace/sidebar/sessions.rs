@@ -915,6 +915,9 @@ impl WorkspaceApp {
         let workspace = cx.entity();
         div()
             .id("active-sessions-sidebar-scroll")
+            // 右键菜单需要 relative 定位；放在列表自身的根节点上，
+            // 不要在外面再包一层——那会截断 flex_1，整个侧栏布局会塌。
+            .relative()
             .flex_1()
             .min_h(px(0.0))
             .w_full()
@@ -928,6 +931,7 @@ impl WorkspaceApp {
                     })
                 },
             ))
+            .children(self.render_session_context_menu(cx))
             .into_any_element()
     }
 
