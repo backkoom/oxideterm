@@ -1,5 +1,6 @@
 {
   "terminal": {
+    "connecting": "接続中…",
     "archive": {
       "title": "アーカイブを展開",
       "command": "展開コマンド",

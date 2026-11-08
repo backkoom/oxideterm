@@ -1,5 +1,6 @@
 {
   "terminal": {
+    "connecting": "Conectando…",
     "archive": {
       "title": "Extrair arquivo",
       "command": "Comando de extração",

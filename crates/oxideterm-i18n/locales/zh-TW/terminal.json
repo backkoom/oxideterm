@@ -1,5 +1,6 @@
 {
   "terminal": {
+    "connecting": "正在連線…",
     "archive": {
       "title": "解壓縮檔案",
       "command": "解壓縮命令",

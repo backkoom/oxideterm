@@ -1,5 +1,6 @@
 {
   "terminal": {
+    "connecting": "正在连接…",
     "archive": {
       "title": "解压压缩包",
       "command": "解压命令",

@@ -677,6 +677,27 @@ impl Render for TerminalPane {
                     .children(self.render_command_gutter_controls(cx))
                     .children(self.render_fold_summaries(cx)),
             )
+            // 连接建立前先给个交代：否则标签已经出来、内容区却是一整块空背景，
+            // 看着像卡住了。
+            .when(self.ssh_reconnect_pending(), |pane| {
+                pane.child(
+                    div()
+                        .absolute()
+                        .top_0()
+                        .left_0()
+                        .right_0()
+                        .bottom_0()
+                        .flex()
+                        .items_center()
+                        .justify_center()
+                        .child(
+                            div()
+                                .text_size(self.metrics.font_size)
+                                .text_color(rgb(self.theme.foreground))
+                                .child("Connecting…"),
+                        ),
+                )
+            })
             .when(self.is_serial_transport(), |pane| {
                 pane.child(self.render_serial_control_bar(cx))
             })

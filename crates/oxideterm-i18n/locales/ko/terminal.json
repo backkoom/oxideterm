@@ -1,5 +1,6 @@
 {
   "terminal": {
+    "connecting": "연결 중…",
     "archive": {
       "title": "압축 파일 풀기",
       "command": "압축 해제 명령",

@@ -1,5 +1,6 @@
 {
   "terminal": {
+    "connecting": "Đang kết nối…",
     "archive": {
       "title": "Giải nén tệp",
       "command": "Lệnh giải nén",
