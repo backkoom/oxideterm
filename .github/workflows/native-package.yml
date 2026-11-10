@@ -1,7 +1,13 @@
 name: Native Package
-run-name: Native Package ${{ inputs.release_tag || inputs.version || github.sha }}
+run-name: Native Package ${{ inputs.release_tag || github.ref_name || inputs.version || github.sha }}
 
 on:
+  # 推 v*-bk.* 标签自动打包并发布。
+  # 加这个是为了能在没有 GitHub token 的环境里发版——只有 SSH 推送权限时，
+  # workflow_dispatch 触发不了，但推标签可以。
+  push:
+    tags:
+      - 'v*-bk.*'
   workflow_dispatch:
     inputs:
       version:
@@ -22,7 +28,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: native-package-${{ inputs.release_tag || github.sha }}
+  group: native-package-${{ inputs.release_tag || github.ref_name || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -44,9 +50,11 @@ jobs:
         id: release_request
         shell: bash
         env:
-          INPUT_RELEASE_TAG: ${{ inputs.release_tag }}
+          # push 触发时没有 inputs，用 ref_name（就是标签名）和 event_name 兜底，
+          # 让下面这段校验逻辑不用分两条路径。
+          INPUT_RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
           INPUT_VERSION: ${{ inputs.version }}
-          INPUT_UPLOAD_RELEASE: ${{ inputs.upload_release }}
+          INPUT_UPLOAD_RELEASE: ${{ inputs.upload_release || (github.event_name == 'push' && 'true' || 'false') }}
         run: |
           set -euo pipefail
 
@@ -56,8 +64,10 @@ jobs:
           release_tag=""
 
           if [[ "${INPUT_UPLOAD_RELEASE}" == "true" ]]; then
-            if [[ "${GITHUB_REF}" != "refs/heads/main" ]]; then
-              echo "Release publishing must be dispatched from main, not ${GITHUB_REF}." >&2
+            # 手动触发要求从 main 发起；标签推送触发时 GITHUB_REF 就是那个标签，
+            # 下面的 merge-base 检查才是真正的安全边界。
+            if [[ "${GITHUB_REF}" != "refs/heads/main" && "${GITHUB_REF}" != "refs/tags/${INPUT_RELEASE_TAG}" ]]; then
+              echo "Release publishing must be dispatched from main or its own tag, not ${GITHUB_REF}." >&2
               exit 1
             fi
             if [[ -z "${INPUT_RELEASE_TAG}" ]]; then
@@ -428,7 +438,7 @@ jobs:
       - validate-release-request
       - package
     runs-on: ubuntu-latest
-    if: inputs.upload_release
+    if: inputs.upload_release || github.event_name == 'push'
     permissions:
       contents: write
     outputs:
@@ -628,7 +638,7 @@ jobs:
     runs-on: ubuntu-latest
     # Updaters reject unsigned assets, so the manifest is only meaningful when
     # the signing key was present.
-    if: inputs.upload_release && needs.release.outputs.signed == 'true'
+    if: (inputs.upload_release || github.event_name == 'push') && needs.release.outputs.signed == 'true'
     permissions:
       contents: write
     steps:
@@ -902,7 +912,7 @@ jobs:
       - release
       - publish-updater
     runs-on: ubuntu-latest
-    if: inputs.upload_release
+    if: inputs.upload_release || github.event_name == 'push'
     permissions:
       contents: write
     steps:
@@ -935,7 +945,7 @@ jobs:
       - publish-updater
       - cleanup-sigs
     runs-on: ubuntu-latest
-    if: inputs.upload_release
+    if: inputs.upload_release || github.event_name == 'push'
     permissions:
       contents: read
     steps:
