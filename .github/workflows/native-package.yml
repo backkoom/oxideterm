@@ -46,6 +46,21 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check signing key is configured
+        env:
+          SIGNING_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          # 快速自检：密钥没配的话，132 分钟后才发现就太亏了。
+          # 不 exit 1——没密钥也能发版，只是没有自动更新清单。
+          if [[ -z "${SIGNING_KEY}" ]]; then
+            echo "::warning title=自动更新不可用::TAURI_SIGNING_PRIVATE_KEY 未配置，本次不会签名，也不会生成 latest.json"
+          elif [[ -z "${SIGNING_KEY_PASSWORD}" ]]; then
+            echo "::warning title=密钥密码缺失::TAURI_SIGNING_PRIVATE_KEY_PASSWORD 未配置，签名会因解密失败而中断"
+          else
+            echo "签名密钥已配置（私钥长度 ${#SIGNING_KEY}，密码长度 ${#SIGNING_KEY_PASSWORD}）"
+          fi
+
       - name: Validate version, tag, and commit
         id: release_request
         shell: bash
