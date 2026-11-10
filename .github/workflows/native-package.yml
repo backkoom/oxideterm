@@ -662,6 +662,35 @@ jobs:
           # pinned action version; `overwrite_files` is the supported one.
           overwrite_files: true
 
+      - name: Sync release notes
+        # action-gh-release 在 Release 已存在时不会覆盖 body——实测重推同一个 tag
+        # 时说明永远停在第一次创建的那版。这里显式 PATCH 一次，保证重跑能把说明改对。
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          RELEASE_TAG: ${{ steps.release_meta.outputs.tag }}
+          NOTES_PATH: ${{ steps.release_notes.outputs.body_path }}
+        with:
+          script: |
+            const fs = require('fs');
+            const tag = process.env.RELEASE_TAG;
+            const body = fs.readFileSync(process.env.NOTES_PATH, 'utf8');
+            const { data: release } = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag,
+            });
+            if ((release.body || '') === body) {
+              core.info('Release notes already up to date.');
+            } else {
+              await github.rest.repos.updateRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: release.id,
+                body,
+              });
+              core.info(`Release notes synced (${body.length} chars).`);
+            }
+
   publish-updater:
     name: Generate updater manifest
     needs: release
