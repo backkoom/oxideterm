@@ -124,6 +124,9 @@ jobs:
     name: Package ${{ matrix.label }}
     needs: validate-release-request
     runs-on: ${{ matrix.os }}
+    # 卡死保护：正常平台 40~50 分钟，macos-x64 的 Intel runner 实测要 132 分钟。
+    # 上限放到 180 分钟，既不会误杀慢的，也不会拖到 GitHub 默认的 6 小时。
+    timeout-minutes: 180
     permissions:
       actions: write
       contents: read
@@ -138,6 +141,8 @@ jobs:
           - label: macos-x64
             # Use an Intel runner so Cargo build scripts run on the same host
             # architecture as the x86_64 release target.
+            # 实测这一轮要 132 分钟（arm64 只要 50 分钟），Intel runner 就是慢，
+            # 不是卡死——别看着时间长就以为挂了。
             os: macos-15-intel
             target: x86_64-apple-darwin
             xcode: '26.3'
