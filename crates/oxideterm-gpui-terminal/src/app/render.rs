@@ -783,11 +783,11 @@ impl Render for TerminalPane {
             .when_some(self.tmux_prompt.clone(), |pane, prompt| {
                 pane.child(self.render_tmux_prompt_overlay(&prompt, cx))
             })
-            .when(self.pending_paste.is_some(), |pane| {
-                pane.child(self.render_paste_overlay(window, cx))
+            .when_some(self.render_paste_overlay(window, cx), |pane, overlay| {
+                pane.child(overlay)
             })
             .when(
-                self.kitty_file_transmission_confirm_open && self.pending_paste.is_none(),
+                self.kitty_file_transmission_confirm_open && self.paste_editor.is_none(),
                 |pane| pane.child(self.render_kitty_file_transmission_confirm(cx)),
             )
             .when_some(self.modem_progress.clone(), |pane, transfer| {
@@ -2399,7 +2399,7 @@ impl TerminalPane {
                     .child(self.render_terminal_context_menu_item(
                         self.preferences.paste_labels.edit_title.clone(),
                         false,
-                        |this, _, window, cx| this.edit_clipboard_paste(window, cx),
+                        |this, _, _, cx| this.edit_clipboard_paste(cx),
                         cx,
                     ))
                     // 剪贴板之后是「对选区做什么」，两者操作对象不同。
