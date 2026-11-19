@@ -273,6 +273,16 @@ fn search_specs_connections() -> Vec<SettingsSearchEntrySpec> {
                 "settings_view.connections.importers.duplicate",
             ],
         ),
+        settings_search_entry(
+            SettingsTab::Connections,
+            6,
+            "settings_view.known_hosts.title",
+            &[
+                "settings_view.known_hosts.description",
+                "settings_view.known_hosts.source",
+                "settings_view.known_hosts.search",
+            ],
+        ),
     ]
 }
 
