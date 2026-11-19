@@ -352,7 +352,7 @@ impl HistoryStore {
             return Err(HistoryError::InvalidRequest);
         }
         let revision = if unchanged {
-            previous.clone().ok_or(HistoryError::InvalidRevision)?
+            previous.ok_or(HistoryError::InvalidRevision)?
         } else {
             Revision {
                 client: client.clone(),
