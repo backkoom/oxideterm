@@ -4085,7 +4085,7 @@ mod tests {
                 .lock()
                 .feed_recording_output(b"\x1b[H\x1b[Jprompt> ");
             pane.handle_scroll(
-                &ScrollEvent {
+                &ScrollWheelEvent {
                     delta: ScrollDelta::Lines(point(0.0, -1.0)),
                     ..Default::default()
                 },
